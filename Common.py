@@ -1,5 +1,6 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
+import os
 
 Pa = None
 Pb = None
@@ -8,14 +9,35 @@ crash_script = None
 
 DEBUG = False
 
-######## Directories and Files ############
-DIRECTORY_LOG = "logs"
-DIRECTORY_OUTPUT = "output"
+# ------------------- Directories --------------------
 
-MAIN_LOG_FILE = ""
+DIRECTORY_MAIN = os.getcwd()
+DIRECTORY_LOG = DIRECTORY_MAIN + "/logs"
+DIRECTORY_OUTPUT = DIRECTORY_MAIN + "/output"
+
+# ------------------- Files --------------------
+
+FILE_MAIN_LOG = ""
+FILE_CONFIGURATION = ""
 
 
-######## KEY DEFINITIONS ##################
+
+# ------------------- Configuration --------------------
+
+CONF_PATH_A = "path_a:"
+CONF_PATH_B = "path_b:"
+CONF_PATH_C = "path_c:"
+CONF_EXPLOIT_A = "exploit_a"
+CONF_EXPLOIT_C = "exploit_c"
+
+# ------------------ Configuration Values ---------------
+VALUE_PATH_A = ""
+VALUE_PATH_B = ""
+VALUE_PATH_C = ""
+VALUE_EXPLOIT_A = ""
+VALUE_EXPLOIT_C = ""
+
+# ----------------- KEY DEFINITIONS -------------------
 
 KEY_DURATION_TOTAL = 'run-time'
 KEY_DURATION_INITIALIZATION = 'initialization'
@@ -23,9 +45,11 @@ KEY_DURATION_CLONE_DETECTION = 'clone-detection'
 KEY_DURATION_TRANSLATION = 'translation'
 KEY_DURATION_TRANSPLANTATION = "transplantation"
 
+ARG_CONF_FILE = "--conf="
+ARG_DEBUG = "--debug"
 
-CONF_FILE_NAME = "crochet.conf"
-PATCH_COMMAND = "crochet-patch"
+
+PATCH_COMMAND = "patchweave-patch"
 PATCH_SIZE = "1000"
 DIFF_COMMAND = "crochet-diff "
 DIFF_SIZE = "1000"

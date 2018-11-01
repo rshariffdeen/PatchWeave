@@ -30,39 +30,52 @@ def title(title):
     write("_"*100 + "\n\n\t" + title + "\n" + "_"*100+"\n", CYAN)
 
 
-def sub_title(sub_title):
-    write("\n\t" + sub_title + "\n\t" + "-"*90+"\n", CYAN)
+def sub_title(subtitle):
+    write("\n\t" + subtitle + "\n\t" + "-"*90+"\n", CYAN)
 
 
-def output(message, jumpline=True):
-    write(message, BLUE, jumpline)
+def command(message):
+    if Common.DEBUG:
+        write(message, ROSE)
+    Logger.information(message)
+
+
+def normal(message, jump_line=True):
+    write(message, BLUE, jump_line)
+    Logger.output(message)
 
 
 def information(message, jump_line=True):
-    if not Common.DEBUG:
+    if Common.DEBUG:
         write(message, GREY, jump_line)
+    Logger.information(message)
 
 
 def statistics(message):
     write(message, WHITE)
+    Logger.output(message)
 
 
 def error(message):
     write(message, RED)
+    Logger.error(message)
 
 
 def success(message):
     write(message, GREEN)
+    Logger.output(message)
 
 
 def warning(message):
-    if not Common.DEBUG:
+    if Common.DEBUG:
         write(message, YELLOW)
+    Logger.warning(message)
 
-      
-def initialize():
-    output("\n\n" + "#"*100 + "\n\n\tStarting PatchWeave...\n\n" + "#"*100)
-    Logger.initialize()
+
+def start():
+    Logger.create()
+    normal("\n\n" + "#"*100 + "\n\n\tStarting PatchWeave...\n\n" + "#"*100)
+
 
 
 def end(time_info):
@@ -73,5 +86,11 @@ def end(time_info):
     statistics("Translation: " + time_info[Common.KEY_DURATION_TRANSLATION] + " seconds")
     statistics("Transplantation: " + time_info[Common.KEY_DURATION_TRANSPLANTATION] + " seconds")
     success("\nPatchWeave finished successfully after " + time_info[Common.KEY_DURATION_TOTAL] + " seconds\n")
+
+
+def help():
+    print("Usage: python patchweave [OPTIONS] " + Common.ARG_CONF_FILE + "$FILE_PATH")
+    print("Options are:")
+    print("\t" + Common.ARG_DEBUG + "\t| " + "enable debugging information")
 
 
