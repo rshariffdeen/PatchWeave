@@ -6,6 +6,24 @@ Pb = None
 Pc = None
 crash_script = None
 
+DEBUG = False
+
+######## Directories and Files ############
+DIRECTORY_LOG = "logs"
+DIRECTORY_OUTPUT = "output"
+
+MAIN_LOG_FILE = ""
+
+
+######## KEY DEFINITIONS ##################
+
+KEY_DURATION_TOTAL = 'run-time'
+KEY_DURATION_INITIALIZATION = 'initialization'
+KEY_DURATION_CLONE_DETECTION = 'clone-detection'
+KEY_DURATION_TRANSLATION = 'translation'
+KEY_DURATION_TRANSPLANTATION = "transplantation"
+
+
 CONF_FILE_NAME = "crochet.conf"
 PATCH_COMMAND = "crochet-patch"
 PATCH_SIZE = "1000"
@@ -13,21 +31,6 @@ DIFF_COMMAND = "crochet-diff "
 DIFF_SIZE = "1000"
 SYNTAX_CHECK_COMMAND = "clang-check "
 STYLE_FORMAT_COMMAND = "clang-format -style=LLVM "
-
-interesting = ["VarDecl", "DeclRefExpr", "ParmVarDecl", "TypedefDecl",
-               "FieldDecl", "EnumDecl", "EnumConstantDecl", "RecordDecl"]
-
-UPDATEMOVE = "UpdateMove"
-UPDATE = "Update"
-MOVE = "Move"
-INSERT = "Insert"
-DELETE = "Delete"
-MATCH = "Match"
-TO = " to "
-AT = " at "
-INTO = " into "
-AND = "and"
-order = [UPDATE,DELETE,UPDATEMOVE, MOVE, INSERT]
 
 
 header_file_list_to_patch = []

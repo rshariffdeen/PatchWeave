@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import sys
+import Common
+import Logger
 
 GREY = '\t\x1b[1;30m'
 RED = '\t\x1b[1;31m'
@@ -11,112 +13,65 @@ ROSE = '\n\t\x1b[1;35m'
 CYAN = '\x1b[1;36m'
 WHITE = '\t\x1b[1;37m'
 
-DEBUG = False
 
-''' Functions to print (colors, title, presentation of the program...)'''
-
-
-def color(print_message, print_color, jump_line=True):
-    with open("logs/main_log", 'a') as out_file:
-        r = "\033[K" + print_color + str(print_message) + '\x1b[0m'
+def write(print_message, print_color, new_line=True):
+    r = "\033[K" + print_color + str(print_message) + '\x1b[0m'
+    sys.stdout.write(r)
+    if new_line:
+        r = "\n"
+        sys.stdout.write("\n")
+    else:
+        r = "\033[K\r"
         sys.stdout.write(r)
-        out_file.write(r)
-        if jump_line:
-            r = "\n"
-            sys.stdout.write("\n")
-            out_file.write(r)
-        else:
-            r = "\033[K\r"
-            sys.stdout.write(r)
-            out_file.write(r)
-        sys.stdout.flush()
+    sys.stdout.flush()
 
 
-def grey(message, jumpline=True):
-    color(message, GREY, jumpline)
-   
-   
-def error(message):
-    color(message, RED)
-
-
-def success(message):
-    color(message, GREEN)
-
-
-def warning(message):
-    color(message, YELLOW)
-
-
-def blue(message):
-    color(message, BLUE)
-    
-    
-def rose(message):
-    color(message, ROSE)
-    
-    
-def cyan(message):
-    color(message, CYAN)
-
-
-def white(message):
-    color(message, WHITE)
-      
-      
-def start():
-    cyan("\n\n" + "#"*100 + "\n\n\tStarting PatchWeave...\n\n" + "#"*100)
-    cyan("="*100 + "\n\n" +
-    '''
-    PatchWeave was developed by researchers at NUS Tsunami Team:
-    
-    \tRidwan Shariffdeen (rshariffdeen@gmail.com)
-        
-    \tPedro Bahamondes (pibahamondesw@gmail.com)
-        
-    \tShin Hwei Tan (shinhwei0131@gmail.com)
-    
-    Special Thanks:
-        
-    \tDr. Abhik Roychoudhury (abhik@comp.nus.edu.sg)
-    
-    \tAndrew Santosa (dcsandr@nus.edu.sg)
-    
-    Acknowledgements:
-    
-    \tThis software uses the following software developped by third parties:
-    
-    \t\tDeckard (at tools/Deckard). See https://github.com/skyhover/Deckard/
-    \t\tfor more info.
-    
-    \t\tClang (at tools/bin) and some subprojects.
-    
-    \t\tClang-diff, a tool based on Gumtree diff
-    '''
-    +"\n" + "="*100 + "\n")
-
-
-def exit_msg(runtime, initialization_duration, clone_detection_duration, script_generation_duration, translation_duration, transplantation_duration):
-    success("Time duration for:\n")
-    warning("Initialization: " + initialization_duration)
-    warning("Clone Detection: " + clone_detection_duration)
-    warning("Script Generation: " + script_generation_duration)
-    warning("Translation: " + translation_duration)
-    warning("Transplantation: " + transplantation_duration)
-    success("\nPatchWeave finished successfully after " + runtime + " seconds\n")
-
-      
 def title(title):
-    cyan("_"*100 + "\n\n\t" + title + "\n" + "_"*100+"\n")
+    write("_"*100 + "\n\n\t" + title + "\n" + "_"*100+"\n", CYAN)
 
 
 def sub_title(sub_title):
-    cyan("\n\t" + sub_title + "\n\t" + "-"*90+"\n")
+    write("\n\t" + sub_title + "\n\t" + "-"*90+"\n", CYAN)
 
 
-def conditional(message, *args):
-    if debug:
-        for i in args:
-            if not i:
-                return None
-        white(message)
+def output(message, jumpline=True):
+    write(message, BLUE, jumpline)
+
+
+def information(message, jump_line=True):
+    if not Common.DEBUG:
+        write(message, GREY, jump_line)
+
+
+def statistics(message):
+    write(message, WHITE)
+
+
+def error(message):
+    write(message, RED)
+
+
+def success(message):
+    write(message, GREEN)
+
+
+def warning(message):
+    if not Common.DEBUG:
+        write(message, YELLOW)
+
+      
+def initialize():
+    output("\n\n" + "#"*100 + "\n\n\tStarting PatchWeave...\n\n" + "#"*100)
+    Logger.initialize()
+
+
+def end(time_info):
+    Logger.end(time_info)
+    statistics("\nRun time statistics:\n-----------------------\n")
+    statistics("Initialization: " + time_info[Common.KEY_DURATION_INITIALIZATION] + " seconds")
+    statistics("Clone Detection: " + time_info[Common.KEY_DURATION_CLONE_DETECTION] + " seconds")
+    statistics("Translation: " + time_info[Common.KEY_DURATION_TRANSLATION] + " seconds")
+    statistics("Transplantation: " + time_info[Common.KEY_DURATION_TRANSPLANTATION] + " seconds")
+    success("\nPatchWeave finished successfully after " + time_info[Common.KEY_DURATION_TOTAL] + " seconds\n")
+
+

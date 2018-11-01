@@ -1,4 +1,5 @@
 build
+logs/
 cmake-build-debug
 .idea
 *.pyc
