@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import json
+import sys
+import Logger
 
 ttype = [None]
 label = [None]
@@ -63,13 +65,13 @@ class AST:
                 self.children.append(child)
                 child.parent = self
 
-    def treeString(self):
+    def get_string(self):
         self.attrs = [self.id, self.identifier, self.line, self.line_end,
                       self.col, self.col_end, self.begin, self.end, self.value,
                       self.type, self.file, self.parent_id]
         s = self.char[:-2] + "{\n"
         for i in range(len(self.attrs)):
-            if self.attrs[i] != None:
+            if self.attrs[i] is not None:
                 s += self.char + self.attr_names[i] + ": "
                 s += str(self.attrs[i]) + "\n"
         if len(self.children) > 0:
@@ -97,12 +99,14 @@ class AST:
         s += "]"
         return s
 
-    def get_code(self, file):
-        with open(file, 'r', errors='replace') as f:
-            source_code = "".join(f.readlines())
+    def get_code(self, file_path):
+        Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+        with open(file_path, 'r') as source_file:
+            source_code = "".join(source_file.readlines())
         return source_code[int(self.begin):int(self.end)]
 
-    def get_nodes(self, attribute, value, nodes):
+    def get_node_list(self, attribute, value, node_list):
+        Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
         self.attrs = [self.id, self.identifier, self.line, self.line_end,
                       self.col, self.col_end, self.begin, self.end, self.value,
                       self.type, self.file, self.parent_id]
@@ -110,9 +114,9 @@ class AST:
             return 0
         index = AST.attr_names.index(attribute)
         if self.attrs[index] == value:
-            nodes.append(self)
+            node_list.append(self)
         for child in self.children:
-            if child.get_nodes(attribute, value, nodes) == 0:
+            if child.get_node_list(attribute, value, node_list) == 0:
                 return 0
         return 1
 
@@ -127,32 +131,32 @@ class AST:
                 return True
         return False
 
-    def format_value(self, file):
+    def format_value(self, file_path):
         if "VarDecl" in self.type:
-            nvalue = self.get_code(file)
+            nvalue = self.get_code(file_path)
         elif "(anonymous struct)::" in self.value:
-            nvalue = self.get_code(file)
+            nvalue = self.get_code(file_path)
         else:
             nvalue = self.value
         return nvalue
 
-    def info(self, file):
+    def info(self, file_path):
         if self.value:
-            return self.type + ": " + self.format_value(file)
+            return self.type + ": " + self.format_value(file_path)
         return self.type
 
-    def value_calc(self, file):
+    def value_calc(self, file_path):
         if self.value:
-            return self.format_value(file)
+            return self.format_value(file_path)
 
     def simple_print(self):
         return str(self.type) + "(" + str(self.id) + ")"
 
 
-def AST_from_file(file):
+def load_from_file(file_path):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     global ast
-
-    with open(file, 'r', errors='replace') as ast_file:
+    with open(file_path, 'r') as ast_file:
         ast = ast_file.readline()
     object_ast = json.loads(ast)
     AST(object_ast['root'])

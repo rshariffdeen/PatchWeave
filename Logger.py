@@ -13,29 +13,45 @@ def create():
     Common.FILE_MAIN_LOG = log_file_path
     with open(Common.FILE_MAIN_LOG, 'w+') as log_file:
         log_file.write("[Start] PatchWeave started at " + str(datetime.datetime.now()) + "\n")
+    if os.path.exists(Common.FILE_LAST_LOG):
+        os.remove(Common.FILE_LAST_LOG)
+    with open(Common.FILE_LAST_LOG, 'w+') as last_log:
+        last_log.write("[Start] PatchWeave started at " + str(datetime.datetime.now()) + "\n")
 
 
 def log(log_message):
     with open(Common.FILE_MAIN_LOG, 'a') as log_file:
         log_file.write(log_message)
+    with open(Common.FILE_LAST_LOG, 'a') as log_file:
+        log_file.write(log_message)
 
 
 def information(message):
-    message = "[INFO]" + str(message) + "\n";
+    message = "[INFO]: " + str(message) + "\n"
+    log(message)
+
+
+def trace(function_name, arguments):
+    message = "[TRACE]: " + function_name + ": " + str(arguments) + "\n"
+    log(message)
+
+
+def command(message):
+    message = "[COMMAND]: " + str(message) + "\n"
     log(message)
 
 
 def error(message):
-    message = "[ERROR]" + str(message) + "\n";
+    message = "[ERROR]: " + str(message) + "\n"
     log(message)
 
 
 def output(message):
-    log(message)
+    log(message + "\n")
 
 
 def warning(message):
-    message = "[WARNING]" + str(message) + "\n";
+    message = "[WARNING]: " + str(message) + "\n"
     log(message)
 
 

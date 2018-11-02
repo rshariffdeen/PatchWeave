@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import sys
 import subprocess
 import Logger
 import Output
@@ -9,8 +10,7 @@ import Common
 
 def execute_command(command):
     # Print executed command and execute it in console
-    message = "running command " + command
-    Output.command(message)
+    Output.command(command)
     process = subprocess.Popen([command], stdout=subprocess.PIPE, shell=True)
     (output, error) = process.communicate()
     # out is the output of the command, and err is the exit value
@@ -24,6 +24,9 @@ def create_directories():
     if not os.path.isdir(Common.DIRECTORY_OUTPUT):
         os.makedirs(Common.DIRECTORY_OUTPUT)
 
+    if not os.path.isdir(Common.DIRECTORY_BACKUP):
+        os.makedirs(Common.DIRECTORY_BACKUP)
+
 
 def error_exit(*args):
     print("\n")
@@ -34,6 +37,7 @@ def error_exit(*args):
 
 
 def find_files(src_path, extension, output):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     # Save paths to all files in src_path with extension extension to output
     find_command = "find " + src_path + " -name '" + extension + "' > " + output
     execute_command(find_command)
@@ -41,6 +45,7 @@ def find_files(src_path, extension, output):
 
 def clean_files():
     # Remove other residual files stored in ./output/
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.information("Removing other residual files...")
     if os.path.isdir("output"):
         clean_command = "rm -rf " + Common.DIRECTORY_OUTPUT
@@ -48,6 +53,7 @@ def clean_files():
 
 
 def get_file_extension_list(src_path, output_file_name):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     extensions = set()
     find_command = "find " + src_path + " -type f -not -name '*\.c' -not -name '*\.h'" + \
         " > " + output_file_name
@@ -62,3 +68,16 @@ def get_file_extension_list(src_path, output_file_name):
                 extensions.add(a)
             a = f.readline().strip()
     return extensions
+
+
+def backup_file(file_path, backup_name):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    backup_command = "cp " + file_path + " " + Common.DIRECTORY_BACKUP + "/" + backup_name
+    execute_command(backup_command)
+
+
+def restore_file(file_path, backup_name):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    restore_command = "cp " + Common.DIRECTORY_BACKUP + "/" + backup_name + " " + file_path
+    execute_command(restore_command)
+

@@ -7,7 +7,7 @@ import Common
 from Utilities import error_exit, create_directories
 import Initializer
 import os, sys
-import Detector
+import Differ
 
 
 def first_run_check():
@@ -15,7 +15,6 @@ def first_run_check():
 
 
 def read_conf():
-
     if len(sys.argv) > 1:
         for arg in sys.argv:
             if Common.ARG_DEBUG in arg:
@@ -47,7 +46,6 @@ def read_conf():
 
 
 def run_patchweave():
-
     # read configuration and check first run
     read_conf()
     first_run_check()
@@ -61,7 +59,7 @@ def run_patchweave():
     time_info[Common.KEY_DURATION_INITIALIZATION] = str(time.time() - initialization_start_time)
 
     function_identification_start_time = time.time()
-    Detector.detect()
+    Differ.diff()
     time_info[Common.KEY_DURATION_CLONE_DETECTION] = str(time.time() - function_identification_start_time)
 
     patch_extraction_start_time = time.time()

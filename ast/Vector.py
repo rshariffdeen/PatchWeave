@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import Output
+import Logger
+import sys
 from Utilities import execute_command, error_exit
 import os
 
@@ -32,6 +34,7 @@ class Vector:
         Vector.vid += 1
         
     def generate_deckard_vec(self):
+        Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
         if self.function_name is None:
             command = "echo " + self.vector_path + " >> output/errors; " + \
                 Vector.deckard_path + " " + self.file_path + " -o " + \

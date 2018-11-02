@@ -28,21 +28,24 @@ def write(print_message, print_color, new_line=True):
 
 def title(title):
     write("_"*100 + "\n\n\t" + title + "\n" + "_"*100+"\n", CYAN)
+    Logger.information(title)
 
 
 def sub_title(subtitle):
     write("\n\t" + subtitle + "\n\t" + "-"*90+"\n", CYAN)
+    Logger.information(subtitle)
 
 
 def command(message):
     if Common.DEBUG:
+        message = "running command\n\t" + message
         write(message, ROSE)
-    Logger.information(message)
+    Logger.command(message)
 
 
 def normal(message, jump_line=True):
     write(message, BLUE, jump_line)
-    Logger.output(message)
+    # Logger.output(message)
 
 
 def information(message, jump_line=True):
@@ -74,8 +77,7 @@ def warning(message):
 
 def start():
     Logger.create()
-    normal("\n\n" + "#"*100 + "\n\n\tStarting PatchWeave...\n\n" + "#"*100)
-
+    write("\n\n" + "#"*100 + "\n\n\tPatchWeave - Automated Patch Transplantation\n\n" + "#"*100, BLUE)
 
 
 def end(time_info):

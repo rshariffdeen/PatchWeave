@@ -12,6 +12,6 @@ import Output
 
 def initialize():
     Output.title("Initializing project for Transplantation")
-    Project.Project(Common.VALUE_PATH_A, "Pa", Common.VALUE_EXPLOIT_A)
-    Project.Project(Common.VALUE_PATH_B, "Pb")
-    Project.Project(Common.VALUE_PATH_C, "Pc", Common.VALUE_EXPLOIT_C)
+    Common.Project_A = Project.Project(Common.VALUE_PATH_A, "Pa", Common.VALUE_EXPLOIT_A)
+    Common.Project_B = Project.Project(Common.VALUE_PATH_B, "Pb")
+    Common.Project_C = Project.Project(Common.VALUE_PATH_C, "Pc", Common.VALUE_EXPLOIT_C)

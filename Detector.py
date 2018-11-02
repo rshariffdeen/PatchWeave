@@ -52,7 +52,7 @@ def generate_diff():
             diff_line = diff.readline().strip()
 
     # C files
-    Output.blue("Starting fine-grained diff...\n")
+    Output.normal("Starting fine-grained diff...\n")
     with open(FILE_DIFF_C, 'r') as diff:
         diff_line = diff.readline().strip()
         while diff_line:
@@ -62,7 +62,7 @@ def generate_diff():
             Generator.llvm_format(file_a)
             Generator.llvm_format(file_b)
             diff_command = "diff -ENBZbwr " + file_a + " " + file_b + " > output/C_diff"
-            exec_com(diff_command)
+            execute_command(diff_command)
             pertinent_lines_a = []
             pertinent_lines_b = []
             with open('output/C_diff', 'r', errors='replace') as file_diff:
@@ -102,10 +102,10 @@ def generate_diff():
 
 def generate_vector_for_extension(file_extension, output, is_header=False):
 
-    Output.blue("Generate vectors for " + file_extension + " files in " + Common.Pc.name + "...")
+    Output.normal("Generate vectors for " + file_extension + " files in " + Common.Pc.name + "...")
     # Generates an AST file for each file of extension ext
     find_files(Common.Pc.path, file_extension, output)
-    with open(output, 'r', errors='replace') as file_list:
+    with open(output, 'r') as file_list:
         file_name = file_list.readline().strip()
         while file_name:
             # Parses it to get useful information and generate vectors
@@ -130,7 +130,7 @@ def get_vector_list(project, extension):
     else:
         rxt = "h"
 
-    Output.blue("Getting vectors for " + rxt + " files in " + project.name + "...")
+    Output.normal("Getting vectors for " + rxt + " files in " + project.name + "...")
     filepath = "output/vectors_" + rxt + "_" + project.name
     find_files(project.path, extension, filepath)
     with open(filepath, "r", errors='replace') as file:
@@ -151,12 +151,12 @@ def clone_detection_header_files():
     candidate_list = []
     vector_list_a = get_vector_list(Common.Pa, extension)
     if len(vector_list_a) == 0:
-        Output.blue(" - nothing to do -")
+        Output.normal(" - nothing to do -")
         return candidate_list
     vector_list_c = get_vector_list(Common.Pc, extension)
     factor = 2
 
-    Output.blue("Declaration mapping for *.h files")
+    Output.normal("Declaration mapping for *.h files")
     for vector_a in vector_list_a:
         best_vector = vector_list_c[0]
         min_distance = Vector.Vector.dist(vector_a[1], best_vector[1])
@@ -185,10 +185,10 @@ def clone_detection_header_files():
             potential_candidate = potential_list[potential_iterator][0]
             potential_candidate_file = potential_candidate[0].replace(Common.Pc.path, "")[:-4]
             vector_distance = str(potential_list[potential_iterator][1])
-            Output.blue("\tPossible match for " + modified_header_file + " in Pa:")
-            Output.blue("\t\tFile: " + potential_candidate_file + " in Pc")
-            Output.blue("\t\tDistance: " + vector_distance + "\n")
-            Output.blue("\tDeclaration mapping from " + modified_header_file + " to " + potential_candidate_file + ":")
+            Output.normal("\tPossible match for " + modified_header_file + " in Pa:")
+            Output.normal("\t\tFile: " + potential_candidate_file + " in Pc")
+            Output.normal("\t\tDistance: " + vector_distance + "\n")
+            Output.normal("\tDeclaration mapping from " + modified_header_file + " to " + potential_candidate_file + ":")
             try:
                 declaration_map, match_count, edit_count = detect_matching_declarations(modified_header_file, potential_candidate_file)
                 declaration_map_list.append(declaration_map)
@@ -234,9 +234,9 @@ def clone_detection_header_files():
             d_c = str(potential_list[index][1])
             decl_map = declaration_map_list[index]
             Output.success("\t\tMatch for " + modified_header_file + " in Pa:")
-            Output.blue("\t\tFile: " + file_c + " in Pc.")
-            Output.blue("\t\tDistance: " + d_c + ".\n")
-            Output.blue("\t\tMatch Score: " + d_c + ".\n")
+            Output.normal("\t\tFile: " + file_c + " in Pc.")
+            Output.normal("\t\tDistance: " + d_c + ".\n")
+            Output.normal("\t\tMatch Score: " + d_c + ".\n")
             # Output.green((Common.Pa.path + file_a, Pc.path + file_c, var_map))
             candidate_list.append((Common.Pa.path + modified_header_file, Common.Pc.path + file_c, decl_map))
     return candidate_list
@@ -248,11 +248,11 @@ def clone_detection_for_c_files():
     candidate_list = []
     vector_list_a = get_vector_list(Common.Pa, c_ext)
     if len(vector_list_a) == 0:
-        Output.blue("\t - nothing to do -")
+        Output.normal("\t - nothing to do -")
         return candidate_list
 
     vector_list_c = get_vector_list(Common.Pc, c_ext)
-    Output.blue("Variable mapping...\n")
+    Output.normal("Variable mapping...\n")
 
 
     UNKNOWN = "#UNKNOWN#"
@@ -297,11 +297,11 @@ def clone_detection_for_c_files():
             f_c = fc[-1]
             file_c = ".".join(fc[:-1])
             d_c = str(candidates_d[k])
-            Output.blue("\tPossible match for " + f_a + " in $Pa/" + file_a + \
+            Output.normal("\tPossible match for " + f_a + " in $Pa/" + file_a + \
                        ":")
-            Output.blue("\t\tFunction: " + f_c + " in $Pc/" + file_c)
-            Output.blue("\t\tDistance: " + d_c + "\n")
-            Output.blue("\tVariable mapping from " + f_a + " to " + f_c + ":")
+            Output.normal("\t\tFunction: " + f_c + " in $Pc/" + file_c)
+            Output.normal("\t\tDistance: " + d_c + "\n")
+            Output.normal("\tVariable mapping from " + f_a + " to " + f_c + ":")
             try:
                 var_map = detect_matching_variables(f_a, file_a, f_c, file_c)
                 var_maps.append(var_map)
@@ -347,8 +347,8 @@ def clone_detection_for_c_files():
         file_c = ".".join(fc[:-1])
         d_c = str(best_d)
         Output.success("\t\tBest match for " + f_a + " in $Pa/" + file_a + ":")
-        Output.blue("\t\tFunction: " + f_c + " in $Pc/" + file_c)
-        Output.blue("\t\tDistance: " + d_c + "\n")
+        Output.normal("\t\tFunction: " + f_c + " in $Pc/" + file_c)
+        Output.normal("\t\tDistance: " + d_c + "\n")
 
         candidate_list.append((Common.Pa.functions[Common.Pa.path + file_a][f_a],
                          Common.Pc.functions[Common.Pc.path + file_c][f_c], var_map))

@@ -2,11 +2,9 @@
 # -*- coding: utf-8 -*-
 import os
 
-Pa = None
-Pb = None
-Pc = None
-crash_script = None
-
+Project_A = None
+Project_B = None
+Project_C = None
 DEBUG = False
 
 # ------------------- Directories --------------------
@@ -14,10 +12,12 @@ DEBUG = False
 DIRECTORY_MAIN = os.getcwd()
 DIRECTORY_LOG = DIRECTORY_MAIN + "/logs"
 DIRECTORY_OUTPUT = DIRECTORY_MAIN + "/output"
+DIRECTORY_BACKUP = DIRECTORY_MAIN + "/backup"
 
 # ------------------- Files --------------------
 
 FILE_MAIN_LOG = ""
+FILE_LAST_LOG = DIRECTORY_LOG + "/log-latest"
 FILE_CONFIGURATION = ""
 
 
