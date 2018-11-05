@@ -104,9 +104,11 @@ def extract_function_name_list():
             try:
                 Generator.get_function_name_list(Common.Project_A, file_a, pertinent_lines_a)
                 Generator.get_function_name_list(Common.Project_B, file_b, pertinent_lines_b)
+
             except Exception as exception:
                 error_exit(exception, "failed at finding affected functions.")
             diff_line = diff_file.readline().strip()
+    return function_list
 
 
 def extract_c_file_list():

@@ -10,6 +10,7 @@ import Output
 import Common
 import Generator
 import Vector
+import Logger
 
 
 FILE_EXCLUDED_EXTENSIONS = Common.DIRECTORY_OUTPUT + "/excluded-extensions"
@@ -520,10 +521,12 @@ def clean_parse(content, separator):
 
 
 def safe_exec(function_def, title, *args):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     start_time = time.time()
-    Output.sub_title("Starting " + title + "...")
+    Output.sub_title("starting " + title + "...")
     description = title[0].lower() + title[1:]
     try:
+        Logger.information("running " + str(function_def))
         if not args:
             result = function_def()
         else:
@@ -537,8 +540,9 @@ def safe_exec(function_def, title, *args):
     return result
 
 
-def detect():
-    Output.title("Locating changed functions")
+def match():
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    Output.title("Finding target function to patch")
     safe_exec(generate_diff, "search for affected functions")
     # Generates vectors for all functions in Pc
     safe_exec(generate_vectors, "vector generation for all functions in Pc")

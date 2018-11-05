@@ -6,6 +6,10 @@ Project_A = None
 Project_B = None
 Project_C = None
 DEBUG = False
+PROJECT_A_FUNCTION_LIST = ""
+PROJECT_B_FUNCTION_LIST = ""
+PROJECT_C_FUNCTION_LIST = ""
+DIFF_FUNCTION_LIST = ""
 
 # ------------------- Directories --------------------
 
@@ -27,8 +31,9 @@ FILE_CONFIGURATION = ""
 CONF_PATH_A = "path_a:"
 CONF_PATH_B = "path_b:"
 CONF_PATH_C = "path_c:"
-CONF_EXPLOIT_A = "exploit_a"
-CONF_EXPLOIT_C = "exploit_c"
+CONF_EXPLOIT_A = "exploit_a:"
+CONF_EXPLOIT_C = "exploit_c:"
+CONF_PATH_POC = "path_poc:"
 
 # ------------------ Configuration Values ---------------
 VALUE_PATH_A = ""
@@ -36,14 +41,18 @@ VALUE_PATH_B = ""
 VALUE_PATH_C = ""
 VALUE_EXPLOIT_A = ""
 VALUE_EXPLOIT_C = ""
+VALUE_PATH_POC = ""
 
 # ----------------- KEY DEFINITIONS -------------------
 
 KEY_DURATION_TOTAL = 'run-time'
 KEY_DURATION_INITIALIZATION = 'initialization'
-KEY_DURATION_CLONE_DETECTION = 'clone-detection'
+KEY_DURATION_DIFF_ANALYSIS = 'diff-analysis'
+KEY_DURATION_TRACE_ANALYSIS = "trace-analysis"
+KEY_DURATION_FUNCTION_MATCH = "match-functions"
 KEY_DURATION_TRANSLATION = 'translation'
 KEY_DURATION_TRANSPLANTATION = "transplantation"
+KEY_DURATION_CLONE_DETECTION = 'clone-detection'
 
 ARG_CONF_FILE = "--conf="
 ARG_DEBUG = "--debug"

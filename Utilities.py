@@ -2,6 +2,7 @@
 
 import os
 import sys
+import time
 import subprocess
 import Logger
 import Output
@@ -80,4 +81,3 @@ def restore_file(file_path, backup_name):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     restore_command = "cp " + Common.DIRECTORY_BACKUP + "/" + backup_name + " " + file_path
     execute_command(restore_command)
-
