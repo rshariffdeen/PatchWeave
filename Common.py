@@ -17,10 +17,14 @@ DIRECTORY_MAIN = os.getcwd()
 DIRECTORY_LOG = DIRECTORY_MAIN + "/logs"
 DIRECTORY_OUTPUT = DIRECTORY_MAIN + "/output"
 DIRECTORY_BACKUP = DIRECTORY_MAIN + "/backup"
+DIRECTORY_VECTORS_A = DIRECTORY_OUTPUT + "/vectors-a"
+DIRECTORY_VECTORS_B = DIRECTORY_OUTPUT + "/vectors-b"
+DIRECTORY_VECTORS_C = DIRECTORY_OUTPUT + "/vectors-c"
 
 # ------------------- Files --------------------
 
 FILE_MAIN_LOG = ""
+FILE_ERROR_LOG = DIRECTORY_LOG + "/log-error"
 FILE_LAST_LOG = DIRECTORY_LOG + "/log-latest"
 FILE_CONFIGURATION = ""
 
@@ -34,6 +38,7 @@ CONF_PATH_C = "path_c:"
 CONF_EXPLOIT_A = "exploit_a:"
 CONF_EXPLOIT_C = "exploit_c:"
 CONF_PATH_POC = "path_poc:"
+CONF_EXPLOIT_PREPARE = "pre_exploit:"
 
 # ------------------ Configuration Values ---------------
 VALUE_PATH_A = ""
@@ -42,6 +47,7 @@ VALUE_PATH_C = ""
 VALUE_EXPLOIT_A = ""
 VALUE_EXPLOIT_C = ""
 VALUE_PATH_POC = ""
+VALUE_EXPLOIT_PREPARE = ""
 
 # ----------------- KEY DEFINITIONS -------------------
 
@@ -54,9 +60,14 @@ KEY_DURATION_TRANSLATION = 'translation'
 KEY_DURATION_TRANSPLANTATION = "transplantation"
 KEY_DURATION_CLONE_DETECTION = 'clone-detection'
 
+
+# ---------------- ARGUMENTS ---------------------------
 ARG_CONF_FILE = "--conf="
 ARG_DEBUG = "--debug"
 
+# ----------------- TOOLS --------------------------------
+TOOL_VECGEN = "tools/deckard/cvecgen_fail "
+TOOL_VECGEN_ORIG = "tools/deckard/cvecgen "
 
 PATCH_COMMAND = "patchweave-patch"
 PATCH_SIZE = "1000"

@@ -48,14 +48,18 @@ def extract_function_list(trace_file_path, project_path):
             for read_line in trace_file:
                 read_line = read_line.strip()
                 if "fl=" in read_line:
+                    #print(file_path)
+                    found_file = False
                     file_path = str(read_line).split(") ")[-1]
                     if project_path in file_path:
                         found_file = True
                 elif found_file:
-                    found_file = False
-                    if "fn=" in read_line:
+                    if "fn=" in read_line and "cfn=" not in read_line:
                         function_name = read_line.split(") ")[-1]
-                        function_list.append(file_path + ":" + function_name)
+                        if "(" not in function_name:
+                            function_entry = file_path + ":" + function_name
+                            if function_entry not in function_list:
+                                function_list.append(function_entry)
     else:
         error_exit("trace file doesn't exists")
     return function_list
@@ -63,10 +67,13 @@ def extract_function_list(trace_file_path, project_path):
 
 def generate_trace_donor():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    prepare_exploit_environment(Common.VALUE_PATH_A)
     trace_exploit(Common.VALUE_EXPLOIT_A, Common.Project_A.path, Common.VALUE_PATH_POC)
     move_command = "mv callgrind* " + FILE_VALGRIND_LOG_A
     execute_command(move_command)
     Common.PROJECT_A_FUNCTION_LIST = extract_function_list(FILE_VALGRIND_LOG_A, Common.VALUE_PATH_A)
+    #print(Common.PROJECT_A_FUNCTION_LIST)
+    prepare_exploit_environment(Common.VALUE_PATH_B)
     trace_exploit(Common.VALUE_EXPLOIT_A, Common.Project_B.path, Common.VALUE_PATH_POC)
     move_command = "mv callgrind* " + FILE_VALGRIND_LOG_B
     execute_command(move_command)
@@ -79,6 +86,14 @@ def generate_trace_target():
     move_command = "mv callgrind* " + FILE_VALGRIND_LOG_C
     execute_command(move_command)
     Common.PROJECT_C_FUNCTION_LIST = extract_function_list(FILE_VALGRIND_LOG_C, Common.VALUE_PATH_C)
+
+
+def prepare_exploit_environment(project_path):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    if Common.VALUE_EXPLOIT_PREPARE is not None:
+        prepare_command = str(Common.VALUE_EXPLOIT_PREPARE).replace("$DIR", project_path) + " >output/null 2>output/null "
+        #print(prepare_command)
+        execute_command(prepare_command)
 
 
 def safe_exec(function_def, title, *args):

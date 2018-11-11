@@ -13,8 +13,8 @@ class Vector:
     #deckard_vecs = dict()
     vid = 0
     
-    def __init__(self, project, file_path, function_name, start_line, end_line, is_deckard=True):
-        self.project = project
+    def __init__(self, file_path, function_name, start_line, end_line, is_deckard=True):
+        # self.project = project
         self.file_path = file_path
         self.function_name = function_name
         self.start_line = start_line

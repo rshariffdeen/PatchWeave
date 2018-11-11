@@ -1,9 +1,0 @@
-1164a1165
->   size_t size;
-1201c1202,1205
-<   dec->numtiles = dec->numhtiles * dec->numvtiles;
----
->   if (!jas_safe_size_mul(dec->numhtiles, dec->numvtiles, &size)) {
->     return -1;
->   }
->   dec->numtiles = size;

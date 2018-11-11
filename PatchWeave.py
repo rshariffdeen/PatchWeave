@@ -47,6 +47,8 @@ def read_conf():
             Common.VALUE_PATH_B = configuration.replace(Common.CONF_PATH_B, '')
         elif Common.CONF_PATH_C in configuration:
             Common.VALUE_PATH_C = configuration.replace(Common.CONF_PATH_C, '')
+        elif Common.CONF_EXPLOIT_PREPARE in configuration:
+            Common.VALUE_EXPLOIT_PREPARE = configuration.replace(Common.CONF_EXPLOIT_PREPARE, '')
 
 
 def run_patchweave():
@@ -63,12 +65,8 @@ def run_patchweave():
     time_info[Common.KEY_DURATION_INITIALIZATION] = str(time.time() - time_check)
 
     time_check = time.time()
-    #Differ.diff()
+    # Differ.diff()
     time_info[Common.KEY_DURATION_DIFF_ANALYSIS] = str(time.time() - time_check)
-
-    time_check = time.time()
-    Tracer.trace()
-    time_info[Common.KEY_DURATION_TRACE_ANALYSIS] = str(time.time() - time_check)
 
     time_check = time.time()
     Tracer.trace()

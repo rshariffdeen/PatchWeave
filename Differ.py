@@ -19,7 +19,7 @@ FILE_EXCLUDED_EXTENSIONS_B = Common.DIRECTORY_OUTPUT + "/excluded-extensions-b"
 FILE_DIFF_C = Common.DIRECTORY_OUTPUT + "/diff_H"
 FILE_DIFF_H = Common.DIRECTORY_OUTPUT + "/diff_C"
 FILE_DIFF_ALL = Common.DIRECTORY_OUTPUT + "/diff_all"
-FILE_TEMP_DIFF = Common.DIRECTORY_OUTPUT + "temp_diff"
+FILE_TEMP_DIFF = Common.DIRECTORY_OUTPUT + "/temp_diff"
 
 
 def find_diff_files():
@@ -48,8 +48,8 @@ def extract_h_file_list():
             diff_line = diff_line.split(" ")
             file_a = diff_line[1]
             file_b = diff_line[3]
-            Generator.convert_to_llvm(file_a)
-            Generator.convert_to_llvm(file_b)
+            # Generator.convert_to_llvm(file_a)
+            # Generator.convert_to_llvm(file_b)
             Generator.parseAST(file_a, Common.Project_A, is_deckard=True, is_header=True)
             file_list.append(file_a.split("/")[-1])
             diff_line = diff_file.readline().strip()
@@ -69,8 +69,8 @@ def extract_function_name_list():
             diff_line = diff_line.split(" ")
             file_a = diff_line[1]
             file_b = diff_line[3]
-            Generator.convert_to_llvm(file_a)
-            Generator.convert_to_llvm(file_b)
+            # Generator.convert_to_llvm(file_a)
+            # Generator.convert_to_llvm(file_b)
             diff_command = "diff -ENBZbwr " + file_a + " " + file_b + " > " + FILE_TEMP_DIFF
             execute_command(diff_command)
             pertinent_lines_a = []
@@ -121,8 +121,8 @@ def extract_c_file_list():
             diff_line = diff_line.split(" ")
             file_a = diff_line[1]
             file_b = diff_line[3]
-            Generator.convert_to_llvm(file_a)
-            Generator.convert_to_llvm(file_b)
+            # Generator.convert_to_llvm(file_a)
+            # Generator.convert_to_llvm(file_b)
             file_list.append(file_a.split("/")[-1])
             diff_line = diff_file.readline().strip()
     if len(file_list) > 0:
@@ -261,9 +261,4 @@ def diff():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.title("Locating changed functions")
     safe_exec(generate_diff, "search for changed functions")
-    # Generates vectors for all functions in Pc
-    #safe_exec(generate_vectors, "vector generation for all functions in Pc")
-    # Pairwise vector comparison for matching
-    #Common.header_file_list_to_patch = safe_exec(clone_detection_header_files, "clone detection for header files")
-    #Common.c_file_list_to_patch = safe_exec(clone_detection_for_c_files, "clone detection for C files")
 

@@ -17,16 +17,16 @@ interesting = ["VarDecl", "DeclRefExpr", "ParmVarDecl", "TypedefDecl",
                "FieldDecl", "EnumDecl", "EnumConstantDecl", "RecordDecl"]
 
 
-def generate_vector(project, proj_attribute, file_path, f_or_struct, start_line, end_line, is_deckard=True):
+def generate_vector(file_path, f_or_struct, start_line, end_line, is_deckard=True):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    v = Vector.Vector(project, file_path, f_or_struct, start_line, end_line, is_deckard)
+    v = Vector.Vector(file_path, f_or_struct, start_line, end_line, is_deckard)
     if not v.vector:
         return None
-    if file_path in proj_attribute.keys():
-        proj_attribute[file_path][f_or_struct] = v
-    else:
-        proj_attribute[file_path] = dict()
-        proj_attribute[file_path][f_or_struct] = v
+    # if file_path in proj_attribute.keys():
+    #     proj_attribute[file_path][f_or_struct] = v
+    # else:
+    #     proj_attribute[file_path] = dict()
+    #     proj_attribute[file_path][f_or_struct] = v
     return v
 
 
@@ -40,10 +40,10 @@ def ast_dump(file_path, output_path, is_header=False):
     Output.warning(a[0])
 
 
-def generate_json(file_path, is_header=False):
+def generate_json(file_path):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     json_file = file_path + ".AST"
-    ast_dump(file_path, json_file, is_header)
+    ast_dump(file_path, json_file)
     return AST.load_from_file(json_file)
 
 
@@ -53,7 +53,7 @@ def convert_to_llvm(file_path):
         backup_name = "last.c"
         convert_file_path = Common.DIRECTORY_OUTPUT + "/temp_llvm.c"
         backup_file(file_path, backup_name)
-        format_command = APP_FORMAT_LLVM + file_path + "> " + convert_file_path
+        format_command = APP_FORMAT_LLVM + file_path + "> " + convert_file_path + " 2>" + Common.FILE_ERROR_LOG
         replace_command = format_command + ";" + "cp " + convert_file_path + " " + file_path
         execute_command(replace_command)
     except Exception as exception:
@@ -64,15 +64,15 @@ def convert_to_llvm(file_path):
         restore_file(file_path, backup_name)
 
 
-def parse_ast(file_path, project, use_deckard=True, is_header=False):
+def parse_ast(file_path, use_deckard=True):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    convert_to_llvm(file_path)
+    #convert_to_llvm(file_path)
     # Save functions here
     function_lines = list()
     # Save variables for each function d[function] = "typevar namevar; ...;"
     dict_file = dict()
     try:
-        ast = generate_json(file_path, is_header)
+        ast = generate_json(file_path)
     except Exception as exception:
         Output.warning("Failed parsing AST for file:\n\t" + file_path)
         return function_lines, dict_file
@@ -80,42 +80,35 @@ def parse_ast(file_path, project, use_deckard=True, is_header=False):
     start_line = 0
     end_line = 0
     file_line = file_path.split("/")[-1]
-    
-    if use_deckard:
-        Output.grey("\tGenerating vectors for " + file_line)
-        
-    if is_header:
-        if use_deckard:
-            Vector.Vector(project, file_path, None, None, None, Deckard=True)
-    else:
-        function_nodes = []
-        root = ast[0]
-        root.get_node_list("type", "FunctionDecl", function_nodes)
-        #Output.white(function_nodes)
-        for node in function_nodes:
-            set_struct_nodes = set()
-            #Output.yellow(node.file)
-            if node.file is not None and file_line == node.file.split("/")[-1]:
-                f = node.value.split("(")[0]
-                start_line = int(node.line)
-                end_line = int(node.line_end)
-                function_lines.append((f, start_line, end_line))
-                generate_vector(project, project.functions, file_path, f, start_line, end_line, use_deckard)
-                structural_nodes = []
-                for interesting_type in interesting:
-                    node.get_node_list("type", interesting_type, structural_nodes)
-                for struct_node in structural_nodes:
-                    var = struct_node.value.split("(")
-                    var_type = var[-1][:-1]
-                    var = var[0]
-                    line = var_type + " " + var + ";"
-                    if f not in dict_file.keys():
-                        dict_file[f] = ""
-                    dict_file[f] = dict_file[f] + line
-                    set_struct_nodes.add(struct_node.value)
 
-        if use_deckard:
-            get_vars(project, file_path, dict_file)
+    function_nodes = []
+    root = ast[0]
+    root.get_node_list("type", "FunctionDecl", function_nodes)
+    for node in function_nodes:
+        set_struct_nodes = set()
+        # Output.yellow(node.file)
+        if node.file is not None and file_line == node.file.split("/")[-1]:
+            f = node.value.split("(")[0]
+            start_line = int(node.line)
+            end_line = int(node.line_end)
+            function_lines.append((f, start_line, end_line))
+            generate_vector(file_path, f, start_line, end_line, use_deckard)
+            structural_nodes = []
+            for interesting_type in interesting:
+                node.get_node_list("type", interesting_type, structural_nodes)
+            for struct_node in structural_nodes:
+                var = struct_node.value.split("(")
+                var_type = var[-1][:-1]
+                var = var[0]
+                line = var_type + " " + var + ";"
+                if f not in dict_file.keys():
+                    dict_file[f] = ""
+                dict_file[f] = dict_file[f] + line
+                set_struct_nodes.add(struct_node.value)
+
+        # if use_deckard:
+        #     get_vars(project, file_path, dict_file)
+        #     print("")
    
     return function_lines, dict_file
 

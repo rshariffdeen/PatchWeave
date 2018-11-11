@@ -15,6 +15,8 @@ def create():
         log_file.write("[Start] PatchWeave started at " + str(datetime.datetime.now()) + "\n")
     if os.path.exists(Common.FILE_LAST_LOG):
         os.remove(Common.FILE_LAST_LOG)
+    if os.path.exists(Common.FILE_ERROR_LOG):
+        os.remove(Common.FILE_ERROR_LOG)
     with open(Common.FILE_LAST_LOG, 'w+') as last_log:
         last_log.write("[Start] PatchWeave started at " + str(datetime.datetime.now()) + "\n")
 
