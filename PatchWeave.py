@@ -65,7 +65,7 @@ def run_patchweave():
     time_info[Common.KEY_DURATION_INITIALIZATION] = str(time.time() - time_check)
 
     time_check = time.time()
-    # Differ.diff()
+    Differ.diff()
     time_info[Common.KEY_DURATION_DIFF_ANALYSIS] = str(time.time() - time_check)
 
     time_check = time.time()

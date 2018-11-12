@@ -153,9 +153,9 @@ def safe_exec(function_def, title, *args):
 def match():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.title("Finding target function to patch")
-    # safe_exec(generate_vectors, "vector generation for traced functions in Pa", Common.PROJECT_A_FUNCTION_LIST)
-    # safe_exec(generate_vectors, "vector generation for traced functions in Pb", Common.PROJECT_B_FUNCTION_LIST)
-    # safe_exec(generate_vectors, "vector generation for traced functions in Pc", Common.PROJECT_C_FUNCTION_LIST)
+    safe_exec(generate_vectors, "vector generation for traced functions in Pa", Common.PROJECT_A_FUNCTION_LIST)
+    safe_exec(generate_vectors, "vector generation for traced functions in Pb", Common.PROJECT_B_FUNCTION_LIST)
+    safe_exec(generate_vectors, "vector generation for traced functions in Pc", Common.PROJECT_C_FUNCTION_LIST)
 
     safe_exec(generate_function_map, "finding matching functions from Pa to Pc")
 

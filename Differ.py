@@ -206,7 +206,6 @@ def id_from_string(simplestring):
     return int(simplestring.split("(")[-1][:-1])
 
 
-
 def clean_parse(content, separator):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     if content.count(separator) == 1:

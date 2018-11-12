@@ -126,9 +126,10 @@ def is_intersect(start, end, start2, end2):
     
                         
 def get_function_name_list(project, source_file, pertinent_lines):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.normal("\t\tproject " + project.name + ":")
     try:
-        function_list, definition_list = parse_ast(source_file, project, False)
+        function_list, definition_list = parse_ast(source_file, False)
     except Exception as e:
         error_exit(e, "Error in parse_ast.")
     for start_line, end_line in pertinent_lines:
@@ -138,7 +139,7 @@ def get_function_name_list(project, source_file, pertinent_lines):
                     project.functions[source_file] = dict()
 
                 if function_name not in project.functions[source_file]:
-                    project.functions[source_file][function_name] = Vector.Vector(project, source_file, function_name, begin_line, finish_line, False)
+                    project.functions[source_file][function_name] = Vector.Vector(source_file, function_name, begin_line, finish_line, False)
                     Output.normal("\t\t\t" + function_name + " in " + source_file.replace(project.path, project.name + "/"))
                     Output.normal("\t\t\t" + function_name + " " + str(begin_line) + "-" + str(finish_line), False)
                 break
