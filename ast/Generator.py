@@ -10,7 +10,7 @@ import Logger
 import sys
 import Common
 
-APP_DIFF = "./tools/ast/crochet-diff "
+APP_DIFF = "./tools/ast/ast-diff "
 APP_FORMAT_LLVM = "clang-format -style=LLVM "
 
 interesting = ["VarDecl", "DeclRefExpr", "ParmVarDecl", "TypedefDecl",
