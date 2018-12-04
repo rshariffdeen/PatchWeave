@@ -260,4 +260,4 @@ def diff():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.title("Locating changed functions")
     safe_exec(generate_diff, "search for changed functions")
-
+    print(Common.DIFF_FUNCTION_LIST)

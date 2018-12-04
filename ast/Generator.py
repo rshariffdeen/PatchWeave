@@ -10,7 +10,7 @@ import Logger
 import sys
 import Common
 
-APP_DIFF = "crochet-diff "
+APP_DIFF = "./tools/ast/crochet-diff "
 APP_FORMAT_LLVM = "clang-format -style=LLVM "
 
 interesting = ["VarDecl", "DeclRefExpr", "ParmVarDecl", "TypedefDecl",
@@ -73,6 +73,7 @@ def parse_ast(file_path, use_deckard=True):
     dict_file = dict()
     try:
         ast = generate_json(file_path)
+
     except Exception as exception:
         Output.warning("Failed parsing AST for file:\n\t" + file_path)
         return function_lines, dict_file
@@ -134,6 +135,7 @@ def get_function_name_list(project, source_file, pertinent_lines):
         error_exit(e, "Error in parse_ast.")
     for start_line, end_line in pertinent_lines:
         for function_name, begin_line, finish_line in function_list:
+
             if is_intersect(begin_line, finish_line, start_line, end_line):
                 if source_file not in project.functions.keys():
                     project.functions[source_file] = dict()
