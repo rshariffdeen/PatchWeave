@@ -10,7 +10,7 @@ import os, sys
 import Differ
 import Tracer
 import FunMatcher
-
+import VarMatcher
 
 def first_run_check():
     create_directories()
@@ -74,7 +74,11 @@ def run_patchweave():
 
     time_check = time.time()
     FunMatcher.match()
-    time_info[Common.KEY_DURATION_TRACE_ANALYSIS] = str(time.time() - time_check)
+    time_info[Common.KEY_DURATION_FUNCTION_MATCH] = str(time.time() - time_check)
+
+    time_check = time.time()
+    VarMatcher.match()
+    time_info[Common.KEY_DURATION_VARIABLE_MATCH] = str(time.time() - time_check)
 
     time_check = time.time()
     #Extraction.extract()

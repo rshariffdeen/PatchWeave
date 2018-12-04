@@ -13,8 +13,11 @@ import Vector
 import Logger
 
 VALGRIND_INSTRUMENTATION = "valgrind --tool=callgrind "
+CALLGRIND_ANNOTATE = "callgrind_annotate"
 FILE_VALGRIND_OUTPUT = Common.DIRECTORY_OUTPUT + "/output-valgrind"
 FILE_VALGRIND_ERROR = Common.DIRECTORY_OUTPUT + "/error-valgrind"
+FILE_CALLGRIND_OUTPUT = Common.DIRECTORY_OUTPUT + "/output-callgrind"
+FILE_CALLGRIND_ERROR = Common.DIRECTORY_OUTPUT + "/error-callgrind"
 
 FILE_VALGRIND_LOG_A = Common.DIRECTORY_OUTPUT + "/callgrind-pa"
 FILE_VALGRIND_LOG_B = Common.DIRECTORY_OUTPUT + "/callgrind-pb"
@@ -35,6 +38,11 @@ def trace_exploit(exploit, project_path, poc_path):
     trace_command = VALGRIND_INSTRUMENTATION + project_path + exploit + " > " + FILE_VALGRIND_OUTPUT + \
                     " 2>" + FILE_VALGRIND_ERROR
     execute_command(trace_command)
+    annotate_command = CALLGRIND_ANNOTATE + " callgrind.out.* > " + FILE_CALLGRIND_OUTPUT + \
+                    " 2>" + FILE_CALLGRIND_ERROR
+    execute_command(annotate_command)
+    remove_command = "rm callgrind.out.*"
+    execute_command(remove_command)
 
 
 def extract_function_list(trace_file_path, project_path):
@@ -43,23 +51,26 @@ def extract_function_list(trace_file_path, project_path):
     function_list = list()
     if os.path.exists(trace_file_path):
         with open(trace_file_path, 'r') as trace_file:
-            found_file = False
+            is_trace = False
             file_path = ""
             for read_line in trace_file:
                 read_line = read_line.strip()
-                if "fl=" in read_line:
-                    #print(file_path)
-                    found_file = False
-                    file_path = str(read_line).split(") ")[-1]
-                    if project_path in file_path:
-                        found_file = True
-                elif found_file:
-                    if "fn=" in read_line and "cfn=" not in read_line:
-                        function_name = read_line.split(") ")[-1]
-                        if "(" not in function_name:
-                            function_entry = file_path + ":" + function_name
-                            if function_entry not in function_list:
-                                function_list.append(function_entry)
+                if is_trace:
+                    break
+                if "Ir  file:function" in read_line:
+                    is_trace = True
+
+            for read_line in trace_file:
+                split_tokens = read_line.split(" ")
+                for token in split_tokens:
+                    if ":" in token:
+                        function_f = token
+                        break
+                file_path, function_name = str(function_f).split(":")
+                if project_path in file_path:
+                    if function_f not in function_list:
+                        function_list.append(function_f)
+
     else:
         error_exit("trace file doesn't exists")
     return function_list
@@ -69,13 +80,13 @@ def generate_trace_donor():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     prepare_exploit_environment(Common.VALUE_PATH_A)
     trace_exploit(Common.VALUE_EXPLOIT_A, Common.Project_A.path, Common.VALUE_PATH_POC)
-    move_command = "mv callgrind* " + FILE_VALGRIND_LOG_A
+    move_command = "cp " + FILE_CALLGRIND_OUTPUT + " " + FILE_VALGRIND_LOG_A
     execute_command(move_command)
     Common.PROJECT_A_FUNCTION_LIST = extract_function_list(FILE_VALGRIND_LOG_A, Common.VALUE_PATH_A)
     #print(Common.PROJECT_A_FUNCTION_LIST)
     prepare_exploit_environment(Common.VALUE_PATH_B)
     trace_exploit(Common.VALUE_EXPLOIT_A, Common.Project_B.path, Common.VALUE_PATH_POC)
-    move_command = "mv callgrind* " + FILE_VALGRIND_LOG_B
+    move_command = "cp " + FILE_CALLGRIND_OUTPUT + " " + FILE_VALGRIND_LOG_B
     execute_command(move_command)
     Common.PROJECT_B_FUNCTION_LIST = extract_function_list(FILE_VALGRIND_LOG_B, Common.VALUE_PATH_B)
 
@@ -83,7 +94,7 @@ def generate_trace_donor():
 def generate_trace_target():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     trace_exploit(Common.VALUE_EXPLOIT_C, Common.Project_C.path, Common.VALUE_PATH_POC)
-    move_command = "mv callgrind* " + FILE_VALGRIND_LOG_C
+    move_command = "cp " + FILE_CALLGRIND_OUTPUT + " " + FILE_VALGRIND_LOG_C
     execute_command(move_command)
     Common.PROJECT_C_FUNCTION_LIST = extract_function_list(FILE_VALGRIND_LOG_C, Common.VALUE_PATH_C)
 

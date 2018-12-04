@@ -13,11 +13,6 @@ import Vector
 import Logger
 
 
-FILE_EXCLUDED_EXTENSIONS = Common.DIRECTORY_OUTPUT + "/excluded-extensions"
-FILE_EXCLUDED_EXTENSIONS_A = Common.DIRECTORY_OUTPUT + "/excluded-extensions-a"
-FILE_EXCLUDED_EXTENSIONS_B = Common.DIRECTORY_OUTPUT + "/excluded-extensions-b"
-FILE_DIFF_C = Common.DIRECTORY_OUTPUT + "diff_H"
-FILE_DIFF_H = Common.DIRECTORY_OUTPUT + "diff_C"
 
 
 def get_function_info(function_list):
@@ -84,16 +79,11 @@ def generate_similarity_matrix(vector, target_vector_list):
     for function_f in target_vector_list:
         target_vector = target_vector_list[function_f]
         distance = calculate_vector_distance(vector, target_vector)
-        # print(vector)
-        # print(target_vector)
-        # print(distance)
-        # print("")
         similarity_matrix[function_f] = distance
     return similarity_matrix
 
 
 def get_vector_list(function_list):
-
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     vector_file_list = dict()
     for function_f in function_list:
@@ -109,44 +99,24 @@ def get_vector_list(function_list):
     return vector_file_list
 
 
-def get_minimum_distance(similarity_matrix):
-    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    minimum_distance = 100000000000000000
-    for vector_c_name in similarity_matrix:
-        vector_distance = similarity_matrix[vector_c_name]
-        if vector_distance < minimum_distance:
-            minimum_distance = vector_distance
-    return minimum_distance
-
-
-def get_matched_function_list(similarity_matrix):
-    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    minimum_distance = get_minimum_distance(similarity_matrix)
-    matched_function_list = list()
-    for vector_c_name in similarity_matrix:
-        vector_distance = similarity_matrix[vector_c_name]
-        if  minimum_distance <= vector_distance <= (2*minimum_distance):
-            matched_function_list.append(vector_c_name)
-    return matched_function_list
-
-
 def generate_function_map():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     vector_list_a = get_vector_list(Common.PROJECT_A_FUNCTION_LIST)
     vector_list_c = get_vector_list(Common.PROJECT_C_FUNCTION_LIST)
     function_map = dict()
     for vector_name in vector_list_a:
-        Output.information(vector_name)
-        vector = vector_list_a[vector_name]
         print(vector_name)
+        vector = vector_list_a[vector_name]
         similarity_matrix = generate_similarity_matrix(vector, vector_list_c)
         print(similarity_matrix)
-        print("")
-        function_map[vector_name] = get_matched_function_list(similarity_matrix)
-    for function_a in function_map:
-        Output.normal(function_a)
-        Output.normal(function_map[function_a])
-        print("")
+        best_match_function = ""
+        minimum_distance = 100000000000000000
+        for vector_c_name in similarity_matrix:
+            vector_distance = similarity_matrix[vector_c_name]
+            if vector_distance < minimum_distance:
+                minimum_distance = vector_distance
+                best_match_function = vector_c_name
+        function_map[vector_name] = best_match_function
     return function_map
 
 
@@ -172,9 +142,7 @@ def safe_exec(function_def, title, *args):
 
 def match():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.title("generating map between functions")
-    safe_exec(generate_vectors, "vector generation for traced functions in Pa", Common.PROJECT_A_FUNCTION_LIST)
-    safe_exec(generate_vectors, "vector generation for traced functions in Pb", Common.PROJECT_B_FUNCTION_LIST)
-    safe_exec(generate_vectors, "vector generation for traced functions in Pc", Common.PROJECT_C_FUNCTION_LIST)
-    Common.FUNCTION_MAP = safe_exec(generate_function_map, "finding matching functions from Pa to Pc")
+    Output.title("generating map between variables for each function")
+
+
 
