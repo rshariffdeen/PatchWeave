@@ -11,6 +11,8 @@ PROJECT_B_FUNCTION_LIST = ""
 PROJECT_C_FUNCTION_LIST = ""
 DIFF_FUNCTION_LIST = ""
 FUNCTION_MAP = ""
+CRASH_LINE_LIST = dict()
+TRACE_LIST = dict()
 
 # ------------------- Directories --------------------
 

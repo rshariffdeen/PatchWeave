@@ -11,6 +11,8 @@ import Common
 import Generator
 import Vector
 import Logger
+import Builder
+
 
 VALGRIND_INSTRUMENTATION = "valgrind --tool=callgrind "
 CALLGRIND_ANNOTATE = "callgrind_annotate"
@@ -23,31 +25,73 @@ FILE_VALGRIND_LOG_A = Common.DIRECTORY_OUTPUT + "/callgrind-pa"
 FILE_VALGRIND_LOG_B = Common.DIRECTORY_OUTPUT + "/callgrind-pb"
 FILE_VALGRIND_LOG_C = Common.DIRECTORY_OUTPUT + "/callgrind-pc"
 
+FILE_EXPLOIT_OUTPUT_A = Common.DIRECTORY_OUTPUT + "/exploit-a"
+FILE_EXPLOIT_OUTPUT_C = Common.DIRECTORY_OUTPUT + "/exploit-c"
 
-def run_exploit(exploit, project_path, poc_path):
+
+def test_exploits():
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    Output.sub_title("exploiting crashes")
+    Output.normal(Common.Project_A.path)
+    msg, exit_code = run_exploit(Common.VALUE_EXPLOIT_A, Common.Project_A.path, Common.VALUE_PATH_POC, FILE_EXPLOIT_OUTPUT_A)
+    if exit_code != 1:
+        Output.normal("\tprogram crashed")
+    Output.normal(Common.Project_C.path)
+    msg, exit_code = run_exploit(Common.VALUE_EXPLOIT_C, Common.Project_C.path, Common.VALUE_PATH_POC, FILE_EXPLOIT_OUTPUT_C)
+    if exit_code != 1:
+        Output.normal("\tprogram crashed")
+
+
+def run_exploit(exploit, project_path, poc_path, output_file):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     exploit = str(exploit).replace('$POC', poc_path)
-    exploit_command = project_path + exploit
-    execute_command(exploit_command)
+    exploit_command = project_path + exploit + " > " + output_file
+    return execute_command(exploit_command)
+
+
+def extract_crash_point(trace_file_path):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    Output.normal("\textracting crash point")
+    source_path = ""
+    function_name = ""
+    line_number = ""
+    if os.path.exists(trace_file_path):
+        with open(trace_file_path, 'r') as trace_file:
+            grab = False
+            for read_line in trace_file:
+                read_line = read_line.strip()
+                if 'at address' in read_line:
+                    grab = True
+                    continue
+                if grab:
+                    read_line = read_line.split("==")[-1]
+                    read_line = read_line.split(":")
+                    function_name = (read_line[1].split("(")[0]).strip()
+                    source_path = read_line[1].split("(")[1]
+                    line_number = read_line[2].strip(")")
+                    break
+    return source_path, function_name, line_number
 
 
 def trace_exploit(exploit, project_path, poc_path):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal("generating execution trace for exploit in " + project_path.split("/")[-2])
+    Output.normal("\tgenerating execution trace for exploit")
     exploit = str(exploit).replace('$POC', poc_path)
     trace_command = VALGRIND_INSTRUMENTATION + project_path + exploit + " > " + FILE_VALGRIND_OUTPUT + \
                     " 2>" + FILE_VALGRIND_ERROR
     execute_command(trace_command)
+    source_path, function_name, line_number = extract_crash_point(FILE_VALGRIND_ERROR)
     annotate_command = CALLGRIND_ANNOTATE + " callgrind.out.* > " + FILE_CALLGRIND_OUTPUT + \
                     " 2>" + FILE_CALLGRIND_ERROR
     execute_command(annotate_command)
     remove_command = "rm callgrind.out.*"
     execute_command(remove_command)
+    return source_path, function_name, line_number
 
 
 def extract_function_list(trace_file_path, project_path):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal("extracting function list from trace of " + project_path.split("/")[-1])
+    Output.normal("\textracting function list from trace")
     function_list = list()
     if os.path.exists(trace_file_path):
         with open(trace_file_path, 'r') as trace_file:
@@ -78,14 +122,18 @@ def extract_function_list(trace_file_path, project_path):
 
 def generate_trace_donor():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    Output.normal(Common.VALUE_PATH_A)
     prepare_exploit_environment(Common.VALUE_PATH_A)
-    trace_exploit(Common.VALUE_EXPLOIT_A, Common.Project_A.path, Common.VALUE_PATH_POC)
+    source_path, function_name, line_number = trace_exploit(Common.VALUE_EXPLOIT_A, Common.Project_A.path, Common.VALUE_PATH_POC)
+    Common.TRACE_LIST[Common.Project_A.name] = source_path, function_name, line_number
     move_command = "cp " + FILE_CALLGRIND_OUTPUT + " " + FILE_VALGRIND_LOG_A
     execute_command(move_command)
     Common.PROJECT_A_FUNCTION_LIST = extract_function_list(FILE_VALGRIND_LOG_A, Common.VALUE_PATH_A)
     #print(Common.PROJECT_A_FUNCTION_LIST)
+
+    Output.normal(Common.VALUE_PATH_B)
     prepare_exploit_environment(Common.VALUE_PATH_B)
-    trace_exploit(Common.VALUE_EXPLOIT_A, Common.Project_B.path, Common.VALUE_PATH_POC)
+    source_path, function_name, line_number = trace_exploit(Common.VALUE_EXPLOIT_A, Common.Project_B.path, Common.VALUE_PATH_POC)
     move_command = "cp " + FILE_CALLGRIND_OUTPUT + " " + FILE_VALGRIND_LOG_B
     execute_command(move_command)
     Common.PROJECT_B_FUNCTION_LIST = extract_function_list(FILE_VALGRIND_LOG_B, Common.VALUE_PATH_B)
@@ -93,7 +141,9 @@ def generate_trace_donor():
 
 def generate_trace_target():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    trace_exploit(Common.VALUE_EXPLOIT_C, Common.Project_C.path, Common.VALUE_PATH_POC)
+    Output.normal(Common.VALUE_PATH_C)
+    source_path, function_name, line_number= trace_exploit(Common.VALUE_EXPLOIT_C, Common.Project_C.path, Common.VALUE_PATH_POC)
+    Common.TRACE_LIST[Common.Project_C.name] = source_path, function_name, line_number
     move_command = "cp " + FILE_CALLGRIND_OUTPUT + " " + FILE_VALGRIND_LOG_C
     execute_command(move_command)
     Common.PROJECT_C_FUNCTION_LIST = extract_function_list(FILE_VALGRIND_LOG_C, Common.VALUE_PATH_C)
@@ -130,5 +180,7 @@ def safe_exec(function_def, title, *args):
 def trace():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.title("Analysing execution traces")
+    # Builder.build_normal()
+    test_exploits()
     safe_exec(generate_trace_donor, "generating trace information from donor program")
     safe_exec(generate_trace_target, "generating trace information from target program")

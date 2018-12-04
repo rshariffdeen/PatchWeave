@@ -95,4 +95,4 @@ def initialize():
     read_conf()
     load_values()
     Output.sub_title("cleaning residue files")
-    clean_projects()
+    # clean_projects()

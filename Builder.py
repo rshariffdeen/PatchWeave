@@ -10,122 +10,104 @@ import Common
 import Output
 import Logger
 
-
-def loadValues():
-    Common.Project_A = Project.Project(Common.VALUE_PATH_A, "Pa", Common.VALUE_EXPLOIT_A)
-    Common.Project_B = Project.Project(Common.VALUE_PATH_B, "Pb")
-    Common.Project_C = Project.Project(Common.VALUE_PATH_C, "Pc", Common.VALUE_EXPLOIT_C)
-
-
-def make_clean(project_path):
-    Output.normal("\tremoving binaries and make files")
-    clean_command = "cd " + project_path + "; make clean; make distclean"
-    execute_command(clean_command)
+CC = ""
+CXX = ""
+C_FLAGS = ""
+CXX_FLAGS = ""
+LD_FLAGS = ""
 
 
-def restore_modifications(project_path):
-    Output.normal("\trestoring modified files")
-    restore_command = "cd " + project_path + ";"
-    if os.path.exists(project_path + "/.git"):
-        restore_command += "git clean -fd; git reset --hard HEAD"
-    elif os.path.exists(project_path + "/.svn"):
-        restore_command += "svn revert -R .; svn status --no-ignore | grep '^\?' | sed 's/^\?     //'  | xargs rm -rf"
-    execute_command(restore_command)
-
-
-def clean_projects():
-    Output.normal(Common.Project_A.path)
-    make_clean(Common.Project_A.path)
-    restore_modifications(Common.Project_A.path)
-
-    Output.normal(Common.Project_B.path)
-    make_clean(Common.Project_B.path)
-    restore_modifications(Common.Project_B.path)
-
-    Output.normal(Common.Project_C.path)
-    make_clean(Common.Project_C.path)
-    restore_modifications(Common.Project_C.path)
-
-
-def make_project(project_path):
+def config_project(project_path, is_llvm):
     dir_command = "cd " + project_path + ";"
     if os.path.exists(project_path + "/configure"):
-        config_command = "CC=clang CXX=clang++ ./configure " \
-                         "CFLAGS='-g -O0 -static'"
-        execute_command(config_command)
+        config_command = "CC=" + CC + " "
+        config_command += "CXX=" + CXX + " "
+        config_command += "./configure "
+        config_command += "CFLAGS=" + C_FLAGS + " "
+        config_command += "CXXFLAGS=" + CXX_FLAGS
+
     elif os.path.exists(project_path + "/configure.ac"):
         config_command = "autoreconf -i;"
-        config_command += "CC=clang CXX=clang++ ./configure " \
-                         "CFLAGS='-g -O0 -static'"
+        config_command += "CC=" + CC + " "
+        config_command += "CXX=" + CXX + " "
+        config_command += "./configure "
+        config_command += "CFLAGS=" + C_FLAGS + " "
+        config_command += "CXXFLAGS=" + CXX_FLAGS
 
     elif os.path.exists(project_path + "/CMakeLists.txt"):
-        config_command = "cmake -DCMAKE_CC=clang -DCMAKE_CXX=clang++ " \
-                         "-DCMAKE_C_FLAGS='-g -O0 -static' -DCMAKE_CXX_FLAGS='-g -O0 -static' ."
-    Output.normal("\tconfiguring project")
+        config_command = "cmake -DCMAKE_CC=" + CC + " "
+        config_command += "-DCMAKE_CXX="  + CXX + " "
+        config_command += "-DCMAKE_C_FLAGS=" + C_FLAGS + " "
+        config_command += "-DCMAKE_CXX_FLAGS=" + CXX_FLAGS + " . "
+    if is_llvm:
+        config_command = "LLVM_COMPILER=clang;" + config_command
+
     config_command = dir_command + config_command
     execute_command(config_command)
-    Output.normal("\tbuilding project")
-    build_command = dir_command + "bear make >" + Common.FILE_MAKE_LOG
+
+
+def build_project(project_path):
+    dir_command = "cd " + project_path + ";"
+    build_command = "bear make CFLAGS=" + C_FLAGS + " "
+    build_command += "CXXFLAGS=" + CXX_FLAGS + " > " + Common.FILE_MAKE_LOG
+    build_command = dir_command + build_command
     execute_command(build_command)
 
 
-def build_projects():
-    Output.normal(Common.Project_A.path)
-    make_project(Common.Project_A.path)
-    Output.normal(Common.Project_B.path)
-    make_project(Common.Project_B.path)
-    Output.normal(Common.Project_C.path)
-    make_project(Common.Project_C.path)
+def build_all():
+    Output.normal("building")
+    Output.normal("\t" + Common.Project_A.path)
+    build_project(Common.Project_A.path)
+    Output.normal("\t" + Common.Project_B.path)
+    build_project(Common.Project_B.path)
+    Output.normal("\t" + Common.Project_C.path)
+    build_project(Common.Project_C.path)
 
 
-def read_conf():
-    Output.normal("reading configuration values")
-    if len(sys.argv) > 1:
-        for arg in sys.argv:
-            if Common.ARG_DEBUG in arg:
-                Common.DEBUG = True
-            elif Common.ARG_CONF_FILE in arg:
-                Common.FILE_CONFIGURATION = str(arg).replace(Common.ARG_CONF_FILE, '')
-    else:
-        Output.help()
-        exit()
-
-    if not os.path.exists(Common.FILE_CONFIGURATION):
-        Output.error("[NOT FOUND] Configuration file " + Common.FILE_CONFIGURATION)
-        exit()
-
-    with open(Common.FILE_CONFIGURATION, 'r') as conf_file:
-        configuration_list = [i.strip() for i in conf_file.readlines()]
-
-    for configuration in configuration_list:
-        if Common.CONF_EXPLOIT_A in configuration:
-            Common.VALUE_EXPLOIT_A = configuration.replace(Common.CONF_EXPLOIT_A, '')
-        elif Common.CONF_EXPLOIT_C in configuration:
-            Common.VALUE_EXPLOIT_C = configuration.replace(Common.CONF_EXPLOIT_C, '')
-        elif Common.CONF_PATH_POC in configuration:
-            Common.VALUE_PATH_POC = configuration.replace(Common.CONF_PATH_POC, '')
-        elif Common.CONF_PATH_A in configuration:
-            Common.VALUE_PATH_A = configuration.replace(Common.CONF_PATH_A, '')
-        elif Common.CONF_PATH_B in configuration:
-            Common.VALUE_PATH_B = configuration.replace(Common.CONF_PATH_B, '')
-        elif Common.CONF_PATH_C in configuration:
-            Common.VALUE_PATH_C = configuration.replace(Common.CONF_PATH_C, '')
-        elif Common.CONF_EXPLOIT_PREPARE in configuration:
-            Common.VALUE_EXPLOIT_PREPARE = configuration.replace(Common.CONF_EXPLOIT_PREPARE, '')
-        elif Common.CONF_BUILD_A in configuration:
-            Common.VALUE_BUILD_SCRIPT_PATH_A = configuration.replace(Common.CONF_BUILD_A, '')
-        elif Common.CONF_BUILD_B in configuration:
-            Common.VALUE_BUILD_SCRIPT_PATH_A = configuration.replace(Common.CONF_BUILD_B, '')
-        elif Common.CONF_BUILD_C in configuration:
-            Common.VALUE_BUILD_SCRIPT_PATH_C = configuration.replace(Common.CONF_BUILD_C, '')
+def config_all(is_llvm=False):
+    Output.normal("configuring projects")
+    Output.normal("\t" + Common.Project_A.path)
+    config_project(Common.Project_A.path, is_llvm)
+    Output.normal("\t" + Common.Project_B.path)
+    config_project(Common.Project_B.path, is_llvm)
+    Output.normal("\t" + Common.Project_C.path)
+    config_project(Common.Project_C.path, is_llvm)
 
 
-def initialize():
-    Output.title("Initializing project for Transplantation")
-    Output.sub_title("loading configuration")
-    read_conf()
-    loadValues()
-    Output.sub_title("cleaning residue files")
-    clean_projects()
+def build_normal():
+    global CC, CXX, CXX_FLAGS, C_FLAGS, LD_FLAGS
     Output.sub_title("building projects")
-    build_projects()
+    CC = "clang"
+    CXX = "clang++"
+    CXX_FLAGS = "'-g -O0 -static'"
+    C_FLAGS = "'-g -O0 -static'"
+    config_all()
+    CXX_FLAGS = "'-g -O0 -static -DNDEBUG -ftrapv'"
+    C_FLAGS = "'-g -O0 -static -DNDEBUG -ftrapv'"
+    build_all()
+
+
+def build_asan():
+    global CC, CXX, CXX_FLAGS, C_FLAGS, LD_FLAGS
+    Output.sub_title("building projects")
+    CC = "clang"
+    CXX = "clang++"
+    CXX_FLAGS = "'-g -O0 -static'"
+    C_FLAGS = "'-g -O0 -static'"
+    config_all()
+    CXX_FLAGS = "'-g -O0 -static -DNDEBUG -fsanitize=undefined'"
+    C_FLAGS = "'-g -O0 -static -DNDEBUG -fsanitize=undefined'"
+    build_all()
+
+
+def build_llvm():
+    global CC, CXX, CXX_FLAGS, C_FLAGS, LD_FLAGS
+    Output.sub_title("building projects")
+    CC = "wllvm"
+    CXX = "wllvm++"
+    CXX_FLAGS = "'-g -O0 -static'"
+    C_FLAGS = "'-g -O0 -static'"
+    config_all()
+    CXX_FLAGS = "'-g -O0 -static -DNDEBUG -fsanitize=undefined'"
+    C_FLAGS = "'-g -O0 -static -DNDEBUG -fsanitize=undefined'"
+    build_all()
