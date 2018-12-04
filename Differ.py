@@ -16,8 +16,8 @@ import Logger
 FILE_EXCLUDED_EXTENSIONS = Common.DIRECTORY_OUTPUT + "/excluded-extensions"
 FILE_EXCLUDED_EXTENSIONS_A = Common.DIRECTORY_OUTPUT + "/excluded-extensions-a"
 FILE_EXCLUDED_EXTENSIONS_B = Common.DIRECTORY_OUTPUT + "/excluded-extensions-b"
-FILE_DIFF_C = Common.DIRECTORY_OUTPUT + "/diff_H"
-FILE_DIFF_H = Common.DIRECTORY_OUTPUT + "/diff_C"
+FILE_DIFF_C = Common.DIRECTORY_OUTPUT + "/diff_C"
+FILE_DIFF_H = Common.DIRECTORY_OUTPUT + "/diff_H"
 FILE_DIFF_ALL = Common.DIRECTORY_OUTPUT + "/diff_all"
 FILE_TEMP_DIFF = Common.DIRECTORY_OUTPUT + "/temp_diff"
 
@@ -34,7 +34,7 @@ def find_diff_files():
     diff_command = "diff -ENZBbwqr " + Common.Project_A.path + " " + Common.Project_B.path + " -X " \
                    + FILE_EXCLUDED_EXTENSIONS + "> " + FILE_DIFF_ALL + ";"
     diff_command += "cat " + FILE_DIFF_ALL + "| grep -P '\.c and ' > " + FILE_DIFF_C + ";"
-    diff_command += "cat " + FILE_DIFF_ALL + "| grep -P '\.h and ' > " + FILE_DIFF_H + ";"
+    diff_command += "cat " + FILE_DIFF_ALL + "| grep -P '\.h and ' > " + FILE_DIFF_H
     execute_command(diff_command)
 
 

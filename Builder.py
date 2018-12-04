@@ -11,7 +11,7 @@ import Output
 import Logger
 
 
-def load_values():
+def loadValues():
     Common.Project_A = Project.Project(Common.VALUE_PATH_A, "Pa", Common.VALUE_EXPLOIT_A)
     Common.Project_B = Project.Project(Common.VALUE_PATH_B, "Pb")
     Common.Project_C = Project.Project(Common.VALUE_PATH_C, "Pc", Common.VALUE_EXPLOIT_C)
@@ -45,6 +45,37 @@ def clean_projects():
     Output.normal(Common.Project_C.path)
     make_clean(Common.Project_C.path)
     restore_modifications(Common.Project_C.path)
+
+
+def make_project(project_path):
+    dir_command = "cd " + project_path + ";"
+    if os.path.exists(project_path + "/configure"):
+        config_command = "CC=clang CXX=clang++ ./configure " \
+                         "CFLAGS='-g -O0 -static'"
+        execute_command(config_command)
+    elif os.path.exists(project_path + "/configure.ac"):
+        config_command = "autoreconf -i;"
+        config_command += "CC=clang CXX=clang++ ./configure " \
+                         "CFLAGS='-g -O0 -static'"
+
+    elif os.path.exists(project_path + "/CMakeLists.txt"):
+        config_command = "cmake -DCMAKE_CC=clang -DCMAKE_CXX=clang++ " \
+                         "-DCMAKE_C_FLAGS='-g -O0 -static' -DCMAKE_CXX_FLAGS='-g -O0 -static' ."
+    Output.normal("\tconfiguring project")
+    config_command = dir_command + config_command
+    execute_command(config_command)
+    Output.normal("\tbuilding project")
+    build_command = dir_command + "bear make >" + Common.FILE_MAKE_LOG
+    execute_command(build_command)
+
+
+def build_projects():
+    Output.normal(Common.Project_A.path)
+    make_project(Common.Project_A.path)
+    Output.normal(Common.Project_B.path)
+    make_project(Common.Project_B.path)
+    Output.normal(Common.Project_C.path)
+    make_project(Common.Project_C.path)
 
 
 def read_conf():
@@ -93,6 +124,8 @@ def initialize():
     Output.title("Initializing project for Transplantation")
     Output.sub_title("loading configuration")
     read_conf()
-    load_values()
+    loadValues()
     Output.sub_title("cleaning residue files")
     clean_projects()
+    Output.sub_title("building projects")
+    build_projects()
