@@ -8,13 +8,17 @@ import Output
 import Common
 
 
-def execute_command(command):
+def execute_command(command, show_output=True):
     # Print executed command and execute it in console
     Output.command(command)
+    command = "{ " + command + " ;} 2> " + Common.FILE_ERROR_LOG
+    if not show_output:
+        command += " > /dev/null"
+    # print(command)
     process = subprocess.Popen([command], stdout=subprocess.PIPE, shell=True)
     (output, error) = process.communicate()
     # out is the output of the command, and err is the exit value
-    return output.decode("utf-8").strip(), error
+    return str(process.returncode)
 
 
 def create_directories():

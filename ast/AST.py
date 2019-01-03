@@ -106,7 +106,7 @@ class AST:
         return source_code[int(self.begin):int(self.end)]
 
     def get_node_list(self, attribute, value, node_list):
-        Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, "blocked args")
+        # Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, "blocked args")
         self.attrs = [self.id, self.identifier, self.line, self.line_end,
                       self.col, self.col_end, self.begin, self.end, self.value,
                       self.type, self.file, self.parent_id]
