@@ -2,9 +2,6 @@
 # -*- coding: utf-8 -*-
 
 
-import os
-import sys
-from Utilities import error_exit
 import Project
 import Common
 import Output

@@ -2,14 +2,14 @@
 # -*- coding: utf-8 -*-
 
 
-import sys, os
+import sys
+
 sys.path.append('./ast/')
 import time
-from Utilities import execute_command, error_exit, find_files, clean_files, get_file_extension_list
+from Utilities import execute_command, error_exit
 import Output
 import Common
 import Generator
-import Vector
 import Logger
 
 
@@ -56,12 +56,12 @@ def generate_vectors(function_list):
     for source_file in function_info:
         Output.normal("\t" + source_file + ":")
         for function_name in function_info[source_file]:
-            Output.normal("\t\t" + function_name )
+            Output.normal("\t\t" + function_name)
             function_range = function_info[source_file][function_name]
             output_file_name = str(source_file).split("/")[-1].strip(".c").strip(".cpp") + "-" + function_name + ".vec"
             output_directory = source_file.strip(str(source_file).split("/")[-1])
             vector_command = Common.TOOL_VECGEN + " --start-line-number " + \
-                       str(function_range[0]) + " --end-line-number " + str(function_range[1]) + \
+                             str(function_range[0]) + " --end-line-number " + str(function_range[1]) + \
                        " " + source_file + " -o " + output_directory + "/" + output_file_name + \
                        " 2> " + Common.FILE_ERROR_LOG
             execute_command(vector_command)

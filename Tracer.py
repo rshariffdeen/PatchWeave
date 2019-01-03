@@ -5,11 +5,9 @@
 import sys, os
 sys.path.append('./ast/')
 import time
-from Utilities import execute_command, error_exit, find_files, clean_files, get_file_extension_list
+from Utilities import execute_command, error_exit
 import Output
 import Common
-import Generator
-import Vector
 import Logger
 
 VALGRIND_INSTRUMENTATION = "valgrind --tool=callgrind "

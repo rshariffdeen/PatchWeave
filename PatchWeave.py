@@ -7,7 +7,6 @@ import Common
 from Utilities import error_exit, create_directories
 import Initializer
 import os, sys
-import Differ
 import Tracer
 import FunMatcher
 
