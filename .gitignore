@@ -1,7 +1,7 @@
 build
 logs/
 backup/
-*.conf
+conf/
 cmake-build-debug
 .idea
 *.pyc
