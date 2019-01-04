@@ -19,36 +19,6 @@ def load_values():
     Common.Project_C = Project.Project(Common.VALUE_PATH_C, "Pc", Common.VALUE_EXPLOIT_C)
 
 
-def make_clean(project_path):
-    Output.normal("\tremoving binaries and make files")
-    clean_command = "cd " + project_path + "; make clean; make distclean"
-    execute_command(clean_command)
-
-
-def restore_modifications(project_path):
-    Output.normal("\trestoring modified files")
-    restore_command = "cd " + project_path + ";"
-    if os.path.exists(project_path + "/.git"):
-        restore_command += "git clean -fd; git reset --hard HEAD"
-    elif os.path.exists(project_path + "/.svn"):
-        restore_command += "svn revert -R .; svn status --no-ignore | grep '^\?' | sed 's/^\?     //'  | xargs rm -rf"
-    execute_command(restore_command)
-
-
-def clean_projects():
-    Output.normal(Common.Project_A.path)
-    make_clean(Common.Project_A.path)
-    restore_modifications(Common.Project_A.path)
-
-    Output.normal(Common.Project_B.path)
-    make_clean(Common.Project_B.path)
-    restore_modifications(Common.Project_B.path)
-
-    Output.normal(Common.Project_C.path)
-    make_clean(Common.Project_C.path)
-    restore_modifications(Common.Project_C.path)
-
-
 def read_conf():
     Output.normal("reading configuration values")
     if len(sys.argv) > 1:
@@ -97,5 +67,4 @@ def initialize():
     read_conf()
     load_values()
     Output.sub_title("cleaning residue files")
-    #clean_projects()
     #build_normal()

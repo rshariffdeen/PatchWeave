@@ -12,19 +12,23 @@ import Logger
 import Builder
 
 
-VALGRIND_INSTRUMENTATION = "valgrind --tool=callgrind "
-CALLGRIND_ANNOTATE = "callgrind_annotate"
-FILE_VALGRIND_OUTPUT = Common.DIRECTORY_OUTPUT + "/output-valgrind"
-FILE_VALGRIND_ERROR = Common.DIRECTORY_OUTPUT + "/error-valgrind"
-FILE_CALLGRIND_OUTPUT = Common.DIRECTORY_OUTPUT + "/output-callgrind"
-FILE_CALLGRIND_ERROR = Common.DIRECTORY_OUTPUT + "/error-callgrind"
+SYMBOLIC_CONVERTER = "gen-bout"
+WLLVM_EXTRACTOR = "extract-bc"
+SYMBOLIC_ENGINE = "klee"
+SYMBOLIC_ARGUMENTS = " -write-smt2s --libc=uclibc --posix-runtime --external-calls=all --only-replay-seeds --seed-out=$KTEST"
 
-FILE_VALGRIND_LOG_A = Common.DIRECTORY_OUTPUT + "/callgrind-pa"
-FILE_VALGRIND_LOG_B = Common.DIRECTORY_OUTPUT + "/callgrind-pb"
-FILE_VALGRIND_LOG_C = Common.DIRECTORY_OUTPUT + "/callgrind-pc"
 
-FILE_EXPLOIT_OUTPUT_A = Common.DIRECTORY_OUTPUT + "/exploit-a"
-FILE_EXPLOIT_OUTPUT_C = Common.DIRECTORY_OUTPUT + "/exploit-c"
+VALUE_BIT_SIZE = 0
+
+FILE_KLEE_LOG_A = Common.DIRECTORY_OUTPUT + "/klee-pa"
+FILE_KLEE_LOG_B = Common.DIRECTORY_OUTPUT + "/klee-pb"
+FILE_KLEE_LOG_C = Common.DIRECTORY_OUTPUT + "/klee-pc"
+
+FILE_SYM_PATH_A = Common.DIRECTORY_OUTPUT + "/sym-path-a"
+FILE_SYM_PATH_B = Common.DIRECTORY_OUTPUT + "/sym-path-b"
+FILE_SYM_PATH_C = Common.DIRECTORY_OUTPUT + "/sym-path-c"
+
+FILE_SYMBOLIC_POC = Common.DIRECTORY_OUTPUT + "/symbolic.ktest"
 
 
 def test_exploits():
@@ -71,20 +75,16 @@ def extract_crash_point(trace_file_path):
     return source_path, function_name, line_number
 
 
-def trace_exploit(exploit, project_path, poc_path):
+def trace_exploit(binary_arguments, binary_path, binary_name):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal("\tgenerating execution trace for exploit")
-    exploit = str(exploit).replace('$POC', poc_path)
-    trace_command = VALGRIND_INSTRUMENTATION + project_path + exploit + " > " + FILE_VALGRIND_OUTPUT + \
-                    " 2>" + FILE_VALGRIND_ERROR
+    Output.normal("\tgenerating symbolic trace for exploit")
+    trace_command = "cd " + binary_path + ";"
+    trace_command += SYMBOLIC_ENGINE + SYMBOLIC_ARGUMENTS.replace("$KTEST", FILE_SYMBOLIC_POC) + " " + binary_name + ".bc "\
+                     + binary_arguments.replace("$POC", "A") + " --sym-files 1 " + str(VALUE_BIT_SIZE) + "  > " + FILE_KLEE_LOG_A + \
+                    " 2>&1"
     execute_command(trace_command)
-    source_path, function_name, line_number = extract_crash_point(FILE_VALGRIND_ERROR)
-    annotate_command = CALLGRIND_ANNOTATE + " callgrind.out.* > " + FILE_CALLGRIND_OUTPUT + \
-                    " 2>" + FILE_CALLGRIND_ERROR
-    execute_command(annotate_command)
-    remove_command = "rm callgrind.out.*"
-    execute_command(remove_command)
-    return source_path, function_name, line_number
+    sym_file_path = binary_path + "/klee-last/test000001.smt2 "
+    return sym_file_path
 
 
 def extract_function_list(trace_file_path, project_path):
@@ -118,23 +118,28 @@ def extract_function_list(trace_file_path, project_path):
     return function_list
 
 
+def extract_bitcode(binary_path):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    binary_name = str(binary_path).split("/")[-1]
+    binary_directory = "/".join(str(binary_path).split("/")[:-1])
+    extract_command = WLLVM_EXTRACTOR + " " + binary_path
+    execute_command(extract_command)
+    return binary_directory, binary_name
+
+
 def generate_trace_donor():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.normal(Common.VALUE_PATH_A)
-    prepare_exploit_environment(Common.VALUE_PATH_A)
-    source_path, function_name, line_number = trace_exploit(Common.VALUE_EXPLOIT_A, Common.Project_A.path, Common.VALUE_PATH_POC)
-    Common.TRACE_LIST[Common.Project_A.name] = source_path, function_name, line_number
-    move_command = "cp " + FILE_CALLGRIND_OUTPUT + " " + FILE_VALGRIND_LOG_A
-    execute_command(move_command)
-    Common.PROJECT_A_FUNCTION_LIST = extract_function_list(FILE_VALGRIND_LOG_A, Common.VALUE_PATH_A)
-    #print(Common.PROJECT_A_FUNCTION_LIST)
+    binary_path, binary_name = extract_bitcode(Common.VALUE_PATH_A + Common.VALUE_EXPLOIT_A.split(" ")[0])
+    sym_file_path = trace_exploit(" ".join(Common.VALUE_EXPLOIT_A.split(" ")[1:]), binary_path, binary_name)
+    copy_command = "cp " + sym_file_path + " " + FILE_SYM_PATH_A
+    execute_command(copy_command)
 
     Output.normal(Common.VALUE_PATH_B)
-    prepare_exploit_environment(Common.VALUE_PATH_B)
-    source_path, function_name, line_number = trace_exploit(Common.VALUE_EXPLOIT_A, Common.Project_B.path, Common.VALUE_PATH_POC)
-    move_command = "cp " + FILE_CALLGRIND_OUTPUT + " " + FILE_VALGRIND_LOG_B
-    execute_command(move_command)
-    Common.PROJECT_B_FUNCTION_LIST = extract_function_list(FILE_VALGRIND_LOG_B, Common.VALUE_PATH_B)
+    binary_path, binary_name = extract_bitcode(Common.VALUE_PATH_B + Common.VALUE_EXPLOIT_A.split(" ")[0])
+    sym_file_path = trace_exploit(" ".join(Common.VALUE_EXPLOIT_A.split(" ")[1:]), binary_path, binary_name)
+    copy_command = "cp " + sym_file_path + " " + FILE_SYM_PATH_B
+    execute_command(copy_command)
 
 
 def generate_trace_target():
@@ -147,12 +152,16 @@ def generate_trace_target():
     Common.PROJECT_C_FUNCTION_LIST = extract_function_list(FILE_VALGRIND_LOG_C, Common.VALUE_PATH_C)
 
 
-def prepare_exploit_environment(project_path):
+def convert_poc():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    if Common.VALUE_EXPLOIT_PREPARE is not None:
-        prepare_command = str(Common.VALUE_EXPLOIT_PREPARE).replace("$DIR", project_path) + " >output/null 2>output/null "
-        #print(prepare_command)
-        execute_command(prepare_command)
+    global VALUE_BIT_SIZE
+    Output.normal("converting concrete poc to symbolic file")
+    concrete_file = open(Common.VALUE_PATH_POC,'rb')
+    VALUE_BIT_SIZE = os.fstat(concrete_file.fileno()).st_size
+    convert_command = SYMBOLIC_CONVERTER + " --sym-file " + Common.VALUE_PATH_POC
+    execute_command(convert_command)
+    move_command = "mv file.bout " + FILE_SYMBOLIC_POC
+    execute_command(move_command)
 
 
 def safe_exec(function_def, title, *args):
@@ -175,10 +184,10 @@ def safe_exec(function_def, title, *args):
     return result
 
 
-def trace():
+def execute():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.title("Analysing execution traces")
-    # Builder.build_normal()
-    test_exploits()
-    safe_exec(generate_trace_donor, "generating trace information from donor program")
-    safe_exec(generate_trace_target, "generating trace information from target program")
+    Output.title("Concolic execution traces")
+    convert_poc()
+   # Builder.build_llvm()
+    safe_exec(generate_trace_donor, "generating symbolic trace information from donor program")
+    safe_exec(generate_trace_target, "generating symbolic trace information from target program")

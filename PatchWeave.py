@@ -10,6 +10,8 @@ import os, sys
 import Tracer
 import FunMatcher
 import VarMatcher
+import Differ
+import Concolic
 
 
 def first_run_check():
@@ -28,23 +30,29 @@ def run_patchweave():
     Initializer.initialize()
     time_info[Common.KEY_DURATION_INITIALIZATION] = str(time.time() - time_check)
 
-
-    #
-    # time_check = time.time()
-    # Differ.diff()
-    # time_info[Common.KEY_DURATION_DIFF_ANALYSIS] = str(time.time() - time_check)
+    time_check = time.time()
+    Differ.diff()
+    time_info[Common.KEY_DURATION_DIFF_ANALYSIS] = str(time.time() - time_check)
 
     time_check = time.time()
     Tracer.trace()
     time_info[Common.KEY_DURATION_TRACE_ANALYSIS] = str(time.time() - time_check)
 
-    time_check = time.time()
-    FunMatcher.match()
-    time_info[Common.KEY_DURATION_FUNCTION_MATCH] = str(time.time() - time_check)
+    # time_check = time.time()
+    Concolic.execute()
+    # time_info[Common.KEY_DURATION_VARIABLE_MATCH] = str(time.time() - time_check)
 
-    time_check = time.time()
-    VarMatcher.match()
-    time_info[Common.KEY_DURATION_VARIABLE_MATCH] = str(time.time() - time_check)
+    # time_check = time.time()
+    # FunMatcher.match()
+    # time_info[Common.KEY_DURATION_FUNCTION_MATCH] = str(time.time() - time_check)
+
+
+
+    # time_check = time.time()
+    # VarMatcher.match()
+    # time_info[Common.KEY_DURATION_VARIABLE_MATCH] = str(time.time() - time_check)
+
+
 
     time_check = time.time()
     #Extraction.extract()
