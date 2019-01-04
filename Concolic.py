@@ -75,13 +75,14 @@ def extract_crash_point(trace_file_path):
     return source_path, function_name, line_number
 
 
-def trace_exploit(binary_arguments, binary_path, binary_name):
+def trace_exploit(binary_arguments, binary_path, binary_name, log_path):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.normal("\tgenerating symbolic trace for exploit")
     trace_command = "cd " + binary_path + ";"
     trace_command += SYMBOLIC_ENGINE + SYMBOLIC_ARGUMENTS.replace("$KTEST", FILE_SYMBOLIC_POC) + " " + binary_name + ".bc "\
-                     + binary_arguments.replace("$POC", "A") + " --sym-files 1 " + str(VALUE_BIT_SIZE) + "  > " + FILE_KLEE_LOG_A + \
+                     + binary_arguments.replace("$POC", "A") + " --sym-files 1 " + str(VALUE_BIT_SIZE) + "  > " + log_path + \
                     " 2>&1"
+    print(trace_command)
     execute_command(trace_command)
     sym_file_path = binary_path + "/klee-last/test000001.smt2 "
     return sym_file_path
@@ -131,13 +132,13 @@ def generate_trace_donor():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.normal(Common.VALUE_PATH_A)
     binary_path, binary_name = extract_bitcode(Common.VALUE_PATH_A + Common.VALUE_EXPLOIT_A.split(" ")[0])
-    sym_file_path = trace_exploit(" ".join(Common.VALUE_EXPLOIT_A.split(" ")[1:]), binary_path, binary_name)
+    sym_file_path = trace_exploit(" ".join(Common.VALUE_EXPLOIT_A.split(" ")[1:]), binary_path, binary_name, FILE_KLEE_LOG_A)
     copy_command = "cp " + sym_file_path + " " + FILE_SYM_PATH_A
     execute_command(copy_command)
 
     Output.normal(Common.VALUE_PATH_B)
     binary_path, binary_name = extract_bitcode(Common.VALUE_PATH_B + Common.VALUE_EXPLOIT_A.split(" ")[0])
-    sym_file_path = trace_exploit(" ".join(Common.VALUE_EXPLOIT_A.split(" ")[1:]), binary_path, binary_name)
+    sym_file_path = trace_exploit(" ".join(Common.VALUE_EXPLOIT_A.split(" ")[1:]), binary_path, binary_name, FILE_KLEE_LOG_B)
     copy_command = "cp " + sym_file_path + " " + FILE_SYM_PATH_B
     execute_command(copy_command)
 
@@ -145,11 +146,10 @@ def generate_trace_donor():
 def generate_trace_target():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.normal(Common.VALUE_PATH_C)
-    source_path, function_name, line_number= trace_exploit(Common.VALUE_EXPLOIT_C, Common.Project_C.path, Common.VALUE_PATH_POC)
-    Common.TRACE_LIST[Common.Project_C.name] = source_path, function_name, line_number
-    move_command = "cp " + FILE_CALLGRIND_OUTPUT + " " + FILE_VALGRIND_LOG_C
-    execute_command(move_command)
-    Common.PROJECT_C_FUNCTION_LIST = extract_function_list(FILE_VALGRIND_LOG_C, Common.VALUE_PATH_C)
+    binary_path, binary_name = extract_bitcode(Common.VALUE_PATH_C + Common.VALUE_EXPLOIT_C.split(" ")[0])
+    sym_file_path = trace_exploit(" ".join(Common.VALUE_EXPLOIT_C.split(" ")[1:]), binary_path, binary_name, FILE_KLEE_LOG_C)
+    copy_command = "cp " + sym_file_path + " " + FILE_SYM_PATH_C
+    execute_command(copy_command)
 
 
 def convert_poc():
@@ -188,6 +188,6 @@ def execute():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.title("Concolic execution traces")
     convert_poc()
-   # Builder.build_llvm()
+    #Builder.build_llvm()
     safe_exec(generate_trace_donor, "generating symbolic trace information from donor program")
     safe_exec(generate_trace_target, "generating symbolic trace information from target program")
