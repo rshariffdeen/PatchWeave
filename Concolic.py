@@ -15,7 +15,7 @@ import Builder
 SYMBOLIC_CONVERTER = "gen-bout"
 WLLVM_EXTRACTOR = "extract-bc"
 SYMBOLIC_ENGINE = "klee"
-SYMBOLIC_ARGUMENTS = " -write-smt2s --libc=uclibc --posix-runtime --external-calls=all --only-replay-seeds --seed-out=$KTEST"
+SYMBOLIC_ARGUMENTS = " -write-smt2s -print-trace -print-path --libc=uclibc --posix-runtime --external-calls=all --only-replay-seeds --seed-out=$KTEST"
 
 
 VALUE_BIT_SIZE = 0
@@ -30,49 +30,57 @@ FILE_SYM_PATH_C = Common.DIRECTORY_OUTPUT + "/sym-path-c"
 
 FILE_SYMBOLIC_POC = Common.DIRECTORY_OUTPUT + "/symbolic.ktest"
 
+sym_path_a = dict()
+sym_path_b = dict()
+sym_path_c = dict()
 
-def test_exploits():
+list_trace_a = list()
+list_trace_b = list()
+list_trace_c = list()
+
+
+def collect_symbolic_path(file_path, project_path):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.sub_title("exploiting crashes")
-    Output.normal(Common.Project_A.path)
-    exit_code = run_exploit(Common.VALUE_EXPLOIT_A, Common.Project_A.path, Common.VALUE_PATH_POC, FILE_EXPLOIT_OUTPUT_A)
-    if exit_code != 1:
-        Output.normal("\tprogram crashed with exit code " + str(exit_code))
-    Output.normal(Common.Project_C.path)
-    exit_code = run_exploit(Common.VALUE_EXPLOIT_C, Common.Project_C.path, Common.VALUE_PATH_POC, FILE_EXPLOIT_OUTPUT_C)
-    if exit_code != 1:
-        Output.normal("\tprogram crashed with exit code " + str(exit_code))
+    Output.normal("\tcollecting symbolic path conditions")
+    constraints = dict()
+    if os.path.exists(file_path):
+        source_path = ""
+        with open(file_path, 'r') as trace_file:
+            for line in trace_file:
+                if '[path:condition]' in line:
+                    if project_path in line:
+                        source_path = str(line.replace("[path:condition]", '')).split(" : ")[0]
+
+                if source_path and "(assert" in line:
+                    constraints[source_path] = line
+                    source_path = ""
+
+    return constraints
 
 
-def run_exploit(exploit, project_path, poc_path, output_file):
+def collect_trace(file_path, project_path):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    exploit = str(exploit).replace('$POC', poc_path)
-    exploit_command = project_path + exploit + " > " + output_file
-    return execute_command(exploit_command)
+    Output.normal("\tcollecting trace")
+    list_trace = list()
+    if os.path.exists(file_path):
+        with open(file_path, 'r') as trace_file:
+            for line in trace_file:
+                if '[trace]' in line:
+                    if project_path in line:
+                        if not list_trace or list_trace[-1] is not line:
+                            list_trace.append(str(line.replace("[trace]", '')).split(" - ")[0])
+    return list_trace
 
 
-def extract_crash_point(trace_file_path):
+def extract_divergent_point():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal("\textracting crash point")
-    source_path = ""
-    function_name = ""
-    line_number = ""
-    if os.path.exists(trace_file_path):
-        with open(trace_file_path, 'r') as trace_file:
-            grab = False
-            for read_line in trace_file:
-                read_line = read_line.strip()
-                if 'at address' in read_line:
-                    grab = True
-                    continue
-                if grab:
-                    read_line = read_line.split("==")[-1]
-                    read_line = read_line.split(":")
-                    function_name = (read_line[1].split("(")[0]).strip()
-                    source_path = read_line[1].split("(")[1]
-                    line_number = read_line[2].strip(")")
-                    break
-    return source_path, function_name, line_number
+    Output.normal("\textracting divergent point(s)")
+    length = len(list_trace_b)
+    for i in range(0, length):
+        if list_trace_a[i] is not list_trace_b[i]:
+            Common.DIVERGENT_POINT_LIST.append(list_trace_b[i-1])
+            # print("Divergent Point: " + list_trace_b[i-1])
+            break
 
 
 def trace_exploit(binary_arguments, binary_path, binary_name, log_path):
@@ -82,41 +90,11 @@ def trace_exploit(binary_arguments, binary_path, binary_name, log_path):
     trace_command += SYMBOLIC_ENGINE + SYMBOLIC_ARGUMENTS.replace("$KTEST", FILE_SYMBOLIC_POC) + " " + binary_name + ".bc "\
                      + binary_arguments.replace("$POC", "A") + " --sym-files 1 " + str(VALUE_BIT_SIZE) + "  > " + log_path + \
                     " 2>&1"
-    print(trace_command)
+    #print(trace_command)
     execute_command(trace_command)
+
     sym_file_path = binary_path + "/klee-last/test000001.smt2 "
     return sym_file_path
-
-
-def extract_function_list(trace_file_path, project_path):
-    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal("\textracting function list from trace")
-    function_list = list()
-    if os.path.exists(trace_file_path):
-        with open(trace_file_path, 'r') as trace_file:
-            is_trace = False
-            file_path = ""
-            for read_line in trace_file:
-                read_line = read_line.strip()
-                if is_trace:
-                    break
-                if "Ir  file:function" in read_line:
-                    is_trace = True
-
-            for read_line in trace_file:
-                split_tokens = read_line.split(" ")
-                for token in split_tokens:
-                    if ":" in token:
-                        function_f = token
-                        break
-                file_path, function_name = str(function_f).split(":")
-                if project_path in file_path:
-                    if function_f not in function_list:
-                        function_list.append(function_f)
-
-    else:
-        error_exit("trace file doesn't exists")
-    return function_list
 
 
 def extract_bitcode(binary_path):
@@ -129,19 +107,24 @@ def extract_bitcode(binary_path):
 
 
 def generate_trace_donor():
+    global list_trace_a, list_trace_b, list_trace_c
+    global sym_path_a, sym_path_b, sym_path_c
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.normal(Common.VALUE_PATH_A)
     binary_path, binary_name = extract_bitcode(Common.VALUE_PATH_A + Common.VALUE_EXPLOIT_A.split(" ")[0])
-    sym_file_path = trace_exploit(" ".join(Common.VALUE_EXPLOIT_A.split(" ")[1:]), binary_path, binary_name, FILE_KLEE_LOG_A)
-    copy_command = "cp " + sym_file_path + " " + FILE_SYM_PATH_A
-    execute_command(copy_command)
+    # sym_file_path = trace_exploit(" ".join(Common.VALUE_EXPLOIT_A.split(" ")[1:]), binary_path, binary_name, FILE_KLEE_LOG_A)
+    # copy_command = "cp " + sym_file_path + " " + FILE_SYM_PATH_A
+    # execute_command(copy_command)
+    list_trace_a = collect_trace(FILE_KLEE_LOG_A, Common.VALUE_PATH_A)
+    sym_path_a = collect_symbolic_path(FILE_KLEE_LOG_A, Common.VALUE_PATH_A)
 
     Output.normal(Common.VALUE_PATH_B)
     binary_path, binary_name = extract_bitcode(Common.VALUE_PATH_B + Common.VALUE_EXPLOIT_A.split(" ")[0])
-    sym_file_path = trace_exploit(" ".join(Common.VALUE_EXPLOIT_A.split(" ")[1:]), binary_path, binary_name, FILE_KLEE_LOG_B)
-    copy_command = "cp " + sym_file_path + " " + FILE_SYM_PATH_B
-    execute_command(copy_command)
-
+    # sym_file_path = trace_exploit(" ".join(Common.VALUE_EXPLOIT_A.split(" ")[1:]), binary_path, binary_name, FILE_KLEE_LOG_B)
+    # copy_command = "cp " + sym_file_path + " " + FILE_SYM_PATH_B
+    # execute_command(copy_command)
+    list_trace_b = collect_trace(FILE_KLEE_LOG_B, Common.VALUE_PATH_B)
+    sym_path_b = collect_symbolic_path(FILE_KLEE_LOG_B, Common.VALUE_PATH_B)
 
 def generate_trace_target():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
@@ -150,6 +133,8 @@ def generate_trace_target():
     sym_file_path = trace_exploit(" ".join(Common.VALUE_EXPLOIT_C.split(" ")[1:]), binary_path, binary_name, FILE_KLEE_LOG_C)
     copy_command = "cp " + sym_file_path + " " + FILE_SYM_PATH_C
     execute_command(copy_command)
+    list_trace_c = collect_trace(FILE_KLEE_LOG_C, Common.VALUE_PATH_C)
+    sym_path_c = collect_symbolic_path(FILE_KLEE_LOG_C, Common.VALUE_PATH_C)
 
 
 def convert_poc():
@@ -191,3 +176,4 @@ def execute():
     #Builder.build_llvm()
     safe_exec(generate_trace_donor, "generating symbolic trace information from donor program")
     safe_exec(generate_trace_target, "generating symbolic trace information from target program")
+    safe_exec(extract_divergent_point, "calculating divergent points")
