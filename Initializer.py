@@ -13,6 +13,11 @@ import Logger
 from Builder import build_normal
 
 
+def set_env_value():
+    Output.normal("setting environment values")
+    os.environ["PYTHONPATH"] = "/home/rshariffdeen/workspace/z3/build/python"
+
+
 def load_values():
     Common.Project_A = Project.Project(Common.VALUE_PATH_A, "Pa", Common.VALUE_EXPLOIT_A)
     Common.Project_B = Project.Project(Common.VALUE_PATH_B, "Pb")
@@ -66,5 +71,7 @@ def initialize():
     Output.sub_title("loading configuration")
     read_conf()
     load_values()
+    Output.sub_title("set environment")
+    set_env_value()
     Output.sub_title("cleaning residue files")
     #build_normal()
