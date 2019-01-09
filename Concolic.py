@@ -145,13 +145,32 @@ def estimate_divergent_point(byte_list):
     Output.normal("\tfinding similar location in recipient")
     length = len(sym_path_c.keys()) - 1
     count_common = len(byte_list)
+    candidate_list = list()
+    estimated_loc = ""
+
     for n in range(length, 0, -1):
         key = sym_path_c.keys()[n]
         sym_path = sym_path_c[key]
         model = get_model_from_solver(sym_path)
         bytes_temp = extract_values_from_model(model)
         count = len(list(set(byte_list).intersection(bytes_temp.keys())))
-        print(count)
+        if count == count_common:
+            candidate_list.append(key)
+    length = len(list_trace_c) - 1
+
+    for n in range(length, 0, -1):
+        path = list_trace_c[n]
+        if path in candidate_list:
+            estimated_loc = path
+            break
+    print("\testimated loc: " + str(estimated_loc))
+    # filtered_list = list()
+    # for i in range(n, length):
+    #     if list_trace_c[i] not in filtered_list:
+    #         filtered_list.append(list_trace_c[i])
+    # for path in filtered_list:
+    #     print(path)
+    return estimated_loc
 
 
 def extract_divergent_point():
@@ -163,7 +182,7 @@ def extract_divergent_point():
         if list_trace_a[i] is not list_trace_b[i]:
             Common.DIVERGENT_POINT_LIST.append(list_trace_b[i-1])
             source_loc = list_trace_b[i-1]
-            # print("Divergent Point: " + list_trace_b[i-1])
+            print("Divergent Point: " + source_loc)
             break
     return source_loc
 
