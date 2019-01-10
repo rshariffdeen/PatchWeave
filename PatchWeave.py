@@ -8,11 +8,11 @@ from Utilities import error_exit, create_directories
 import Initializer
 import os, sys
 import Tracer
-import FunMatcher
-import VarMatcher
+import Builder
 import Differ
 import Concolic
 import Weaver
+
 
 def first_run_check():
     create_directories()
@@ -28,6 +28,10 @@ def run_patchweave():
     # Prepare projects directories by getting paths and cleaning residual files
     time_check = time.time()
     Initializer.initialize()
+    time_info[Common.KEY_DURATION_INITIALIZATION] = str(time.time() - time_check)
+
+    time_check = time.time()
+    #Builder.build_llvm()
     time_info[Common.KEY_DURATION_INITIALIZATION] = str(time.time() - time_check)
 
     time_check = time.time()

@@ -11,7 +11,7 @@ import Common
 import Logger
 import Builder
 
-SYMBOLIC_ENGINE = "klee"
+SYMBOLIC_ENGINE = "klee --print-trace"
 
 
 
@@ -36,6 +36,7 @@ list_trace_b = list()
 list_trace_c = list()
 
 crash_location_a = ""
+divergent_location = ""
 crash_location_c = ""
 
 
@@ -105,19 +106,36 @@ def collect_trace(file_path, project_path):
 
 def generate_trace_donor():
     global list_trace_a, list_trace_b
-    global crash_location_a
+    global crash_location_a, divergent_location
 
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.normal(Common.VALUE_PATH_A)
-    binary_path, binary_name = extract_bitcode(Common.VALUE_PATH_A + Common.VALUE_EXPLOIT_A.split(" ")[0])
-    trace_exploit(" ".join(Common.VALUE_EXPLOIT_A.split(" ")[1:]), binary_path, binary_name, FILE_TRACE_LOG_A)
+    # binary_path, binary_name = extract_bitcode(Common.VALUE_PATH_A + Common.VALUE_EXPLOIT_A.split(" ")[0])
+    # trace_exploit(" ".join(Common.VALUE_EXPLOIT_A.split(" ")[1:]), binary_path, binary_name, FILE_TRACE_LOG_A)
     list_trace_a = collect_trace(FILE_TRACE_LOG_A, Common.VALUE_PATH_A)
     crash_location_a = extract_crash_point(FILE_TRACE_LOG_A)
 
     Output.normal(Common.VALUE_PATH_B)
-    binary_path, binary_name = extract_bitcode(Common.VALUE_PATH_B + Common.VALUE_EXPLOIT_A.split(" ")[0])
-    trace_exploit(" ".join(Common.VALUE_EXPLOIT_A.split(" ")[1:]), binary_path, binary_name, FILE_TRACE_LOG_B)
+    # binary_path, binary_name = extract_bitcode(Common.VALUE_PATH_B + Common.VALUE_EXPLOIT_A.split(" ")[0])
+    # trace_exploit(" ".join(Common.VALUE_EXPLOIT_A.split(" ")[1:]), binary_path, binary_name, FILE_TRACE_LOG_B)
     list_trace_b = collect_trace(FILE_TRACE_LOG_B, Common.VALUE_PATH_B)
+    divergent_location = extract_divergent_point()
+
+
+def extract_divergent_point():
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    Output.normal("\textracting divergent point(s)")
+    length = len(list_trace_b)
+    source_loc = ""
+    for i in range(0, length):
+        trace_line_a = str(list_trace_a[i]).replace(Common.VALUE_PATH_A, "")
+        trace_line_b = str(list_trace_b[i]).replace(Common.VALUE_PATH_B, "")
+        if trace_line_a != trace_line_b:
+            Common.DIVERGENT_POINT_LIST.append(list_trace_b[i-1])
+            source_loc = list_trace_b[i-1]
+            # print("\t\tdivergent Point:\n\t\t " + source_loc)
+            break
+    return source_loc
 
 
 def generate_trace_target():
@@ -128,9 +146,8 @@ def generate_trace_target():
 
     binary_path, binary_name = extract_bitcode(Common.VALUE_PATH_C + Common.VALUE_EXPLOIT_C.split(" ")[0])
     trace_exploit(" ".join(Common.VALUE_EXPLOIT_C.split(" ")[1:]), binary_path, binary_name, FILE_TRACE_LOG_C)
-    list_trace_c = collect_trace(FILE_TRACE_LOG_A, Common.VALUE_PATH_C)
+    list_trace_c = collect_trace(FILE_TRACE_LOG_C, Common.VALUE_PATH_C)
     crash_location_c = extract_crash_point(FILE_TRACE_LOG_C)
-    print(crash_location_c)
 
 
 def safe_exec(function_def, title, *args):

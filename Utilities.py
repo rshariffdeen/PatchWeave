@@ -7,6 +7,7 @@ import Logger
 import Output
 import Common
 
+WLLVM_EXTRACTOR = "extract-bc"
 
 def execute_command(command, show_output=True):
     # Print executed command and execute it in console
@@ -93,3 +94,12 @@ def restore_file(file_path, backup_name):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     restore_command = "cp " + Common.DIRECTORY_BACKUP + "/" + backup_name + " " + file_path
     execute_command(restore_command)
+
+
+def extract_bitcode(binary_path):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    binary_name = str(binary_path).split("/")[-1]
+    binary_directory = "/".join(str(binary_path).split("/")[:-1])
+    extract_command = WLLVM_EXTRACTOR + " " + binary_path
+    execute_command(extract_command)
+    return binary_directory, binary_name

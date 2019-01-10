@@ -51,6 +51,7 @@ def build_project(project_path):
     build_command = "bear make CFLAGS=" + C_FLAGS + " "
     build_command += "CXXFLAGS=" + CXX_FLAGS + " > " + Common.FILE_MAKE_LOG
     build_command = dir_command + build_command
+    # print(build_command)
     execute_command(build_command)
 
 

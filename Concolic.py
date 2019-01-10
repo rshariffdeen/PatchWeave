@@ -5,7 +5,7 @@
 import sys, os
 sys.path.append('./ast/')
 import time
-from Utilities import execute_command, error_exit
+from Utilities import execute_command, error_exit, extract_bitcode
 from six.moves import cStringIO # Py2-Py3 Compatibility
 from pysmt.smtlib.parser import SmtLibParser
 import Output
@@ -16,18 +16,19 @@ from six.moves import cStringIO
 from pysmt.smtlib.parser import SmtLibParser
 from pysmt.shortcuts import get_model
 import Generator
+import Tracer
 
 SYMBOLIC_CONVERTER = "gen-bout"
-WLLVM_EXTRACTOR = "extract-bc"
-SYMBOLIC_ENGINE = "klee"
-SYMBOLIC_ARGUMENTS = " -write-smt2s -print-trace -print-path --libc=uclibc --posix-runtime --external-calls=all --only-replay-seeds --seed-out=$KTEST"
+SYMBOLIC_ENGINE = "klee "
+SYMBOLIC_ARGUMENTS = " -write-smt2s -print-path --libc=uclibc --posix-runtime --external-calls=all --only-replay-seeds --seed-out=$KTEST"
 
 
 VALUE_BIT_SIZE = 0
 
-FILE_KLEE_LOG_A = Common.DIRECTORY_OUTPUT + "/klee-pa"
-FILE_KLEE_LOG_B = Common.DIRECTORY_OUTPUT + "/klee-pb"
-FILE_KLEE_LOG_C = Common.DIRECTORY_OUTPUT + "/klee-pc"
+FILE_KLEE_LOG_A = Common.DIRECTORY_OUTPUT + "/log-klee-pa"
+FILE_KLEE_LOG_B = Common.DIRECTORY_OUTPUT + "/log-klee-pb"
+FILE_KLEE_LOG_C = Common.DIRECTORY_OUTPUT + "/log-klee-pc"
+
 
 FILE_SYM_PATH_A = Common.DIRECTORY_OUTPUT + "/sym-path-a"
 FILE_SYM_PATH_B = Common.DIRECTORY_OUTPUT + "/sym-path-b"
@@ -39,9 +40,6 @@ sym_path_a = dict()
 sym_path_b = dict()
 sym_path_c = dict()
 
-list_trace_a = list()
-list_trace_b = list()
-list_trace_c = list()
 
 divergent_loc = ""
 
@@ -70,21 +68,6 @@ def collect_symbolic_path(file_path, project_path):
                         path_condition = ""
 
     return constraints
-
-
-def collect_trace(file_path, project_path):
-    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal("\tcollecting trace")
-    list_trace = list()
-    if os.path.exists(file_path):
-        with open(file_path, 'r') as trace_file:
-            for line in trace_file:
-                if '[trace]' in line:
-                    if project_path in line:
-                        if not list_trace or list_trace[-1] is not line:
-                            trace_line = str(line.replace("[trace]", '')).split(" - ")[0]
-                            list_trace.append(trace_line.strip())
-    return list_trace
 
 
 def get_model_from_solver(str_formula):
@@ -176,29 +159,15 @@ def estimate_divergent_point(byte_list):
     return estimated_loc
 
 
-def extract_divergent_point():
-    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal("\textracting divergent point(s)")
-    length = len(list_trace_b)
-    source_loc = ""
-    for i in range(0, length):
-        if list_trace_a[i] is not list_trace_b[i]:
-            Common.DIVERGENT_POINT_LIST.append(list_trace_b[i-1])
-            source_loc = list_trace_b[i-1]
-            print("\t\tdivergent Point:\n\t\t " + source_loc)
-            break
-    return source_loc
-
-
 def compute_divergent_point():
     global divergent_loc
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    div_loc = extract_divergent_point()
+    div_loc = Tracer.divergent_location
     byte_list = compute_common_bytes(div_loc)
     divergent_loc = estimate_divergent_point(byte_list)
 
 
-def trace_exploit(binary_arguments, binary_path, binary_name, log_path):
+def concolic_execution(binary_arguments, binary_path, binary_name, log_path):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.normal("\tgenerating symbolic trace for exploit")
     trace_command = "cd " + binary_path + ";"
@@ -212,15 +181,6 @@ def trace_exploit(binary_arguments, binary_path, binary_name, log_path):
     return sym_file_path
 
 
-def extract_bitcode(binary_path):
-    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    binary_name = str(binary_path).split("/")[-1]
-    binary_directory = "/".join(str(binary_path).split("/")[:-1])
-    extract_command = WLLVM_EXTRACTOR + " " + binary_path
-    execute_command(extract_command)
-    return binary_directory, binary_name
-
-
 def generate_trace_donor():
     global list_trace_a, list_trace_b, list_trace_c
     global sym_path_a, sym_path_b, sym_path_c
@@ -228,18 +188,18 @@ def generate_trace_donor():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.normal(Common.VALUE_PATH_A)
     binary_path, binary_name = extract_bitcode(Common.VALUE_PATH_A + Common.VALUE_EXPLOIT_A.split(" ")[0])
-    # sym_file_path = trace_exploit(" ".join(Common.VALUE_EXPLOIT_A.split(" ")[1:]), binary_path, binary_name, FILE_KLEE_LOG_A)
+    # sym_file_path = concolic_execution(" ".join(Common.VALUE_EXPLOIT_A.split(" ")[1:]), binary_path, binary_name, FILE_KLEE_LOG_A)
     # copy_command = "cp " + sym_file_path + " " + FILE_SYM_PATH_A
     # execute_command(copy_command)
-    list_trace_a = collect_trace(FILE_KLEE_LOG_A, Common.VALUE_PATH_A)
+    list_trace_a = Tracer.list_trace_a
     sym_path_a = collect_symbolic_path(FILE_KLEE_LOG_A, Common.VALUE_PATH_A)
 
     Output.normal(Common.VALUE_PATH_B)
     binary_path, binary_name = extract_bitcode(Common.VALUE_PATH_B + Common.VALUE_EXPLOIT_A.split(" ")[0])
-    # sym_file_path = trace_exploit(" ".join(Common.VALUE_EXPLOIT_A.split(" ")[1:]), binary_path, binary_name, FILE_KLEE_LOG_B)
+    # sym_file_path = concolic_execution(" ".join(Common.VALUE_EXPLOIT_A.split(" ")[1:]), binary_path, binary_name, FILE_KLEE_LOG_B)
     # copy_command = "cp " + sym_file_path + " " + FILE_SYM_PATH_B
     # execute_command(copy_command)
-    list_trace_b = collect_trace(FILE_KLEE_LOG_B, Common.VALUE_PATH_B)
+    list_trace_b = Tracer.list_trace_b
     sym_path_b = collect_symbolic_path(FILE_KLEE_LOG_B, Common.VALUE_PATH_B)
 
 
@@ -248,10 +208,10 @@ def generate_trace_target():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.normal(Common.VALUE_PATH_C)
     binary_path, binary_name = extract_bitcode(Common.VALUE_PATH_C + Common.VALUE_EXPLOIT_C.split(" ")[0])
-    # sym_file_path = trace_exploit(" ".join(Common.VALUE_EXPLOIT_C.split(" ")[1:]), binary_path, binary_name, FILE_KLEE_LOG_C)
+    # sym_file_path = concolic_execution(" ".join(Common.VALUE_EXPLOIT_C.split(" ")[1:]), binary_path, binary_name, FILE_KLEE_LOG_C)
     # copy_command = "cp " + sym_file_path + " " + FILE_SYM_PATH_C
     # execute_command(copy_command)
-    list_trace_c = collect_trace(FILE_KLEE_LOG_C, Common.VALUE_PATH_C)
+    list_trace_c = Tracer.list_trace_c
     sym_path_c = collect_symbolic_path(FILE_KLEE_LOG_C, Common.VALUE_PATH_C)
 
 
@@ -291,7 +251,7 @@ def execute():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.title("Concolic execution traces")
     convert_poc()
-    #Builder.build_llvm()
+
     safe_exec(generate_trace_donor, "generating symbolic trace information from donor program")
     safe_exec(generate_trace_target, "generating symbolic trace information from target program")
     safe_exec(compute_divergent_point, "calculating divergent point")
