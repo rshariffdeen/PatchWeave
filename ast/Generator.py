@@ -75,6 +75,7 @@ def parse_ast(file_path, use_deckard=True):
         ast = generate_json(file_path)
 
     except Exception as exception:
+        print(exception)
         Output.warning("Failed parsing AST for file:\n\t" + file_path)
         return function_lines, dict_file
 

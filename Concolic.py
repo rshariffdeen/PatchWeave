@@ -15,7 +15,7 @@ import Builder
 from six.moves import cStringIO
 from pysmt.smtlib.parser import SmtLibParser
 from pysmt.shortcuts import get_model
-
+import Generator
 
 SYMBOLIC_CONVERTER = "gen-bout"
 WLLVM_EXTRACTOR = "extract-bc"
@@ -43,6 +43,8 @@ list_trace_a = list()
 list_trace_b = list()
 list_trace_c = list()
 
+divergent_loc = ""
+
 
 def collect_symbolic_path(file_path, project_path):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
@@ -56,6 +58,7 @@ def collect_symbolic_path(file_path, project_path):
                 if '[path:condition]' in line:
                     if project_path in line:
                         source_path = str(line.replace("[path:condition]", '')).split(" : ")[0]
+                        source_path = source_path.strip()
                         path_condition = str(line.replace("[path:condition]", '')).split(" : ")[1]
                         continue
                 if source_path:
@@ -79,7 +82,8 @@ def collect_trace(file_path, project_path):
                 if '[trace]' in line:
                     if project_path in line:
                         if not list_trace or list_trace[-1] is not line:
-                            list_trace.append(str(line.replace("[trace]", '')).split(" - ")[0])
+                            trace_line = str(line.replace("[trace]", '')).split(" - ")[0]
+                            list_trace.append(trace_line.strip())
     return list_trace
 
 
@@ -112,14 +116,13 @@ def get_sym_path(source_location):
                 sym_path = sym_path_a[path]
             if path is source_location:
                 break
-    if Common.VALUE_PATH_B in source_location:
+    elif Common.VALUE_PATH_B in source_location:
         for path in list_trace_b:
             if path in sym_path_b.keys():
                 sym_path = sym_path_b[path]
             if path is source_location:
                 break
-
-    if Common.VALUE_PATH_C in source_location:
+    elif Common.VALUE_PATH_C in source_location:
         for path in list_trace_c:
             if path in sym_path_c.keys():
                 sym_path = sym_path_c[path]
@@ -135,6 +138,7 @@ def compute_common_bytes(div_source_loc):
     last_sympath_c = sym_path_c[sym_path_c.keys()[-1]]
     model_a = get_model_from_solver(div_sympath)
     bytes_a = extract_values_from_model(model_a)
+    print(bytes_a)
     model_c = get_model_from_solver(last_sympath_c)
     bytes_c = extract_values_from_model(model_c)
     return list(set(bytes_a.keys()).intersection(bytes_c.keys()))
@@ -163,7 +167,7 @@ def estimate_divergent_point(byte_list):
         if path in candidate_list:
             estimated_loc = path
             break
-    print("\testimated loc: " + str(estimated_loc))
+    print("\t\testimated loc:\n\t\t" + str(estimated_loc))
     # filtered_list = list()
     # for i in range(n, length):
     #     if list_trace_c[i] not in filtered_list:
@@ -182,16 +186,17 @@ def extract_divergent_point():
         if list_trace_a[i] is not list_trace_b[i]:
             Common.DIVERGENT_POINT_LIST.append(list_trace_b[i-1])
             source_loc = list_trace_b[i-1]
-            print("Divergent Point: " + source_loc)
+            print("\t\tdivergent Point:\n\t\t " + source_loc)
             break
     return source_loc
 
 
 def compute_divergent_point():
+    global divergent_loc
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     div_loc = extract_divergent_point()
     byte_list = compute_common_bytes(div_loc)
-    estimate_divergent_point(byte_list)
+    divergent_loc = estimate_divergent_point(byte_list)
 
 
 def trace_exploit(binary_arguments, binary_path, binary_name, log_path):
@@ -220,6 +225,7 @@ def extract_bitcode(binary_path):
 def generate_trace_donor():
     global list_trace_a, list_trace_b, list_trace_c
     global sym_path_a, sym_path_b, sym_path_c
+    global function_list_a, function_list_b
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.normal(Common.VALUE_PATH_A)
     binary_path, binary_name = extract_bitcode(Common.VALUE_PATH_A + Common.VALUE_EXPLOIT_A.split(" ")[0])
@@ -239,13 +245,13 @@ def generate_trace_donor():
 
 
 def generate_trace_target():
-    global sym_path_c, list_trace_c
+    global sym_path_c, list_trace_c, function_list_c
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.normal(Common.VALUE_PATH_C)
     binary_path, binary_name = extract_bitcode(Common.VALUE_PATH_C + Common.VALUE_EXPLOIT_C.split(" ")[0])
-    sym_file_path = trace_exploit(" ".join(Common.VALUE_EXPLOIT_C.split(" ")[1:]), binary_path, binary_name, FILE_KLEE_LOG_C)
-    copy_command = "cp " + sym_file_path + " " + FILE_SYM_PATH_C
-    execute_command(copy_command)
+    # sym_file_path = trace_exploit(" ".join(Common.VALUE_EXPLOIT_C.split(" ")[1:]), binary_path, binary_name, FILE_KLEE_LOG_C)
+    # copy_command = "cp " + sym_file_path + " " + FILE_SYM_PATH_C
+    # execute_command(copy_command)
     list_trace_c = collect_trace(FILE_KLEE_LOG_C, Common.VALUE_PATH_C)
     sym_path_c = collect_symbolic_path(FILE_KLEE_LOG_C, Common.VALUE_PATH_C)
 
