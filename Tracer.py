@@ -11,7 +11,7 @@ import Common
 import Logger
 import Builder
 
-SYMBOLIC_ENGINE = "klee --print-trace"
+SYMBOLIC_ENGINE = "klee --print-trace --print-stack "
 
 
 
@@ -34,6 +34,9 @@ FILE_TRACE_LOG_C = Common.DIRECTORY_OUTPUT + "/trace-klee-pc"
 list_trace_a = list()
 list_trace_b = list()
 list_trace_c = list()
+
+stack_a = dict()
+stack_c = dict()
 
 crash_location_a = ""
 divergent_location = ""
@@ -62,6 +65,27 @@ def run_exploit(exploit, project_path, poc_path, output_file):
     exploit = str(exploit).replace('$POC', poc_path)
     exploit_command = project_path + exploit + " > " + output_file
     return execute_command(exploit_command)
+
+
+def extract_stack_info(trace_file_path):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    Output.normal("\textracting stack information")
+    stack_map = dict()
+    if os.path.exists(trace_file_path):
+        with open(trace_file_path, 'r') as trace_file:
+            is_stack = False
+            for read_line in trace_file:
+                if is_stack and '#' in read_line:
+                    read_line, source_path = str(read_line).split(" at ")
+                    source_path, line_number = source_path.split(":")
+                    function_name = str(read_line.split(" in ")[1]).split(" (")[0]
+                    if source_path not in stack_map.keys():
+                        stack_map[source_path] = dict()
+                    stack_map[source_path][function_name] = line_number
+                if "Stack:" in read_line:
+                    is_stack = True
+                    continue
+    return stack_map
 
 
 def extract_crash_point(trace_file_path):
@@ -105,7 +129,7 @@ def collect_trace(file_path, project_path):
 
 
 def generate_trace_donor():
-    global list_trace_a, list_trace_b
+    global list_trace_a, list_trace_b, stack_a
     global crash_location_a, divergent_location
 
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
@@ -114,6 +138,7 @@ def generate_trace_donor():
     # trace_exploit(" ".join(Common.VALUE_EXPLOIT_A.split(" ")[1:]), binary_path, binary_name, FILE_TRACE_LOG_A)
     list_trace_a = collect_trace(FILE_TRACE_LOG_A, Common.VALUE_PATH_A)
     crash_location_a = extract_crash_point(FILE_TRACE_LOG_A)
+    stack_a = extract_stack_info(FILE_TRACE_LOG_A)
 
     Output.normal(Common.VALUE_PATH_B)
     # binary_path, binary_name = extract_bitcode(Common.VALUE_PATH_B + Common.VALUE_EXPLOIT_A.split(" ")[0])
@@ -139,7 +164,7 @@ def extract_divergent_point():
 
 
 def generate_trace_target():
-    global list_trace_c, crash_location_c
+    global list_trace_c, crash_location_c, stack_c
 
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.normal(Common.VALUE_PATH_C)
@@ -148,6 +173,8 @@ def generate_trace_target():
     trace_exploit(" ".join(Common.VALUE_EXPLOIT_C.split(" ")[1:]), binary_path, binary_name, FILE_TRACE_LOG_C)
     list_trace_c = collect_trace(FILE_TRACE_LOG_C, Common.VALUE_PATH_C)
     crash_location_c = extract_crash_point(FILE_TRACE_LOG_C)
+    stack_c = extract_stack_info(FILE_TRACE_LOG_C)
+
 
 
 def safe_exec(function_def, title, *args):
