@@ -138,7 +138,6 @@ def compute_common_bytes(div_source_loc):
     last_sympath_c = sym_path_c[sym_path_c.keys()[-1]]
     model_a = get_model_from_solver(div_sympath)
     bytes_a = extract_values_from_model(model_a)
-    print(bytes_a)
     model_c = get_model_from_solver(last_sympath_c)
     bytes_c = extract_values_from_model(model_c)
     return list(set(bytes_a.keys()).intersection(bytes_c.keys()))

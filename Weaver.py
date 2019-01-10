@@ -10,6 +10,7 @@ import Output
 import Common
 import Logger
 import Concolic
+import Generator
 
 
 function_list_a = list()
@@ -79,19 +80,19 @@ def generate_candidate_function_list():
     length = len(trace_list)
     filtered_trace_list = list()
     for n in range (length-1, 0, -1):
+        filtered_trace_list.append(trace_list[n])
         if div_point is trace_list[n]:
             break
-        filtered_trace_list.append(trace_list[n])
     filtered_trace_list.reverse()
     source_list_c = extract_source_list(filtered_trace_list)
     candidate_list = extract_trace_function_list(source_list_c, filtered_trace_list)
-    print(candidate_list)
     return candidate_list
 
 
 def identify_insertion_points():
     list_points = list()
-    function_list = generate_function_list()
+    function_list = generate_candidate_function_list()
+
     return list_points
 
 
