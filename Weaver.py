@@ -12,13 +12,16 @@ import Logger
 import Concolic
 import Generator
 import Tracer
-
+import Mapper
 
 function_list_a = list()
 function_list_b = list()
 function_list_c = list()
 target_candidate_function_list = list()
 filtered_trace_list = list()
+insertion_point_list = list()
+
+FILE_VAR_EXPR_LOG = Common.DIRECTORY_OUTPUT + "/log-sym-expr"
 
 
 def extract_source_list(trace_list):
@@ -93,6 +96,15 @@ def generate_candidate_function_list():
     return candidate_list
 
 
+def transplant_code():
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    for insertion_loc in insertion_point_list:
+        source_path, line_number = insertion_loc.split(":")
+        Mapper.generate_symbolic_expressions(source_path, line_number)
+        sym_expr_map = Mapper.collect_symbolic_expressions(FILE_VAR_EXPR_LOG)
+        print(sym_expr_map)
+
+
 def get_function_range_from_trace(function_list):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     stack_info = Tracer.stack_c
@@ -132,12 +144,17 @@ def get_function_range_from_trace(function_list):
 
 def identify_insertion_points():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    list_points = list()
+    global insertion_point_list
     function_list = generate_candidate_function_list()
     stack_info = Tracer.stack_c
     range_map = get_function_range_from_trace(function_list)
 
-    return list_points
+    for function_def in range_map:
+        start_line = int(range_map[function_def]['start'])
+        end_line = int(range_map[function_def]['end'])
+        for n in range(start_line, end_line + 1):
+            source_path = function_def.split(":")[0]
+            insertion_point_list.append(source_path + ":" + str(n))
 
 
 def safe_exec(function_def, title, *args):
@@ -164,4 +181,4 @@ def weave():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.title("transplanting patch")
     safe_exec(identify_insertion_points, "identifying insertion points")
-    safe_exec(generate_trace_target, "generating trace information from target program")
+    safe_exec(transplant_code, "transplanting code")

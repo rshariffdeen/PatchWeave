@@ -17,6 +17,8 @@ from pysmt.smtlib.parser import SmtLibParser
 from pysmt.shortcuts import get_model
 import Generator
 import Tracer
+import Mapper
+
 
 SYMBOLIC_CONVERTER = "gen-bout"
 SYMBOLIC_ENGINE = "klee "
@@ -188,17 +190,17 @@ def generate_trace_donor():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.normal(Common.VALUE_PATH_A)
     binary_path, binary_name = extract_bitcode(Common.VALUE_PATH_A + Common.VALUE_EXPLOIT_A.split(" ")[0])
-    # sym_file_path = concolic_execution(" ".join(Common.VALUE_EXPLOIT_A.split(" ")[1:]), binary_path, binary_name, FILE_KLEE_LOG_A)
-    # copy_command = "cp " + sym_file_path + " " + FILE_SYM_PATH_A
-    # execute_command(copy_command)
+    sym_file_path = concolic_execution(" ".join(Common.VALUE_EXPLOIT_A.split(" ")[1:]), binary_path, binary_name, FILE_KLEE_LOG_A)
+    copy_command = "cp " + sym_file_path + " " + FILE_SYM_PATH_A
+    execute_command(copy_command)
     list_trace_a = Tracer.list_trace_a
     sym_path_a = collect_symbolic_path(FILE_KLEE_LOG_A, Common.VALUE_PATH_A)
 
     Output.normal(Common.VALUE_PATH_B)
     binary_path, binary_name = extract_bitcode(Common.VALUE_PATH_B + Common.VALUE_EXPLOIT_A.split(" ")[0])
-    # sym_file_path = concolic_execution(" ".join(Common.VALUE_EXPLOIT_A.split(" ")[1:]), binary_path, binary_name, FILE_KLEE_LOG_B)
-    # copy_command = "cp " + sym_file_path + " " + FILE_SYM_PATH_B
-    # execute_command(copy_command)
+    sym_file_path = concolic_execution(" ".join(Common.VALUE_EXPLOIT_A.split(" ")[1:]), binary_path, binary_name, FILE_KLEE_LOG_B)
+    copy_command = "cp " + sym_file_path + " " + FILE_SYM_PATH_B
+    execute_command(copy_command)
     list_trace_b = Tracer.list_trace_b
     sym_path_b = collect_symbolic_path(FILE_KLEE_LOG_B, Common.VALUE_PATH_B)
 

@@ -43,7 +43,10 @@ def config_project(project_path, is_llvm):
         config_command = "LLVM_COMPILER=clang;" + config_command
 
     config_command = dir_command + config_command
-    execute_command(config_command)
+    ret_code = execute_command(config_command)
+    if int(ret_code) != 0:
+        Output.error(config_command)
+        error_exit("CONFIGURATION FAILED!!\nExit Code: " + str(ret_code))
 
 
 def build_project(project_path):
@@ -52,7 +55,10 @@ def build_project(project_path):
     build_command += "CXXFLAGS=" + CXX_FLAGS + " > " + Common.FILE_MAKE_LOG
     build_command = dir_command + build_command
     # print(build_command)
-    execute_command(build_command)
+    ret_code = execute_command(build_command)
+    if int(ret_code) != 0:
+        Output.error(build_command)
+        error_exit("BUILD FAILED!!\nExit Code: " + str(ret_code))
 
 
 def build_all():
