@@ -99,10 +99,11 @@ def generate_candidate_function_list():
 def transplant_code():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     for insertion_loc in insertion_point_list:
+        Output.normal("\t" + insertion_loc)
         source_path, line_number = insertion_loc.split(":")
         Mapper.generate_symbolic_expressions(source_path, line_number)
         sym_expr_map = Mapper.collect_symbolic_expressions(FILE_VAR_EXPR_LOG)
-        print(sym_expr_map)
+        var_map = Mapper.generate_mapping(Mapper.var_expr_map_a, sym_expr_map)
 
 
 def get_function_range_from_trace(function_list):

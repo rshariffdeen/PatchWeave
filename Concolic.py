@@ -6,8 +6,6 @@ import sys, os
 sys.path.append('./ast/')
 import time
 from Utilities import execute_command, error_exit, extract_bitcode
-from six.moves import cStringIO # Py2-Py3 Compatibility
-from pysmt.smtlib.parser import SmtLibParser
 import Output
 import Common
 import Logger
@@ -72,25 +70,7 @@ def collect_symbolic_path(file_path, project_path):
     return constraints
 
 
-def get_model_from_solver(str_formula):
-    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    parser = SmtLibParser()
-    script = parser.get_script(cStringIO(str_formula))
-    formula = script.get_last_formula()
-    model = get_model(formula, solver_name="z3")
-    return model.__dict__['z3_model']
 
-
-def extract_values_from_model(model):
-    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    byte_array = dict()
-    for dec in model.decls():
-        if dec.name() == "A-data":
-            var_list = model[dec].as_list()
-            for pair in var_list:
-                if type(pair) == list:
-                    byte_array[pair[0]] = pair[1]
-    return byte_array
 
 
 def get_sym_path(source_location):
@@ -121,10 +101,10 @@ def compute_common_bytes(div_source_loc):
     Output.normal("\tanalysing common bytes in symbolic paths")
     div_sympath = get_sym_path(div_source_loc)
     last_sympath_c = sym_path_c[sym_path_c.keys()[-1]]
-    model_a = get_model_from_solver(div_sympath)
-    bytes_a = extract_values_from_model(model_a)
-    model_c = get_model_from_solver(last_sympath_c)
-    bytes_c = extract_values_from_model(model_c)
+    model_a = Mapper.get_model_from_solver(div_sympath)
+    bytes_a = Mapper.extract_values_from_model(model_a)
+    model_c = Mapper.get_model_from_solver(last_sympath_c)
+    bytes_c = Mapper.extract_values_from_model(model_c)
     return list(set(bytes_a.keys()).intersection(bytes_c.keys()))
 
 
@@ -139,8 +119,8 @@ def estimate_divergent_point(byte_list):
     for n in range(length, 0, -1):
         key = sym_path_c.keys()[n]
         sym_path = sym_path_c[key]
-        model = get_model_from_solver(sym_path)
-        bytes_temp = extract_values_from_model(model)
+        model = Mapper.get_model_from_solver(sym_path)
+        bytes_temp = Mapper.extract_values_from_model(model)
         count = len(list(set(byte_list).intersection(bytes_temp.keys())))
         if count == count_common:
             candidate_list.append(key)
@@ -190,19 +170,21 @@ def generate_trace_donor():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.normal(Common.VALUE_PATH_A)
     binary_path, binary_name = extract_bitcode(Common.VALUE_PATH_A + Common.VALUE_EXPLOIT_A.split(" ")[0])
-    sym_file_path = concolic_execution(" ".join(Common.VALUE_EXPLOIT_A.split(" ")[1:]), binary_path, binary_name, FILE_KLEE_LOG_A)
-    copy_command = "cp " + sym_file_path + " " + FILE_SYM_PATH_A
-    execute_command(copy_command)
+    # sym_file_path = concolic_execution(" ".join(Common.VALUE_EXPLOIT_A.split(" ")[1:]), binary_path, binary_name, FILE_KLEE_LOG_A)
+    # copy_command = "cp " + sym_file_path + " " + FILE_SYM_PATH_A
+    # execute_command(copy_command)
     list_trace_a = Tracer.list_trace_a
     sym_path_a = collect_symbolic_path(FILE_KLEE_LOG_A, Common.VALUE_PATH_A)
+    Mapper.var_expr_map_a = Mapper.collect_symbolic_expressions(FILE_KLEE_LOG_A)
 
     Output.normal(Common.VALUE_PATH_B)
     binary_path, binary_name = extract_bitcode(Common.VALUE_PATH_B + Common.VALUE_EXPLOIT_A.split(" ")[0])
-    sym_file_path = concolic_execution(" ".join(Common.VALUE_EXPLOIT_A.split(" ")[1:]), binary_path, binary_name, FILE_KLEE_LOG_B)
-    copy_command = "cp " + sym_file_path + " " + FILE_SYM_PATH_B
-    execute_command(copy_command)
+    # sym_file_path = concolic_execution(" ".join(Common.VALUE_EXPLOIT_A.split(" ")[1:]), binary_path, binary_name, FILE_KLEE_LOG_B)
+    # copy_command = "cp " + sym_file_path + " " + FILE_SYM_PATH_B
+    # execute_command(copy_command)
     list_trace_b = Tracer.list_trace_b
     sym_path_b = collect_symbolic_path(FILE_KLEE_LOG_B, Common.VALUE_PATH_B)
+    Mapper.var_expr_map_b = Mapper.collect_symbolic_expressions(FILE_KLEE_LOG_B)
 
 
 def generate_trace_target():
