@@ -11,12 +11,14 @@ import Common
 import Logger
 import Concolic
 import Generator
+import Tracer
 
 
 function_list_a = list()
 function_list_b = list()
 function_list_c = list()
 target_candidate_function_list = list()
+filtered_trace_list = list()
 
 
 def extract_source_list(trace_list):
@@ -67,12 +69,14 @@ def extract_trace_function_list(source_list, trace_list):
             for function_name, begin_line, finish_line in function_list:
                 if line_number in range(begin_line, finish_line):
                     trace_function = source_path + ":" + function_name
+                    trace_function += ":" + str(begin_line) + ":" + str(finish_line)
                     if trace_function not in trace_function_list:
                         trace_function_list.append(trace_function)
     return trace_function_list
 
 
 def generate_candidate_function_list():
+    global filtered_trace_list
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.normal("\tgenerating candidate functions")
     trace_list = Concolic.list_trace_c
@@ -89,9 +93,49 @@ def generate_candidate_function_list():
     return candidate_list
 
 
+def get_function_range_from_trace(function_list):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    stack_info = Tracer.stack_c
+    range_map = dict()
+
+    for func in function_list:
+        source_path, function_name, start_line, end_line = func.split(":")
+        function_def = source_path + ":" + function_name
+        if function_def not in range_map.keys():
+            range_map[function_def] = dict()
+
+        start_line = int(start_line)
+        end_line = int(end_line)
+        trace_start_line = end_line
+        trace_end_line = start_line
+
+        for trace_line in filtered_trace_list:
+            if source_path in trace_line:
+                line_number = int(trace_line.split(":")[1])
+                if line_number in range(start_line, end_line+1):
+                    if line_number < trace_start_line:
+                        trace_start_line = line_number
+
+                    if trace_end_line < line_number:
+                        trace_end_line = line_number
+
+        range_map[function_def]['start'] = int(trace_start_line)
+        range_map[function_def]['end'] = int(trace_end_line)
+
+        # if source_path in stack_info.keys():
+        #     if function_name in stack_info[source_path].keys():
+        #         range_map[function_def]['end'] = int(stack_info[source_path][function_name])
+
+    # print(range_map)
+    return range_map
+
+
 def identify_insertion_points():
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     list_points = list()
     function_list = generate_candidate_function_list()
+    stack_info = Tracer.stack_c
+    range_map = get_function_range_from_trace(function_list)
 
     return list_points
 
@@ -99,7 +143,7 @@ def identify_insertion_points():
 def safe_exec(function_def, title, *args):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     start_time = time.time()
-    Output.sub_title("starting " + title + "...")
+    Output.sub_title( title + "...")
     description = title[0].lower() + title[1:]
     try:
         Logger.information("running " + str(function_def))
