@@ -39,7 +39,7 @@ stack_a = dict()
 stack_c = dict()
 
 crash_location_a = ""
-divergent_location = ""
+divergent_location_list = list()
 crash_location_c = ""
 
 
@@ -122,9 +122,10 @@ def collect_trace(file_path, project_path):
             for line in trace_file:
                 if '[trace]' in line:
                     if project_path in line:
-                        if not list_trace or list_trace[-1] is not line:
-                            trace_line = str(line.replace("[trace]", '')).split(" - ")[0]
-                            list_trace.append(trace_line.strip())
+                        trace_line = str(line.replace("[trace]", '')).split(" - ")[0]
+                        trace_line = trace_line.strip()
+                        if (not list_trace) or (list_trace[-1] != trace_line):
+                            list_trace.append(trace_line)
     return list_trace
 
 
@@ -144,23 +145,37 @@ def generate_trace_donor():
     # binary_path, binary_name = extract_bitcode(Common.VALUE_PATH_B + Common.VALUE_EXPLOIT_A.split(" ")[0])
     # trace_exploit(" ".join(Common.VALUE_EXPLOIT_A.split(" ")[1:]), binary_path, binary_name, FILE_TRACE_LOG_B)
     list_trace_b = collect_trace(FILE_TRACE_LOG_B, Common.VALUE_PATH_B)
-    divergent_location = extract_divergent_point()
+    # extract_divergent_point()
 
 
 def extract_divergent_point():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.normal("\textracting divergent point(s)")
-    length = len(list_trace_b)
+    global divergent_location_list
+    length_a = len(list_trace_a)
+    length_b = len(list_trace_b)
+    print(length_a, length_b)
     source_loc = ""
-    for i in range(0, length):
+    gap = 0
+    for i in range(0, length_a):
         trace_line_a = str(list_trace_a[i]).replace(Common.VALUE_PATH_A, "")
-        trace_line_b = str(list_trace_b[i]).replace(Common.VALUE_PATH_B, "")
-        if trace_line_a != trace_line_b:
-            Common.DIVERGENT_POINT_LIST.append(list_trace_b[i-1])
-            source_loc = list_trace_b[i-1]
-            # print("\t\tdivergent Point:\n\t\t " + source_loc)
-            break
-    return source_loc
+        found_diff = False
+        if gap >= length_b - i:
+            gap = 0;
+        for j in range(i + gap, length_b):
+            trace_line_b = str(list_trace_b[j]).replace(Common.VALUE_PATH_B, "")
+            if trace_line_a == trace_line_b:
+                break;
+            elif found_diff:
+                gap += 1;
+            else:
+                source_loc = list_trace_a[i]
+                print("\t\tdivergent Point:\n\t\t " + source_loc)
+                print(i, j, gap)
+                print(trace_line_a, trace_line_b)
+                divergent_location_list.append(source_loc)
+                found_diff = True
+    print(divergent_location_list)
 
 
 def generate_trace_target():

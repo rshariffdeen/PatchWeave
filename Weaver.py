@@ -11,6 +11,7 @@ import Common
 import Logger
 import Concolic
 import Generator
+import Differ
 import Tracer
 import Mapper
 
@@ -19,7 +20,7 @@ function_list_b = list()
 function_list_c = list()
 target_candidate_function_list = list()
 filtered_trace_list = list()
-insertion_point_list = list()
+
 
 FILE_VAR_EXPR_LOG = Common.DIRECTORY_OUTPUT + "/log-sym-expr"
 
@@ -78,17 +79,16 @@ def extract_trace_function_list(source_list, trace_list):
     return trace_function_list
 
 
-def generate_candidate_function_list():
+def generate_candidate_function_list(estimate_loc):
     global filtered_trace_list
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.normal("\tgenerating candidate functions")
     trace_list = Concolic.list_trace_c
-    div_point = Concolic.divergent_loc
     length = len(trace_list)
     filtered_trace_list = list()
     for n in range (length-1, 0, -1):
         filtered_trace_list.append(trace_list[n])
-        if div_point is trace_list[n]:
+        if estimate_loc is trace_list[n]:
             break
     filtered_trace_list.reverse()
     source_list_c = extract_source_list(filtered_trace_list)
@@ -96,14 +96,111 @@ def generate_candidate_function_list():
     return candidate_list
 
 
+def estimate_divergent_point(byte_list):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    Output.normal("\tfinding similar location in recipient")
+    length = len(Concolic.sym_path_c.keys()) - 1
+    count_common = len(byte_list)
+    candidate_list = list()
+    estimated_loc = ""
+
+    for n in range(length, 0, -1):
+        key = Concolic.sym_path_c.keys()[n]
+        sym_path = Concolic.sym_path_c[key]
+        model = Mapper.get_model_from_solver(sym_path)
+        bytes_temp = Mapper.extract_values_from_model(model)
+        count = len(list(set(byte_list).intersection(bytes_temp.keys())))
+        if count == count_common:
+            candidate_list.append(key)
+    length = len(Concolic.list_trace_c) - 1
+
+    for n in range(length, 0, -1):
+        path = Concolic.list_trace_c[n]
+        if path in candidate_list:
+            estimated_loc = path
+            break
+    print("\t\testimated loc:\n\t\t" + str(estimated_loc))
+    # filtered_list = list()
+    # for i in range(n, length):
+    #     if list_trace_c[i] not in filtered_list:
+    #         filtered_list.append(list_trace_c[i])
+    # for path in filtered_list:
+    #     print(path)
+    return estimated_loc
+
+
+def get_sym_path(source_location):
+    sym_path = ""
+    if Common.VALUE_PATH_A in source_location:
+        for path in Concolic.list_trace_a:
+            if path in Concolic.sym_path_a.keys():
+                sym_path = Concolic.sym_path_a[path]
+            if path is source_location:
+                break
+    elif Common.VALUE_PATH_B in source_location:
+        for path in Concolic.list_trace_b:
+            if path in Concolic.sym_path_b.keys():
+                sym_path = Concolic.sym_path_b[path]
+            if path is source_location:
+                break
+    elif Common.VALUE_PATH_C in source_location:
+        for path in Concolic.list_trace_c:
+            if path in Concolic.sym_path_c.keys():
+                sym_path = Concolic.sym_path_c[path]
+            if path is source_location:
+                break
+    return sym_path
+
+
+def compute_common_bytes(div_source_loc):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    Output.normal("\tanalysing common bytes in symbolic paths")
+    div_sympath = get_sym_path(div_source_loc)
+    last_sympath_c = Concolic.sym_path_c[Concolic.sym_path_c.keys()[-1]]
+    model_a = Mapper.get_model_from_solver(div_sympath)
+    bytes_a = Mapper.extract_values_from_model(model_a)
+    model_c = Mapper.get_model_from_solver(last_sympath_c)
+    bytes_c = Mapper.extract_values_from_model(model_c)
+    return list(set(bytes_a.keys()).intersection(bytes_c.keys()))
+
+
+def get_code(source_path, line_number):
+    if os.path.exists(source_path):
+        with open(source_path, 'r') as source_file:
+            content = source_file.readlines()
+            return content[line_number-1]
+    return None
+
+
 def transplant_code():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    for insertion_loc in insertion_point_list:
-        Output.normal("\t" + insertion_loc)
-        source_path, line_number = insertion_loc.split(":")
-        Mapper.generate_symbolic_expressions(source_path, line_number)
-        sym_expr_map = Mapper.collect_symbolic_expressions(FILE_VAR_EXPR_LOG)
-        var_map = Mapper.generate_mapping(Mapper.var_expr_map_a, sym_expr_map)
+    for diff_loc in Differ.diff_info.keys():
+        Output.normal(diff_loc)
+        byte_list = compute_common_bytes(diff_loc)
+        estimate_loc = estimate_divergent_point(byte_list)
+        insertion_loc_list = identify_insertion_points(estimate_loc)
+        diff_info = Differ.diff_info[diff_loc]
+        operation = diff_info['operation']
+        source_path_a, line_number_a = diff_loc.split(":")
+        for insertion_loc in insertion_loc_list:
+            Output.normal("\t" + insertion_loc)
+            source_path, line_number = insertion_loc.split(":")
+            Mapper.generate_symbolic_expressions(source_path, line_number)
+            sym_expr_map = Mapper.collect_symbolic_expressions(FILE_VAR_EXPR_LOG)
+            var_map = Mapper.generate_mapping(Mapper.var_expr_map_a, sym_expr_map)
+
+            if operation == 'insert':
+                source_path_b = str(source_path_a).replace(Common.VALUE_PATH_A, Common.VALUE_PATH_B)
+                print(diff_info)
+                start_line, end_line = diff_info['new-lines']
+                original_patch = ""
+                for i in range(int(start_line), int(end_line + 1)):
+                    original_patch += get_code(source_path_b, int(i)) + "\n"
+                print(original_patch)
+            elif operation == 'delete':
+                original_patch = get_code(source_path_a, int(line_number_a))
+
+
 
 
 def get_function_range_from_trace(function_list):
@@ -143,10 +240,10 @@ def get_function_range_from_trace(function_list):
     return range_map
 
 
-def identify_insertion_points():
+def identify_insertion_points(estimated_loc):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    global insertion_point_list
-    function_list = generate_candidate_function_list()
+    insertion_point_list = list()
+    function_list = generate_candidate_function_list(estimated_loc)
     stack_info = Tracer.stack_c
     range_map = get_function_range_from_trace(function_list)
 
@@ -156,6 +253,7 @@ def identify_insertion_points():
         for n in range(start_line, end_line + 1):
             source_path = function_def.split(":")[0]
             insertion_point_list.append(source_path + ":" + str(n))
+    return insertion_point_list
 
 
 def safe_exec(function_def, title, *args):
@@ -181,5 +279,4 @@ def safe_exec(function_def, title, *args):
 def weave():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.title("transplanting patch")
-    safe_exec(identify_insertion_points, "identifying insertion points")
     safe_exec(transplant_code, "transplanting code")

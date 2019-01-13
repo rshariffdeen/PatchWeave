@@ -98,5 +98,3 @@ def generate_mapping(var_map_a, var_map_b):
             if input_bytes_a == input_bytes_b:
                 candidate_list.append(var_b)
 
-        print(var_a)
-        print(candidate_list)

@@ -22,6 +22,8 @@ FILE_DIFF_H = Common.DIRECTORY_OUTPUT + "/diff_H"
 FILE_DIFF_ALL = Common.DIRECTORY_OUTPUT + "/diff_all"
 FILE_TEMP_DIFF = Common.DIRECTORY_OUTPUT + "/temp_diff"
 
+diff_info = dict()
+
 
 def find_diff_files():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
@@ -79,17 +81,21 @@ def extract_function_name_list():
             with open(FILE_TEMP_DIFF, 'r') as temp_diff_file:
                 file_line = temp_diff_file.readline().strip()
                 while file_line:
+                    operation = ""
                     # We only want lines starting with a line number
                     if 48 <= ord(file_line[0]) <= 57:
                         # add
                         if 'a' in file_line:
                             line_info = file_line.split('a')
+                            operation = "insert"
                         # delete
                         elif 'd' in file_line:
                             line_info = file_line.split('d')
+                            operation = "delete"
                         # change (delete + add)
                         elif 'c' in file_line:
                             line_info = file_line.split('c')
+                            operation = "modify"
                         # range for file_a
                         line_a = line_info[0].split(',')
                         start_a = int(line_a[0])
@@ -100,7 +106,20 @@ def extract_function_name_list():
                         end_b = int(line_b[-1])
                         # Pertinent lines in file_a
                         pertinent_lines_a.append((start_a, end_a))
+
                         pertinent_lines_b.append((start_b, end_b))
+                        diff_loc = file_a + ":" + str(start_a)
+                        diff_info[diff_loc] = dict()
+                        diff_info[diff_loc]['operation'] = operation
+
+                        if operation == 'insert':
+                            diff_info[diff_loc]['new-lines'] = (start_b, end_b)
+                        elif operation == "delete":
+                            diff_info[diff_loc]['remove-lines'] = (start_a, end_a)
+                        elif operation == "modify":
+                            diff_info[diff_loc]['old-lines'] = (start_a, end_a)
+                            diff_info[diff_loc]['new-lines'] = (start_b, end_b)
+
                     file_line = temp_diff_file.readline().strip()
             try:
                 Generator.get_function_name_list(Common.Project_A, file_a, pertinent_lines_a)
