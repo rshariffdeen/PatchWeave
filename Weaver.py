@@ -172,6 +172,23 @@ def get_code(source_path, line_number):
     return None
 
 
+def translate_patch(patch_code, var_map):
+    for var in var_map.keys():
+        if var in patch_code:
+            str(patch_code).replace(var, var_map[var])
+    return patch_code
+
+
+def insert_patch(patch_code, source_path, line_number):
+    if os.path.exists(source_path):
+        with open(source_path, 'r') as source_file:
+            content = source_file.readlines()
+            content[line_number] = patch_code
+
+    with open(source_path, 'w') as source_file:
+        source_file.writelines(content)
+
+
 def transplant_code():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     for diff_loc in Differ.diff_info.keys():
@@ -184,8 +201,8 @@ def transplant_code():
         source_path_a, line_number_a = diff_loc.split(":")
         for insertion_loc in insertion_loc_list:
             Output.normal("\t" + insertion_loc)
-            source_path, line_number = insertion_loc.split(":")
-            Mapper.generate_symbolic_expressions(source_path, line_number)
+            source_path_c, line_number_c = insertion_loc.split(":")
+            Mapper.generate_symbolic_expressions(source_path_c, line_number_c)
             sym_expr_map = Mapper.collect_symbolic_expressions(FILE_VAR_EXPR_LOG)
             var_map = Mapper.generate_mapping(Mapper.var_expr_map_a, sym_expr_map)
 
@@ -197,10 +214,12 @@ def transplant_code():
                 for i in range(int(start_line), int(end_line + 1)):
                     original_patch += get_code(source_path_b, int(i)) + "\n"
                 print(original_patch)
+                translated_patch = translate_patch(original_patch, var_map)
+                print(translated_patch)
+                insert_patch(translated_patch, source_path_c, line_number_c)
+
             elif operation == 'delete':
                 original_patch = get_code(source_path_a, int(line_number_a))
-
-
 
 
 def get_function_range_from_trace(function_list):
