@@ -260,10 +260,25 @@ def get_ast_node_list(ast_map, line_range):
     return node_list
 
 
-def merge_ast_script(ast_script):
+def get_child_id_list(ast_node):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    id_list = list()
+    for child_node in ast_node['children']:
+        child_id = int(child_node['id'])
+        id_list.append(child_id)
+        grand_child_list = get_child_id_list(child_node)
+        if grand_child_list:
+            id_list = id_list + grand_child_list
+    if id_list:
+        id_list = list(set(id_list))
+    return id_list
+
+
+def merge_ast_script(ast_script, ast_node):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     merged_ast_script = list()
     inserted_node_list = list()
+    deleted_node_list = list()
     for script_line in ast_script:
         if "Insert" in script_line:
             node_id_1 = int(((script_line.split(" into ")[0]).split("(")[1]).split(")")[0])
@@ -271,21 +286,38 @@ def merge_ast_script(ast_script):
             if node_id_2 not in inserted_node_list:
                 merged_ast_script.append(script_line)
             inserted_node_list.append(node_id_1)
+        elif "Delete" in script_line:
+            node_id = int((script_line.split("(")[1]).split(")")[0])
+            if node_id in deleted_node_list:
+                continue
+            node = get_ast_node_by_id(ast_node, node_id)
+            child_id_list = get_child_id_list(node)
+            deleted_node_list = deleted_node_list + child_id_list
+            merged_ast_script.append(script_line)
     return merged_ast_script
 
 
-def filter_ast_script(ast_script, line_range, ast_map):
+def filter_ast_script(ast_script, line_range, ast_node):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     filtered_ast_script = list()
     line_range_start, line_range_end = line_range
     line_numbers = set(range(int(line_range_start), int(line_range_end) + 1))
-    merged_ast_script = merge_ast_script(ast_script)
+    merged_ast_script = merge_ast_script(ast_script, ast_node)
     for script_line in merged_ast_script:
         if "Insert" in script_line:
             node_id_b = int(((script_line.split(" into ")[0]).split("(")[1]).split(")")[0])
-            node_b = get_ast_node_by_id(ast_map, node_id_b)
+            node_b = get_ast_node_by_id(ast_node, node_id_b)
             node_line_start = int(node_b['start line'])
             node_line_end = int(node_b['end line']) + 1
+            node_line_numbers = set(range(node_line_start, node_line_end))
+            intersection = line_numbers.intersection(node_line_numbers)
+            if intersection:
+                filtered_ast_script.append(script_line)
+        elif "Delete" in script_line:
+            node_id_a = int((script_line.split("(")[1]).split(")")[0])
+            node_a = get_ast_node_by_id(ast_node, node_id_a)
+            node_line_start = int(node_a['start line'])
+            node_line_end = int(node_a['end line']) + 1
             node_line_numbers = set(range(node_line_start, node_line_end))
             intersection = line_numbers.intersection(node_line_numbers)
             if intersection:
@@ -342,10 +374,10 @@ def transplant_code():
             start_line_b, end_line_b = diff_info['new-lines']
             start_line_a, end_line_a = diff_info['old-lines']
             filtered_ast_script_b = filter_ast_script(ast_script, (start_line_b, end_line_b), ast_map_b)
-            print(filtered_ast_script_b)
-            exit()
-            filtered_ast_script_a = filter_ast_script(ast_script, (start_line_a, end_line_a), ast_map_a)
 
+            filtered_ast_script_a = filter_ast_script(ast_script, (start_line_a, end_line_a), ast_map_a)
+            print(filtered_ast_script_a)
+            exit()
             insertion_loc_list = identify_insertion_points(estimate_loc)
             ast_script_c = list()
             for insertion_loc in insertion_loc_list:
