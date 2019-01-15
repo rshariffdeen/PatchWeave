@@ -20,7 +20,7 @@ function_list_b = list()
 function_list_c = list()
 target_candidate_function_list = list()
 filtered_trace_list = list()
-
+mapping_ba = dict()
 
 FILE_VAR_EXPR_LOG = Common.DIRECTORY_OUTPUT + "/log-sym-expr"
 
@@ -200,6 +200,49 @@ def get_fun_node(ast_map, line_number):
     return None
 
 
+def get_ast_node_by_id(ast_node, find_id):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    is_high = False
+    is_low = False
+    prev_child_node = None
+    node_id = int(ast_node['id'])
+    if node_id == find_id:
+        return ast_node
+
+    for child_node in ast_node['children']:
+        child_id = int(child_node['id'])
+        if child_id == find_id:
+            return child_node
+        elif child_id < find_id:
+            is_low = True
+        else:
+            is_high = True
+
+        if is_low and is_high:
+            return get_ast_node_by_id(prev_child_node, int(find_id))
+        else:
+            prev_child_node = child_node
+
+    return get_ast_node_by_id(prev_child_node, int(find_id))
+
+
+def get_ast_node_by_line(ast_map, line_number, node_id=0):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    for node in ast_map:
+        node_start_line = node['start line']
+        node_end_line = node['end line']
+        if node_start_line == node_end_line:
+            if node_id != 0:
+                for child in node['children']:
+                    if child['id'] == node_id:
+                        return child
+            else:
+                return node
+        elif line_number in range(node_start_line, node_end_line + 1):
+            return get_ast_node_by_line(node, line_number, node_id)
+    return None
+
+
 def get_ast_node_list(ast_map, line_range):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     line_start, line_end = line_range
@@ -211,20 +254,56 @@ def get_ast_node_list(ast_map, line_range):
     return node_list
 
 
+def merge_ast_script(ast_script):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    merged_ast_script = list()
+    inserted_node_list = list()
+    for script_line in ast_script:
+        if "Insert" in script_line:
+            node_id_1 = int(((script_line.split(" into ")[0]).split("(")[1]).split(")")[0])
+            node_id_2 = int(((script_line.split(" into ")[1]).split("(")[1]).split(")")[0])
+            if node_id_2 not in inserted_node_list:
+                merged_ast_script.append(script_line)
+            inserted_node_list.append(node_id_1)
+    return merged_ast_script
+
+
+def filter_ast_script(ast_script, line_range, ast_map_a):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    filtered_ast_script = list()
+    line_range_start, line_range_end = line_range
+    line_numbers = set(range(int(line_range_start), int(line_range_end) + 1))
+    merged_ast_script = merge_ast_script(ast_script)
+    for script_line in merged_ast_script:
+        if "Insert" in script_line:
+            node_id_b = int(((script_line.split(" into ")[1]).split("(")[1]).split(")")[0])
+            node_id_a = mapping_ba[node_id_b]
+            node_a = get_ast_node_by_id(ast_map_a, node_id_a)
+            node_line_start = int(node_a['start line'])
+            node_line_end = int(node_a['end line']) + 1
+            node_line_numbers = set(range(node_line_start, node_line_end))
+            intersection = line_numbers.intersection(node_line_numbers)
+            if intersection:
+                filtered_ast_script.append(script_line)
+    return filtered_ast_script
+
+
 def transplant_code():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    global mapping_ba
     partitioned_diff = dict()
-    for diff_loc in Differ.diff_info.keys():
-        source_path_a, line_number_a = diff_loc.split(":")
-        if source_path_a not in partitioned_diff.keys():
-            partitioned_diff[source_path_a] = dict()
-        partitioned_diff[source_path_a][line_number_a] = Differ.diff_info[diff_loc]
-
-    for source_path_a in partitioned_diff:
-        source_path_b = str(source_path_a).replace(Common.VALUE_PATH_A, Common.VALUE_PATH_B)
-        ast_script = Differ.get_ast_script(source_path_a, source_path_b)
-        print(ast_script)
-        exit()
+    # for diff_loc in Differ.diff_info.keys():
+    #     source_path_a, line_number_a = diff_loc.split(":")
+    #     if source_path_a not in partitioned_diff.keys():
+    #         partitioned_diff[source_path_a] = dict()
+    #     partitioned_diff[source_path_a][line_number_a] = Differ.diff_info[diff_loc]
+    #
+    # for source_path_a in partitioned_diff:
+    #
+    #     source_path_b = str(source_path_a).replace(Common.VALUE_PATH_A, Common.VALUE_PATH_B)
+    #     ast_script = Differ.get_ast_script(source_path_a, source_path_b)
+    #     ast_map_a = Generator.generate_json(source_path_a)
+    #     ast_map_b = Generator.generate_json(source_path_b)
 
     for diff_loc in Differ.diff_info.keys():
         Output.normal(diff_loc)
@@ -234,6 +313,20 @@ def transplant_code():
         diff_info = Differ.diff_info[diff_loc]
         operation = diff_info['operation']
         source_path_a, line_number_a = diff_loc.split(":")
+        source_path_b = str(source_path_a).replace(Common.VALUE_PATH_A, Common.VALUE_PATH_B)
+        ast_script = Differ.get_ast_script(source_path_a, source_path_b)
+        ast_map_a = Generator.get_ast_json(source_path_a)
+        ast_map_b = Generator.get_ast_json(source_path_b)
+        mapping_ba = Differ.get_ast_mapping(source_path_a, source_path_b)
+        filtered_ast_script = filter_ast_script(ast_script,(line_number_a, line_number_a) , ast_map_a)
+        if operation == 'insert':
+            for insertion_loc in insertion_loc_list:
+                Output.normal("\t" + insertion_loc)
+                source_path_c, line_number_c = insertion_loc.split(":")
+                start_line_b, end_line_b = diff_info['new-lines']
+                for i in range(int(start_line_b), int(end_line_b + 1)):
+                    ast_node_b = get_ast_node()
+
 
         for insertion_loc in insertion_loc_list:
             Output.normal("\t" + insertion_loc)
@@ -243,7 +336,7 @@ def transplant_code():
             var_map = Mapper.generate_mapping(Mapper.var_expr_map_a, sym_expr_map)
 
             if operation == 'insert':
-                source_path_b = str(source_path_a).replace(Common.VALUE_PATH_A, Common.VALUE_PATH_B)
+
                 ast_map_b = Generator.generate_json(source_path_b)
                 start_line, end_line = diff_info['new-lines']
                 original_patch = ""

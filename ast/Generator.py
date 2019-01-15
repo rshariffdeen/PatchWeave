@@ -9,8 +9,9 @@ import Output
 import Logger
 import sys
 import Common
+import json
 
-APP_DIFF = "./tools/ast/ast-diff "
+APP_DIFF = "crochet-diff "
 APP_FORMAT_LLVM = "clang-format -style=LLVM "
 
 interesting = ["VarDecl", "DeclRefExpr", "ParmVarDecl", "TypedefDecl",
@@ -38,6 +39,15 @@ def ast_dump(file_path, output_path, is_header=False):
     dump_command += " 2> output/errors_AST_dump > " + output_path
     a = execute_command(dump_command)
     Output.warning(a[0])
+
+
+def get_ast_json(file_path):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    json_file = file_path + ".AST"
+    ast_dump(file_path, json_file)
+    with open(json_file, 'r') as f:
+        ast_json = json.load(f)
+    return ast_json['root']
 
 
 def generate_json(file_path):

@@ -227,12 +227,30 @@ def generate_ast_map(source_a, source_b):
         error_exit(exception, "Unexpected error in generate_ast_map.")
 
 
-def generate_ast_script(source_a, source_b):
+def generate_ast_script(source_a, source_b, dump_matches=False):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    generate_command = APP_AST_DIFF + " -s=" + AST_DIFF_SIZE  + " " + \
+    extra_args = " "
+    if dump_matches:
+        extra_args = " -dump-matches "
+
+    generate_command = APP_AST_DIFF + " -s=" + AST_DIFF_SIZE  + extra_args + \
                        source_a + " " + source_b  + " 2> " + FILE_AST_DIFF_ERROR + \
                        " > " + FILE_AST_SCRIPT
     execute_command(generate_command)
+
+
+def get_ast_mapping(source_a, source_b):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    generate_ast_script(source_a, source_b, True)
+    mapping = dict()
+    with open(FILE_AST_SCRIPT, "r") as script_file:
+        script_lines = script_file.readlines()
+        for script_line in script_lines:
+            if "Match" in script_line:
+                node_id_a = int(((script_line.split(" to ")[0]).split("(")[1]).split(")")[0])
+                node_id_b = int(((script_line.split(" to ")[1]).split("(")[1]).split(")")[0])
+                mapping[node_id_b] = node_id_a
+    return mapping
 
 
 def get_ast_script(source_a, source_b):
