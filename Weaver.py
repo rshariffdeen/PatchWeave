@@ -119,7 +119,7 @@ def estimate_divergent_point(byte_list):
         if path in candidate_list:
             estimated_loc = path
             break
-    print("\t\testimated loc:\n\t\t" + str(estimated_loc))
+    # print("\t\testimated loc:\n\t\t" + str(estimated_loc))
     # filtered_list = list()
     # for i in range(n, length):
     #     if list_trace_c[i] not in filtered_list:
@@ -189,14 +189,18 @@ def insert_patch(patch_code, source_path, line_number):
         source_file.writelines(content)
 
 
-def get_fun_node(ast_map, line_number):
+def get_fun_node(ast_node, line_number, source_path):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-
-    for node in ast_map:
-        node_start_line = node['start line']
-        node_end_line = node['end line']
-        if line_number in range(node_start_line, node_end_line + 1):
-            return node
+    file_name = source_path.split("/")[-1]
+    for child_node in ast_node['children']:
+        child_node_type = child_node['type']
+        if child_node_type == "FunctionDecl":
+            function_source = child_node['file']
+            if file_name in function_source:
+                child_node_start_line = int(child_node['start line'])
+                child_node_end_line = int(child_node['end line'])
+                if line_number in range(child_node_start_line, child_node_end_line + 1):
+                    return child_node
     return None
 
 
@@ -226,21 +230,23 @@ def get_ast_node_by_id(ast_node, find_id):
     return get_ast_node_by_id(prev_child_node, int(find_id))
 
 
-def get_ast_node_by_line(ast_map, line_number, node_id=0):
+def get_ast_node_position(ast_node, line_number):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    for node in ast_map:
-        node_start_line = node['start line']
-        node_end_line = node['end line']
-        if node_start_line == node_end_line:
-            if node_id != 0:
-                for child in node['children']:
-                    if child['id'] == node_id:
-                        return child
-            else:
-                return node
-        elif line_number in range(node_start_line, node_end_line + 1):
-            return get_ast_node_by_line(node, line_number, node_id)
-    return None
+    node_id = ast_node['id']
+    node_type = ast_node['type']
+    child_index = 0
+    line_number = int(line_number)
+    prev_child_node = ""
+    for child_node in ast_node['children']:
+        child_node_start_line = int(child_node['start line'])
+        child_node_end_line = int(child_node['end line'])
+        if child_node_start_line == line_number:
+            return str(node_type) + "(" + str(node_id) + ") at " + str(child_index)
+        elif child_node_start_line > line_number:
+            return get_ast_node_position(prev_child_node, line_number)
+        prev_child_node = child_node
+        child_index += 1
+    return get_ast_node_position(prev_child_node, line_number)
 
 
 def get_ast_node_list(ast_map, line_range):
@@ -268,7 +274,7 @@ def merge_ast_script(ast_script):
     return merged_ast_script
 
 
-def filter_ast_script(ast_script, line_range, ast_map_a):
+def filter_ast_script(ast_script, line_range, ast_map):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     filtered_ast_script = list()
     line_range_start, line_range_end = line_range
@@ -276,11 +282,10 @@ def filter_ast_script(ast_script, line_range, ast_map_a):
     merged_ast_script = merge_ast_script(ast_script)
     for script_line in merged_ast_script:
         if "Insert" in script_line:
-            node_id_b = int(((script_line.split(" into ")[1]).split("(")[1]).split(")")[0])
-            node_id_a = mapping_ba[node_id_b]
-            node_a = get_ast_node_by_id(ast_map_a, node_id_a)
-            node_line_start = int(node_a['start line'])
-            node_line_end = int(node_a['end line']) + 1
+            node_id_b = int(((script_line.split(" into ")[0]).split("(")[1]).split(")")[0])
+            node_b = get_ast_node_by_id(ast_map, node_id_b)
+            node_line_start = int(node_b['start line'])
+            node_line_end = int(node_b['end line']) + 1
             node_line_numbers = set(range(node_line_start, node_line_end))
             intersection = line_numbers.intersection(node_line_numbers)
             if intersection:
@@ -309,7 +314,6 @@ def transplant_code():
         Output.normal(diff_loc)
         byte_list = compute_common_bytes(diff_loc)
         estimate_loc = estimate_divergent_point(byte_list)
-        insertion_loc_list = identify_insertion_points(estimate_loc)
         diff_info = Differ.diff_info[diff_loc]
         operation = diff_info['operation']
         source_path_a, line_number_a = diff_loc.split(":")
@@ -318,15 +322,46 @@ def transplant_code():
         ast_map_a = Generator.get_ast_json(source_path_a)
         ast_map_b = Generator.get_ast_json(source_path_b)
         mapping_ba = Differ.get_ast_mapping(source_path_a, source_path_b)
-        filtered_ast_script = filter_ast_script(ast_script,(line_number_a, line_number_a) , ast_map_a)
         if operation == 'insert':
+            start_line_b, end_line_b = diff_info['new-lines']
+            filtered_ast_script = filter_ast_script(ast_script, (start_line_b, end_line_b), ast_map_b)
+            insertion_loc_list = identify_insertion_points(estimate_loc)
+            ast_script_c = list()
             for insertion_loc in insertion_loc_list:
-                Output.normal("\t" + insertion_loc)
+                Output.normal("\t\t" + insertion_loc)
                 source_path_c, line_number_c = insertion_loc.split(":")
-                start_line_b, end_line_b = diff_info['new-lines']
-                for i in range(int(start_line_b), int(end_line_b + 1)):
-                    ast_node_b = get_ast_node()
+                ast_map_c = Generator.get_ast_json(source_path_c)
+                print(insertion_loc)
+                function_node = get_fun_node(ast_map_c, int(line_number_c), source_path_c)
+                position_c = get_ast_node_position(function_node, int(line_number_c))
+                for script_line in filtered_ast_script:
+                    inserting_node = script_line.split(" into ")[0]
+                    translated_command = inserting_node + " into " + position_c
+                    ast_script_c.append(translated_command)
+        elif operation == 'modify':
+            start_line_b, end_line_b = diff_info['new-lines']
+            start_line_a, end_line_a = diff_info['old-lines']
+            filtered_ast_script_b = filter_ast_script(ast_script, (start_line_b, end_line_b), ast_map_b)
+            print(filtered_ast_script_b)
+            exit()
+            filtered_ast_script_a = filter_ast_script(ast_script, (start_line_a, end_line_a), ast_map_a)
 
+            insertion_loc_list = identify_insertion_points(estimate_loc)
+            ast_script_c = list()
+            for insertion_loc in insertion_loc_list:
+                Output.normal("\t\t" + insertion_loc)
+                source_path_c, line_number_c = insertion_loc.split(":")
+                ast_map_c = Generator.get_ast_json(source_path_c)
+                print(insertion_loc)
+                function_node = get_fun_node(ast_map_c, int(line_number_c), source_path_c)
+                position_c = get_ast_node_position(function_node, int(line_number_c))
+                for script_line in filtered_ast_script:
+                    inserting_node = script_line.split(" into ")[0]
+                    translated_command = inserting_node + " into " + position_c
+                    ast_script_c.append(translated_command)
+
+        else:
+            continue
 
         for insertion_loc in insertion_loc_list:
             Output.normal("\t" + insertion_loc)
