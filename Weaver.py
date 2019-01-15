@@ -189,8 +189,43 @@ def insert_patch(patch_code, source_path, line_number):
         source_file.writelines(content)
 
 
+def get_fun_node(ast_map, line_number):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+
+    for node in ast_map:
+        node_start_line = node['start line']
+        node_end_line = node['end line']
+        if line_number in range(node_start_line, node_end_line + 1):
+            return node
+    return None
+
+
+def get_ast_node_list(ast_map, line_range):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    line_start, line_end = line_range
+    node_list = list()
+
+    for line_number in range(line_start, line_end + 1):
+        func_node = get_fun_node(ast_map, line_number)
+
+    return node_list
+
+
 def transplant_code():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    partitioned_diff = dict()
+    for diff_loc in Differ.diff_info.keys():
+        source_path_a, line_number_a = diff_loc.split(":")
+        if source_path_a not in partitioned_diff.keys():
+            partitioned_diff[source_path_a] = dict()
+        partitioned_diff[source_path_a][line_number_a] = Differ.diff_info[diff_loc]
+
+    for source_path_a in partitioned_diff:
+        source_path_b = str(source_path_a).replace(Common.VALUE_PATH_A, Common.VALUE_PATH_B)
+        ast_script = Differ.get_ast_script(source_path_a, source_path_b)
+        print(ast_script)
+        exit()
+
     for diff_loc in Differ.diff_info.keys():
         Output.normal(diff_loc)
         byte_list = compute_common_bytes(diff_loc)
@@ -199,6 +234,7 @@ def transplant_code():
         diff_info = Differ.diff_info[diff_loc]
         operation = diff_info['operation']
         source_path_a, line_number_a = diff_loc.split(":")
+
         for insertion_loc in insertion_loc_list:
             Output.normal("\t" + insertion_loc)
             source_path_c, line_number_c = insertion_loc.split(":")
@@ -208,7 +244,7 @@ def transplant_code():
 
             if operation == 'insert':
                 source_path_b = str(source_path_a).replace(Common.VALUE_PATH_A, Common.VALUE_PATH_B)
-                print(diff_info)
+                ast_map_b = Generator.generate_json(source_path_b)
                 start_line, end_line = diff_info['new-lines']
                 original_patch = ""
                 for i in range(int(start_line), int(end_line + 1)):

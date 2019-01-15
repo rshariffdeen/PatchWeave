@@ -21,6 +21,12 @@ FILE_DIFF_C = Common.DIRECTORY_OUTPUT + "/diff_C"
 FILE_DIFF_H = Common.DIRECTORY_OUTPUT + "/diff_H"
 FILE_DIFF_ALL = Common.DIRECTORY_OUTPUT + "/diff_all"
 FILE_TEMP_DIFF = Common.DIRECTORY_OUTPUT + "/temp_diff"
+FILE_AST_SCRIPT = Common.DIRECTORY_OUTPUT + "/ast-script"
+FILE_AST_DIFF_ERROR = Common.DIRECTORY_OUTPUT + "/errors_ast_diff"
+
+APP_AST_DIFF = "crochet-diff"
+AST_DIFF_SIZE = "1000"
+
 
 diff_info = dict()
 
@@ -219,6 +225,22 @@ def generate_ast_map(source_a, source_b):
         execute_command(command, False)
     except Exception as exception:
         error_exit(exception, "Unexpected error in generate_ast_map.")
+
+
+def generate_ast_script(source_a, source_b):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    generate_command = APP_AST_DIFF + " -s=" + AST_DIFF_SIZE  + " " + \
+                       source_a + " " + source_b  + " 2> " + FILE_AST_DIFF_ERROR + \
+                       " > " + FILE_AST_SCRIPT
+    execute_command(generate_command)
+
+
+def get_ast_script(source_a, source_b):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    generate_ast_script(source_a, source_b)
+    with open(FILE_AST_SCRIPT, "r") as script_file:
+        script_lines = script_file.readlines()
+        return script_lines
 
 
 def id_from_string(simplestring):

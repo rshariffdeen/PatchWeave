@@ -58,12 +58,12 @@ def read_conf():
             Common.VALUE_PATH_C = configuration.replace(Common.CONF_PATH_C, '')
         elif Common.CONF_EXPLOIT_PREPARE in configuration:
             Common.VALUE_EXPLOIT_PREPARE = configuration.replace(Common.CONF_EXPLOIT_PREPARE, '')
-        elif Common.CONF_BUILD_A in configuration:
-            Common.VALUE_BUILD_SCRIPT_PATH_A = configuration.replace(Common.CONF_BUILD_A, '')
-        elif Common.CONF_BUILD_B in configuration:
-            Common.VALUE_BUILD_SCRIPT_PATH_A = configuration.replace(Common.CONF_BUILD_B, '')
-        elif Common.CONF_BUILD_C in configuration:
-            Common.VALUE_BUILD_SCRIPT_PATH_C = configuration.replace(Common.CONF_BUILD_C, '')
+        elif Common.CONF_FLAGS_A in configuration:
+            Common.VALUE_BUILD_FLAGS_A = configuration.replace(Common.CONF_FLAGS_A, '')
+        elif Common.CONF_FLAGS_B in configuration:
+            Common.VALUE_BUILD_FLAGS_B = configuration.replace(Common.CONF_FLAGS_B, '')
+        elif Common.CONF_FLAGS_C in configuration:
+            Common.VALUE_BUILD_FLAGS_C = configuration.replace(Common.CONF_FLAGS_C, '')
 
 
 def initialize():

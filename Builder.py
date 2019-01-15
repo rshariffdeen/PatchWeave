@@ -119,7 +119,7 @@ def build_llvm():
     C_FLAGS = "'-g -O0 -static'"
     config_all()
     CXX_FLAGS = "'-g -O0 -static -DNDEBUG -ftrapv'"
-    C_FLAGS = "'-g -O0 -static -DNDEBUG -ftrapv -L/home/rshariffdeen/workspace/klee/build-rshariffdeen/lib -lkleeRuntest'"
+    C_FLAGS = "'-g -O0 -static -ftrapv -L/home/rshariffdeen/workspace/klee/build-rshariffdeen/lib -lkleeRuntest'"
     build_all()
 
 
