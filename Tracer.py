@@ -184,8 +184,8 @@ def generate_trace_target():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.normal(Common.VALUE_PATH_C)
 
-    binary_path, binary_name = extract_bitcode(Common.VALUE_PATH_C + Common.VALUE_EXPLOIT_C.split(" ")[0])
-    trace_exploit(" ".join(Common.VALUE_EXPLOIT_C.split(" ")[1:]), binary_path, binary_name, FILE_TRACE_LOG_C)
+    # binary_path, binary_name = extract_bitcode(Common.VALUE_PATH_C + Common.VALUE_EXPLOIT_C.split(" ")[0])
+    # trace_exploit(" ".join(Common.VALUE_EXPLOIT_C.split(" ")[1:]), binary_path, binary_name, FILE_TRACE_LOG_C)
     list_trace_c = collect_trace(FILE_TRACE_LOG_C, Common.VALUE_PATH_C)
     crash_location_c = extract_crash_point(FILE_TRACE_LOG_C)
     stack_c = extract_stack_info(FILE_TRACE_LOG_C)
