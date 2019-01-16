@@ -25,7 +25,7 @@ FILE_AST_SCRIPT = Common.DIRECTORY_OUTPUT + "/ast-script"
 FILE_AST_DIFF_ERROR = Common.DIRECTORY_OUTPUT + "/errors_ast_diff"
 
 APP_AST_DIFF = "crochet-diff"
-AST_DIFF_SIZE = "1000"
+AST_DIFF_SIZE = "10"
 
 
 diff_info = dict()

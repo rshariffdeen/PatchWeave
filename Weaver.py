@@ -370,14 +370,14 @@ def transplant_code():
                     inserting_node = script_line.split(" into ")[0]
                     translated_command = inserting_node + " into " + position_c
                     ast_script_c.append(translated_command)
+                print(ast_script_c)
         elif operation == 'modify':
             start_line_b, end_line_b = diff_info['new-lines']
             start_line_a, end_line_a = diff_info['old-lines']
             filtered_ast_script_b = filter_ast_script(ast_script, (start_line_b, end_line_b), ast_map_b)
 
             filtered_ast_script_a = filter_ast_script(ast_script, (start_line_a, end_line_a), ast_map_a)
-            print(filtered_ast_script_a)
-            exit()
+            filtered_ast_script = list(set(filtered_ast_script_b + filtered_ast_script_a))
             insertion_loc_list = identify_insertion_points(estimate_loc)
             ast_script_c = list()
             for insertion_loc in insertion_loc_list:
@@ -388,34 +388,36 @@ def transplant_code():
                 function_node = get_fun_node(ast_map_c, int(line_number_c), source_path_c)
                 position_c = get_ast_node_position(function_node, int(line_number_c))
                 for script_line in filtered_ast_script:
-                    inserting_node = script_line.split(" into ")[0]
-                    translated_command = inserting_node + " into " + position_c
+                    translated_command = script_line
+                    if "Insert" in script_line:
+                        inserting_node = script_line.split(" into ")[0]
+                        translated_command = inserting_node + " into " + position_c
                     ast_script_c.append(translated_command)
-
+                print(ast_script_c)
         else:
             continue
-
-        for insertion_loc in insertion_loc_list:
-            Output.normal("\t" + insertion_loc)
-            source_path_c, line_number_c = insertion_loc.split(":")
-            Mapper.generate_symbolic_expressions(source_path_c, line_number_c)
-            sym_expr_map = Mapper.collect_symbolic_expressions(FILE_VAR_EXPR_LOG)
-            var_map = Mapper.generate_mapping(Mapper.var_expr_map_a, sym_expr_map)
-
-            if operation == 'insert':
-
-                ast_map_b = Generator.generate_json(source_path_b)
-                start_line, end_line = diff_info['new-lines']
-                original_patch = ""
-                for i in range(int(start_line), int(end_line + 1)):
-                    original_patch += get_code(source_path_b, int(i)) + "\n"
-                print(original_patch)
-                translated_patch = translate_patch(original_patch, var_map)
-                print(translated_patch)
-                insert_patch(translated_patch, source_path_c, line_number_c)
-
-            elif operation == 'delete':
-                original_patch = get_code(source_path_a, int(line_number_a))
+        #
+        # for insertion_loc in insertion_loc_list:
+        #     Output.normal("\t" + insertion_loc)
+        #     source_path_c, line_number_c = insertion_loc.split(":")
+        #     Mapper.generate_symbolic_expressions(source_path_c, line_number_c)
+        #     sym_expr_map = Mapper.collect_symbolic_expressions(FILE_VAR_EXPR_LOG)
+        #     var_map = Mapper.generate_mapping(Mapper.var_expr_map_a, sym_expr_map)
+        #
+        #     if operation == 'insert':
+        #
+        #         ast_map_b = Generator.generate_json(source_path_b)
+        #         start_line, end_line = diff_info['new-lines']
+        #         original_patch = ""
+        #         for i in range(int(start_line), int(end_line + 1)):
+        #             original_patch += get_code(source_path_b, int(i)) + "\n"
+        #         print(original_patch)
+        #         translated_patch = translate_patch(original_patch, var_map)
+        #         print(translated_patch)
+        #         insert_patch(translated_patch, source_path_c, line_number_c)
+        #
+        #     elif operation == 'delete':
+        #         original_patch = get_code(source_path_a, int(line_number_a))
 
 
 def get_function_range_from_trace(function_list):
