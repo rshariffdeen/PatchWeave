@@ -16,6 +16,10 @@ import Concolic
 import Generator
 import Tracer
 
+KLEE_SYMBOLIC_ENGINE = "klee "
+SYMBOLIC_ARGUMENTS = "--no-exit-on-error --libc=uclibc --posix-runtime --external-calls=all --only-replay-seeds --seed-out=$KTEST"
+TOOL_KLEE_INSTRUMENTATION = Common.DIRECTORY_TOOLS + "/gizmo/gizmo"
+FILE_TEMP_INSTRUMENTED = Common.DIRECTORY_OUTPUT + "/temp-instrumented"
 
 var_expr_map_a = dict()
 var_expr_map_b = dict()
@@ -39,7 +43,22 @@ def collect_symbolic_expressions(trace_file_path):
 def generate_symbolic_expressions(source_path, line_number):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.normal("\t\tgenerating symbolic expressions")
-
+    source_file_name = str(source_path).split("/")[-1]
+    source_directory = "/".join(str(source_path).split("/")[:-1])
+    instrument_command = "cd " + source_directory + ";"
+    instrument_command += TOOL_KLEE_INSTRUMENTATION + " --line-number=" + str(line_number) + \
+                        " -transformation=var -source=" + source_file_name + " > " + FILE_TEMP_INSTRUMENTED
+    execute_command(instrument_command)
+    exit()
+    #
+    # generate_command = "cd " + binary_path + ";"
+    # generate_command += SYMBOLIC_ENGINE + SYMBOLIC_ARGUMENTS.replace("$KTEST",
+    #                                                               FILE_SYMBOLIC_POC) + " " + binary_name + ".bc " \
+    #                  + binary_arguments.replace("$POC", "A") + " --sym-files 1 " + str(
+    #     VALUE_BIT_SIZE) + "  > " + log_path + \
+    #                  " 2>&1"
+    # # print(trace_command)
+    # execute_command(trace_command)
 
 def get_model_from_solver(str_formula):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())

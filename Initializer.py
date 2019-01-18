@@ -16,6 +16,7 @@ from Builder import build_normal
 def set_env_value():
     Output.normal("setting environment values")
     os.environ["PYTHONPATH"] = "/home/rshariffdeen/workspace/z3/build/python"
+    execute_command("export PYTHONPATH=/home/rshariffdeen/workspace/z3/build/python")
 
 
 def load_values():

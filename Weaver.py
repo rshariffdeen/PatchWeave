@@ -363,13 +363,16 @@ def transplant_code():
                 Output.normal("\t\t" + insertion_loc)
                 source_path_c, line_number_c = insertion_loc.split(":")
                 ast_map_c = Generator.get_ast_json(source_path_c)
-                print(insertion_loc)
+                # print(insertion_loc)
                 function_node = get_fun_node(ast_map_c, int(line_number_c), source_path_c)
                 position_c = get_ast_node_position(function_node, int(line_number_c))
                 for script_line in filtered_ast_script:
                     inserting_node = script_line.split(" into ")[0]
                     translated_command = inserting_node + " into " + position_c
                     ast_script_c.append(translated_command)
+                Mapper.generate_symbolic_expressions(source_path_c, line_number_c)
+                sym_expr_map = Mapper.collect_symbolic_expressions(FILE_VAR_EXPR_LOG)
+                var_map = Mapper.generate_mapping(Mapper.var_expr_map_a, sym_expr_map)
                 print(ast_script_c)
         elif operation == 'modify':
             start_line_b, end_line_b = diff_info['new-lines']
@@ -393,6 +396,9 @@ def transplant_code():
                         inserting_node = script_line.split(" into ")[0]
                         translated_command = inserting_node + " into " + position_c
                     ast_script_c.append(translated_command)
+                Mapper.generate_symbolic_expressions(source_path_c, line_number_c)
+                sym_expr_map = Mapper.collect_symbolic_expressions(FILE_VAR_EXPR_LOG)
+                var_map = Mapper.generate_mapping(Mapper.var_expr_map_a, sym_expr_map)
                 print(ast_script_c)
         else:
             continue
