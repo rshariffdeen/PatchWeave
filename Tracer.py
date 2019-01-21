@@ -64,6 +64,7 @@ def run_exploit(exploit, project_path, poc_path, output_file):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     exploit = str(exploit).replace('$POC', poc_path)
     exploit_command = project_path + exploit + " > " + output_file
+    # print(exploit_command)
     return execute_command(exploit_command)
 
 

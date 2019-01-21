@@ -238,6 +238,8 @@ def get_ast_node_position(ast_node, line_number):
     line_number = int(line_number)
     prev_child_node = ""
     for child_node in ast_node['children']:
+        child_node_id = int(child_node['id'])
+        child_node_type = str(child_node['type'])
         child_node_start_line = int(child_node['start line'])
         child_node_end_line = int(child_node['end line'])
         if child_node_start_line == line_number:
@@ -372,6 +374,8 @@ def transplant_code():
                     ast_script_c.append(translated_command)
                 Mapper.generate_symbolic_expressions(source_path_c, line_number_c)
                 sym_expr_map = Mapper.collect_symbolic_expressions(FILE_VAR_EXPR_LOG)
+                print(sym_expr_map)
+                exit()
                 var_map = Mapper.generate_mapping(Mapper.var_expr_map_a, sym_expr_map)
                 print(ast_script_c)
         elif operation == 'modify':
@@ -390,6 +394,8 @@ def transplant_code():
                 print(insertion_loc)
                 function_node = get_fun_node(ast_map_c, int(line_number_c), source_path_c)
                 position_c = get_ast_node_position(function_node, int(line_number_c))
+                print(position_c)
+                print("nodifying")
                 for script_line in filtered_ast_script:
                     translated_command = script_line
                     if "Insert" in script_line:
@@ -397,7 +403,10 @@ def transplant_code():
                         translated_command = inserting_node + " into " + position_c
                     ast_script_c.append(translated_command)
                 Mapper.generate_symbolic_expressions(source_path_c, line_number_c)
+
                 sym_expr_map = Mapper.collect_symbolic_expressions(FILE_VAR_EXPR_LOG)
+                print(sym_expr_map)
+                exit()
                 var_map = Mapper.generate_mapping(Mapper.var_expr_map_a, sym_expr_map)
                 print(ast_script_c)
         else:
