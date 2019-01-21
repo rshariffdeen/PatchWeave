@@ -23,6 +23,14 @@ def load_values():
     Common.Project_A = Project.Project(Common.VALUE_PATH_A, "Pa", Common.VALUE_EXPLOIT_A)
     Common.Project_B = Project.Project(Common.VALUE_PATH_B, "Pb")
     Common.Project_C = Project.Project(Common.VALUE_PATH_C, "Pc", Common.VALUE_EXPLOIT_C)
+    Common.Project_D = Project.Project(Common.VALUE_PATH_C + "-patch", "Pd")
+
+
+def create_patch_dir():
+    patch_dir = Common.VALUE_PATH_C + "-patch"
+    if not os.path.isdir(patch_dir):
+        create_command = "cp -rf " + Common.VALUE_PATH_C + " " + Common.VALUE_PATH_C + "-patch"
+        execute_command(create_command)
 
 
 def read_conf():
@@ -71,8 +79,8 @@ def initialize():
     Output.title("Initializing project for Transplantation")
     Output.sub_title("loading configuration")
     read_conf()
+    create_patch_dir()
     load_values()
     Output.sub_title("set environment")
     set_env_value()
     Output.sub_title("cleaning residue files")
-    #build_normal()

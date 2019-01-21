@@ -204,18 +204,23 @@ def generate_symbolic_expressions(source_path, line_number):
     Output.normal("\t\tgenerating symbolic expressions")
     source_file_name = str(source_path).split("/")[-1]
     source_directory = "/".join(str(source_path).split("/")[:-1])
+
+    binary_path = Common.VALUE_PATH_C + Common.VALUE_EXPLOIT_C.split(" ")[0]
+    binary_name = str(binary_path).split("/")[-1]
+    binary_directory = "/".join(str(binary_path).split("/")[:-1])
+    backup_command = "cp " + binary_path + "/" + binary_name + ".bc " + binary_path + "/" + binary_name + ".bc.bk"
+    execute_command(backup_command)
+
     instrument_code_for_klee(source_path, line_number)
     build_instrumented_code(source_directory)
-
-    binary_path, binary_name = Concolic.extract_bitcode(Common.VALUE_PATH_C + Common.VALUE_EXPLOIT_C.split(" ")[0])
-    sym_file_path = Concolic.concolic_execution(" ".join(Common.VALUE_EXPLOIT_C.split(" ")[1:]), binary_path, binary_name, Concolic.FILE_KLEE_LOG_C, True)
-    copy_command = "cp " + sym_file_path + " " + Concolic.FILE_SYM_PATH_C
-    execute_command(copy_command)
-    sym_path_a = Concolic.collect_symbolic_path(Concolic.FILE_KLEE_LOG_C, Common.VALUE_PATH_C)
-    var_expr_map_c = collect_symbolic_expressions(Concolic.FILE_KLEE_LOG_C)
+    Concolic.extract_bitcode(Common.VALUE_PATH_C + Common.VALUE_EXPLOIT_C.split(" ")[0])
+    Concolic.concolic_execution(" ".join(Common.VALUE_EXPLOIT_C.split(" ")[1:]), binary_path, binary_name, Weaver.FILE_VAR_EXPR_LOG, True)
+    var_expr_map_c = collect_symbolic_expressions(Weaver.FILE_VAR_EXPR_LOG)
     print(var_expr_map_c)
+    restore_command = "cp " + binary_path + "/" + binary_name + ".bc.bk " + binary_path + "/" + binary_name + ".bc"
+    execute_command(restore_command)
     reset_command = "cd " + source_directory + ";git reset --hard HEAD"
-    # execute_command(reset_command)
+    execute_command(reset_command)
     exit()
     #
     # generate_command = "cd " + binary_path + ";"

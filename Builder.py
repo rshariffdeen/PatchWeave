@@ -69,6 +69,8 @@ def build_all():
     build_project(Common.Project_B.path)
     Output.normal("\t" + Common.Project_C.path)
     build_project(Common.Project_C.path)
+    Output.normal("\t" + Common.Project_D.path)
+    build_project(Common.Project_D.path)
 
 
 def config_all(is_llvm=False):
@@ -79,6 +81,8 @@ def config_all(is_llvm=False):
     config_project(Common.Project_B.path, is_llvm)
     Output.normal("\t" + Common.Project_C.path)
     config_project(Common.Project_C.path, is_llvm)
+    Output.normal("\t" + Common.Project_D.path)
+    config_project(Common.Project_D.path, is_llvm)
 
 
 def build_normal():
@@ -140,6 +144,8 @@ def restore_all():
     restore_project(Common.Project_B.path)
     Output.normal("\t" + Common.Project_C.path)
     restore_project(Common.Project_C.path)
+    Output.normal("\t" + Common.Project_D.path)
+    restore_project(Common.Project_D.path)
 
 
 def clean_project(project_path):
@@ -159,3 +165,5 @@ def clean_all():
     Output.normal("\t" + Common.Project_C.path)
     clean_project(Common.Project_C.path)
 
+    Output.normal("\t" + Common.Project_D.path)
+    clean_project(Common.Project_D.path)

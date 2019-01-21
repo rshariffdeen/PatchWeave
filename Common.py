@@ -5,6 +5,8 @@ import os
 Project_A = None
 Project_B = None
 Project_C = None
+Project_D = None
+
 DEBUG = False
 PROJECT_A_FUNCTION_LIST = ""
 PROJECT_B_FUNCTION_LIST = ""
