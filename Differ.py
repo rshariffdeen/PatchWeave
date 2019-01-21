@@ -68,6 +68,11 @@ def extract_h_file_list():
             Output.normal("\t\t\t" + h_file)
 
 
+def extract_var_name_list():
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    Output.normal("\textracting variables in diff...")
+
+
 def extract_function_name_list():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.normal("\textracting changed function names...")
@@ -164,6 +169,7 @@ def generate_diff():
     extract_h_file_list()
     extract_c_file_list()
     extract_function_name_list()
+    extract_var_name_list()
 
 
 def generate_vector_for_extension(file_extension, output, is_header=False):

@@ -101,5 +101,6 @@ def extract_bitcode(binary_path):
     binary_name = str(binary_path).split("/")[-1]
     binary_directory = "/".join(str(binary_path).split("/")[:-1])
     extract_command = WLLVM_EXTRACTOR + " " + binary_path
+    # print(extract_command)
     execute_command(extract_command)
     return binary_directory, binary_name

@@ -89,7 +89,7 @@ def instrument_code_for_klee(source_path, line_number):
         source_file.writelines(content)
 
 
-def collect_var_dec_list(ast_node, line_number, source_path):
+def collect_var_dec_list(ast_node, line_number):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     var_list = list()
     child_count = len(ast_node['children'])
@@ -109,11 +109,11 @@ def collect_var_dec_list(ast_node, line_number, source_path):
 
     if child_count:
         for child_node in ast_node['children']:
-            var_list = var_list + list(set(collect_var_dec_list(child_node, line_number, source_path)))
+            var_list = var_list + list(set(collect_var_dec_list(child_node, line_number)))
     return list(set(var_list))
 
 
-def collect_var_ref_list(ast_node, line_number, source_path):
+def collect_var_ref_list(ast_node, line_number):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     var_list = list()
     child_count = len(ast_node['children'])
@@ -152,7 +152,7 @@ def collect_var_ref_list(ast_node, line_number, source_path):
         return var_list
     if child_count:
         for child_node in ast_node['children']:
-            var_list = var_list + list(set(collect_var_ref_list(child_node, line_number, source_path)))
+            var_list = var_list + list(set(collect_var_ref_list(child_node, line_number)))
     return list(set(var_list))
 
 
@@ -176,8 +176,8 @@ def generate_available_variable_list(source_path, line_number):
         child_node_start_line = child_node['start line']
         child_node_end_line = child_node['end line']
         filter_declarations = False
-        child_var_dec_list = collect_var_dec_list(child_node, line_number, source_path)
-        child_var_ref_list = collect_var_ref_list(child_node, line_number, source_path)
+        child_var_dec_list = collect_var_dec_list(child_node, line_number)
+        child_var_ref_list = collect_var_ref_list(child_node, line_number)
 
         if child_node_start_line <= line_number <= child_node_end_line:
             variable_list = list(set(variable_list + child_var_ref_list + child_var_dec_list))
@@ -205,23 +205,22 @@ def generate_symbolic_expressions(source_path, line_number):
     source_file_name = str(source_path).split("/")[-1]
     source_directory = "/".join(str(source_path).split("/")[:-1])
 
-    binary_path = Common.VALUE_PATH_C + Common.VALUE_EXPLOIT_C.split(" ")[0]
+    binary_path = Common.Project_D.path + Common.VALUE_EXPLOIT_C.split(" ")[0]
     binary_name = str(binary_path).split("/")[-1]
     binary_directory = "/".join(str(binary_path).split("/")[:-1])
-    backup_command = "cp " + binary_path + "/" + binary_name + ".bc " + binary_path + "/" + binary_name + ".bc.bk"
-    execute_command(backup_command)
+    # backup_command = "cp " + binary_path + "/" + binary_name + ".bc " + binary_path + "/" + binary_name + ".bc.bk"
+    # execute_command(backup_command)
 
     instrument_code_for_klee(source_path, line_number)
     build_instrumented_code(source_directory)
-    Concolic.extract_bitcode(Common.VALUE_PATH_C + Common.VALUE_EXPLOIT_C.split(" ")[0])
-    Concolic.concolic_execution(" ".join(Common.VALUE_EXPLOIT_C.split(" ")[1:]), binary_path, binary_name, Weaver.FILE_VAR_EXPR_LOG, True)
+    Concolic.extract_bitcode(binary_path)
+    Concolic.concolic_execution(" ".join(Common.VALUE_EXPLOIT_C.split(" ")[1:]), binary_directory, binary_name, Weaver.FILE_VAR_EXPR_LOG, True)
     var_expr_map_c = collect_symbolic_expressions(Weaver.FILE_VAR_EXPR_LOG)
-    print(var_expr_map_c)
-    restore_command = "cp " + binary_path + "/" + binary_name + ".bc.bk " + binary_path + "/" + binary_name + ".bc"
-    execute_command(restore_command)
+    # restore_command = "cp " + binary_directory + "/" + binary_name + ".bc.bk " + binary_directory + "/" + binary_name + ".bc"
+    # execute_command(restore_command)
     reset_command = "cd " + source_directory + ";git reset --hard HEAD"
     execute_command(reset_command)
-    exit()
+
     #
     # generate_command = "cd " + binary_path + ";"
     # generate_command += SYMBOLIC_ENGINE + SYMBOLIC_ARGUMENTS.replace("$KTEST",
@@ -280,6 +279,8 @@ def get_input_bytes_used(sym_expr):
 def generate_mapping(var_map_a, var_map_b):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.normal("\t\tgenerating variable map")
+    print(var_map_a)
+    print(var_map_b)
     for var_a in var_map_a:
         sym_expr = generate_z3_code_for_expr(var_map_a[var_a])
         input_bytes_a = get_input_bytes_used(sym_expr)

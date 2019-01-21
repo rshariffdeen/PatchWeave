@@ -365,6 +365,7 @@ def transplant_code():
                 Output.normal("\t\t" + insertion_loc)
                 source_path_c, line_number_c = insertion_loc.split(":")
                 ast_map_c = Generator.get_ast_json(source_path_c)
+                source_path_d = source_path_c.replace(Common.Project_C.path, Common.Project_D.path)
                 # print(insertion_loc)
                 function_node = get_fun_node(ast_map_c, int(line_number_c), source_path_c)
                 position_c = get_ast_node_position(function_node, int(line_number_c))
@@ -372,17 +373,17 @@ def transplant_code():
                     inserting_node = script_line.split(" into ")[0]
                     translated_command = inserting_node + " into " + position_c
                     ast_script_c.append(translated_command)
-                Mapper.generate_symbolic_expressions(source_path_c, line_number_c)
+                Mapper.generate_symbolic_expressions(source_path_d, line_number_c)
                 sym_expr_map = Mapper.collect_symbolic_expressions(FILE_VAR_EXPR_LOG)
-                print(sym_expr_map)
-                exit()
                 var_map = Mapper.generate_mapping(Mapper.var_expr_map_a, sym_expr_map)
+                print(var_map)
+                exit()
                 print(ast_script_c)
         elif operation == 'modify':
             start_line_b, end_line_b = diff_info['new-lines']
             start_line_a, end_line_a = diff_info['old-lines']
             filtered_ast_script_b = filter_ast_script(ast_script, (start_line_b, end_line_b), ast_map_b)
-
+            print(filtered_ast_script_b)
             filtered_ast_script_a = filter_ast_script(ast_script, (start_line_a, end_line_a), ast_map_a)
             filtered_ast_script = list(set(filtered_ast_script_b + filtered_ast_script_a))
             insertion_loc_list = identify_insertion_points(estimate_loc)
@@ -390,24 +391,22 @@ def transplant_code():
             for insertion_loc in insertion_loc_list:
                 Output.normal("\t\t" + insertion_loc)
                 source_path_c, line_number_c = insertion_loc.split(":")
+                source_path_d = source_path_c.replace(Common.Project_C.path, Common.Project_D.path)
                 ast_map_c = Generator.get_ast_json(source_path_c)
                 print(insertion_loc)
                 function_node = get_fun_node(ast_map_c, int(line_number_c), source_path_c)
                 position_c = get_ast_node_position(function_node, int(line_number_c))
-                print(position_c)
-                print("nodifying")
                 for script_line in filtered_ast_script:
                     translated_command = script_line
                     if "Insert" in script_line:
                         inserting_node = script_line.split(" into ")[0]
                         translated_command = inserting_node + " into " + position_c
                     ast_script_c.append(translated_command)
-                Mapper.generate_symbolic_expressions(source_path_c, line_number_c)
-
+                Mapper.generate_symbolic_expressions(source_path_d, line_number_c)
                 sym_expr_map = Mapper.collect_symbolic_expressions(FILE_VAR_EXPR_LOG)
-                print(sym_expr_map)
-                exit()
                 var_map = Mapper.generate_mapping(Mapper.var_expr_map_a, sym_expr_map)
+                print(var_map)
+                exit()
                 print(ast_script_c)
         else:
             continue
@@ -433,6 +432,11 @@ def transplant_code():
         #
         #     elif operation == 'delete':
         #         original_patch = get_code(source_path_a, int(line_number_a))
+
+
+def get_diff_variable_list(ast_script, ast_node):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+
 
 
 def get_function_range_from_trace(function_list):

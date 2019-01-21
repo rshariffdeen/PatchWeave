@@ -104,7 +104,7 @@ def generate_trace_donor():
     execute_command(copy_command)
     list_trace_a = Tracer.list_trace_a
     sym_path_a = collect_symbolic_path(FILE_KLEE_LOG_A, Common.VALUE_PATH_A)
-    Mapper.var_expr_map_a = Mapper.collect_symbolic_expressions(FILE_KLEE_LOG_A)
+    # Mapper.var_expr_map_a = Mapper.collect_symbolic_expressions(FILE_KLEE_LOG_A)
 
     Output.normal(Common.VALUE_PATH_B)
     binary_path, binary_name = extract_bitcode(Common.VALUE_PATH_B + Common.VALUE_EXPLOIT_A.split(" ")[0])
@@ -113,7 +113,7 @@ def generate_trace_donor():
     execute_command(copy_command)
     list_trace_b = Tracer.list_trace_b
     sym_path_b = collect_symbolic_path(FILE_KLEE_LOG_B, Common.VALUE_PATH_B)
-    Mapper.var_expr_map_b = Mapper.collect_symbolic_expressions(FILE_KLEE_LOG_B)
+    # Mapper.var_expr_map_b = Mapper.collect_symbolic_expressions(FILE_KLEE_LOG_B)
 
 
 def generate_trace_target():
