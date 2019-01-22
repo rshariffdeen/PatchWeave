@@ -96,6 +96,12 @@ def restore_file(file_path, backup_name):
     execute_command(restore_command)
 
 
+def reset_git(source_directory):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    reset_command = "cd " + source_directory + ";git reset --hard HEAD"
+    execute_command(reset_command)
+
+
 def extract_bitcode(binary_path):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     binary_name = str(binary_path).split("/")[-1]

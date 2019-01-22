@@ -74,7 +74,7 @@ def collect_symbolic_path(file_path, project_path):
     return constraints
 
 
-def concolic_execution(binary_arguments, binary_path, binary_name, log_path, print_path=False):
+def concolic_execution(binary_arguments, binary_path, binary_name, log_path, print_path=False, error_exit=True):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     global SYMBOLIC_ARGUMENTS
     Output.normal("\tgenerating symbolic trace for exploit")
@@ -86,7 +86,7 @@ def concolic_execution(binary_arguments, binary_path, binary_name, log_path, pri
     trace_command += SYMBOLIC_ENGINE + sym_args.replace("$KTEST", FILE_SYMBOLIC_POC) + " " + binary_name + ".bc "\
                      + binary_arguments.replace("$POC", "A") + " --sym-files 1 " + str(VALUE_BIT_SIZE) + "  > " + log_path + \
                     " 2>&1"
-    # print(trace_command)
+    print(trace_command)
     execute_command(trace_command)
     sym_file_path = binary_path + "/klee-last/test000001.smt2 "
     return sym_file_path

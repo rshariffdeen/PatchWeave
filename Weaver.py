@@ -22,7 +22,14 @@ target_candidate_function_list = list()
 filtered_trace_list = list()
 mapping_ba = dict()
 
-FILE_VAR_EXPR_LOG = Common.DIRECTORY_OUTPUT + "/log-sym-expr"
+var_expr_map_a = dict()
+var_expr_map_b = dict()
+var_expr_map_c = dict()
+
+
+FILE_VAR_EXPR_LOG_A = Common.DIRECTORY_OUTPUT + "/log-sym-expr-a"
+FILE_VAR_EXPR_LOG_B = Common.DIRECTORY_OUTPUT + "/log-sym-expr-b"
+FILE_VAR_EXPR_LOG_C = Common.DIRECTORY_OUTPUT + "/log-sym-expr-c"
 
 
 def extract_source_list(trace_list):
@@ -329,7 +336,7 @@ def filter_ast_script(ast_script, line_range, ast_node):
 
 def transplant_code():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    global mapping_ba
+    global mapping_ba, var_expr_map_a, var_expr_map_b, var_expr_map_c
     partitioned_diff = dict()
     # for diff_loc in Differ.diff_info.keys():
     #     source_path_a, line_number_a = diff_loc.split(":")
@@ -373,8 +380,8 @@ def transplant_code():
                     inserting_node = script_line.split(" into ")[0]
                     translated_command = inserting_node + " into " + position_c
                     ast_script_c.append(translated_command)
-                Mapper.generate_symbolic_expressions(source_path_d, line_number_c)
-                sym_expr_map = Mapper.collect_symbolic_expressions(FILE_VAR_EXPR_LOG)
+                Mapper.generate_symbolic_expressions(source_path_d, line_number_c, FILE_VAR_EXPR_LOG_C)
+                sym_expr_map = Mapper.collect_symbolic_expressions(FILE_VAR_EXPR_LOG_C)
                 var_map = Mapper.generate_mapping(Mapper.var_expr_map_a, sym_expr_map)
                 print(var_map)
                 exit()
@@ -383,8 +390,14 @@ def transplant_code():
             start_line_b, end_line_b = diff_info['new-lines']
             start_line_a, end_line_a = diff_info['old-lines']
             filtered_ast_script_b = filter_ast_script(ast_script, (start_line_b, end_line_b), ast_map_b)
-            print(filtered_ast_script_b)
+            # print(filtered_ast_script_b)
+            Mapper.generate_symbolic_expressions(source_path_b, end_line_b, FILE_VAR_EXPR_LOG_B)
+            var_expr_map_b = Mapper.collect_symbolic_expressions(FILE_VAR_EXPR_LOG_B)
             filtered_ast_script_a = filter_ast_script(ast_script, (start_line_a, end_line_a), ast_map_a)
+            Mapper.generate_symbolic_expressions(source_path_a, end_line_a, FILE_VAR_EXPR_LOG_A)
+            var_expr_map_a = Mapper.collect_symbolic_expressions(FILE_VAR_EXPR_LOG_A)
+            print(var_expr_map_a)
+            exit()
             filtered_ast_script = list(set(filtered_ast_script_b + filtered_ast_script_a))
             insertion_loc_list = identify_insertion_points(estimate_loc)
             ast_script_c = list()
@@ -402,8 +415,8 @@ def transplant_code():
                         inserting_node = script_line.split(" into ")[0]
                         translated_command = inserting_node + " into " + position_c
                     ast_script_c.append(translated_command)
-                Mapper.generate_symbolic_expressions(source_path_d, line_number_c)
-                sym_expr_map = Mapper.collect_symbolic_expressions(FILE_VAR_EXPR_LOG)
+                Mapper.generate_symbolic_expressions(source_path_d, line_number_c, FILE_VAR_EXPR_LOG_C)
+                sym_expr_map = Mapper.collect_symbolic_expressions(FILE_VAR_EXPR_LOG_C)
                 var_map = Mapper.generate_mapping(Mapper.var_expr_map_a, sym_expr_map)
                 print(var_map)
                 exit()
@@ -436,6 +449,7 @@ def transplant_code():
 
 def get_diff_variable_list(ast_script, ast_node):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+
 
 
 

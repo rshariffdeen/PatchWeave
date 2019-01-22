@@ -5,7 +5,7 @@
 import sys, os
 sys.path.append('./ast/')
 import time
-from Utilities import execute_command, error_exit
+from Utilities import execute_command, error_exit, backup_file, restore_file, extract_bitcode, reset_git
 from six.moves import cStringIO
 from pysmt.smtlib.parser import SmtLibParser
 from pysmt.shortcuts import get_model
@@ -22,10 +22,6 @@ KLEE_SYMBOLIC_ENGINE = "klee "
 SYMBOLIC_ARGUMENTS = "--no-exit-on-error --libc=uclibc --posix-runtime --external-calls=all --only-replay-seeds --seed-out=$KTEST"
 TOOL_KLEE_INSTRUMENTATION = "/home/ridwan/workspace/llvm/llvm-7/build/bin/gizmo"
 FILE_TEMP_INSTRUMENTED = Common.DIRECTORY_OUTPUT + "/temp-instrumented"
-
-var_expr_map_a = dict()
-var_expr_map_b = dict()
-var_expr_map_c = dict()
 
 
 def collect_symbolic_expressions(trace_file_path):
@@ -81,6 +77,7 @@ def instrument_code_for_klee(source_path, line_number):
     insert_code = "\n"
     for variable in variable_list:
         insert_code += "klee_print_expr(\"[var-expr] " + variable + "\", " + variable + ");\n"
+    insert_code += "exit(-1);"
     if os.path.exists(source_path):
         with open(source_path, 'r') as source_file:
             content = source_file.readlines()
@@ -132,15 +129,23 @@ def collect_var_ref_list(ast_node, line_number):
         if node_value == "":
             return var_list
         var_name = str(node_value.split(":")[-1])
+        if "union" in node_value:
+            var_name = "." + var_name
+        else:
+            var_name = "->" + var_name
         child_node = ast_node['children'][0]
         while child_node:
             child_node_type = child_node['type']
             if child_node_type == "DeclRefExpr":
-                var_name = str(child_node['value']) + "->" + var_name
+                var_name = str(child_node['value'])  + var_name
             elif child_node_type == "ArraySubscriptExpr":
                 return var_list
             elif child_node_type == "MemberExpr":
-                var_name = str(child_node['value'].split(":")[-1]) + "->" + var_name
+                child_node_value = child_node['value']
+                if "union" in child_node_value:
+                    var_name = "." + str(child_node_value.split(":")[-1]) + var_name
+                else:
+                    var_name = "->" + str(child_node_value.split(":")[-1]) + var_name
             else:
                 print(ast_node)
                 exit()
@@ -199,37 +204,35 @@ def generate_available_variable_list(source_path, line_number):
     return variable_list
 
 
-def generate_symbolic_expressions(source_path, line_number):
+def generate_symbolic_expressions(source_path, line_number, output_log):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.normal("\t\tgenerating symbolic expressions")
     source_file_name = str(source_path).split("/")[-1]
     source_directory = "/".join(str(source_path).split("/")[:-1])
 
-    binary_path = Common.Project_D.path + Common.VALUE_EXPLOIT_C.split(" ")[0]
+    if Common.Project_A.path in source_path:
+        binary_path = Common.Project_A.path + Common.VALUE_EXPLOIT_A.split(" ")[0]
+        binary_args = " ".join(Common.VALUE_EXPLOIT_A.split(" ")[1:])
+    elif Common.Project_B.path in source_path:
+        binary_path = Common.Project_B.path + Common.VALUE_EXPLOIT_A.split(" ")[0]
+        binary_args = " ".join(Common.VALUE_EXPLOIT_A.split(" ")[1:])
+    elif Common.Project_C.path in source_path:
+        binary_path = Common.Project_C.path + Common.VALUE_EXPLOIT_C.split(" ")[0]
+        binary_args = " ".join(Common.VALUE_EXPLOIT_C.split(" ")[1:])
+    else:
+        binary_path = Common.Project_D.path + Common.VALUE_EXPLOIT_C.split(" ")[0]
+        binary_args = " ".join(Common.VALUE_EXPLOIT_C.split(" ")[1:])
+
     binary_name = str(binary_path).split("/")[-1]
     binary_directory = "/".join(str(binary_path).split("/")[:-1])
-    # backup_command = "cp " + binary_path + "/" + binary_name + ".bc " + binary_path + "/" + binary_name + ".bc.bk"
-    # execute_command(backup_command)
+    backup_file(binary_path, "original-bitcode")
 
     instrument_code_for_klee(source_path, line_number)
     build_instrumented_code(source_directory)
-    Concolic.extract_bitcode(binary_path)
-    Concolic.concolic_execution(" ".join(Common.VALUE_EXPLOIT_C.split(" ")[1:]), binary_directory, binary_name, Weaver.FILE_VAR_EXPR_LOG, True)
-    var_expr_map_c = collect_symbolic_expressions(Weaver.FILE_VAR_EXPR_LOG)
-    # restore_command = "cp " + binary_directory + "/" + binary_name + ".bc.bk " + binary_directory + "/" + binary_name + ".bc"
-    # execute_command(restore_command)
-    reset_command = "cd " + source_directory + ";git reset --hard HEAD"
-    execute_command(reset_command)
-
-    #
-    # generate_command = "cd " + binary_path + ";"
-    # generate_command += SYMBOLIC_ENGINE + SYMBOLIC_ARGUMENTS.replace("$KTEST",
-    #                                                               FILE_SYMBOLIC_POC) + " " + binary_name + ".bc " \
-    #                  + binary_arguments.replace("$POC", "A") + " --sym-files 1 " + str(
-    #     VALUE_BIT_SIZE) + "  > " + log_path + \
-    #                  " 2>&1"
-    # # print(trace_command)
-    # execute_command(trace_command)
+    extract_bitcode(binary_path)
+    Concolic.concolic_execution(binary_args, binary_directory, binary_name, output_log, True)
+    restore_file("original-bitcode", binary_path)
+    # reset_git(source_directory)
 
 
 def get_model_from_solver(str_formula):
