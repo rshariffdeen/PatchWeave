@@ -74,7 +74,7 @@ def collect_symbolic_path(file_path, project_path):
     return constraints
 
 
-def concolic_execution(binary_arguments, binary_path, binary_name, log_path, print_path=False, error_exit=True):
+def concolic_execution(binary_arguments, binary_path, binary_name, log_path, print_path=False, no_error_exit=False):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     global SYMBOLIC_ARGUMENTS
     Output.normal("\tgenerating symbolic trace for exploit")
@@ -83,10 +83,13 @@ def concolic_execution(binary_arguments, binary_path, binary_name, log_path, pri
     if print_path:
         sym_args = " -print-path " + sym_args
 
+    if no_error_exit:
+        sym_args = " -no-exit-on-error " + sym_args
+
     trace_command += SYMBOLIC_ENGINE + sym_args.replace("$KTEST", FILE_SYMBOLIC_POC) + " " + binary_name + ".bc "\
                      + binary_arguments.replace("$POC", "A") + " --sym-files 1 " + str(VALUE_BIT_SIZE) + "  > " + log_path + \
                     " 2>&1"
-    print(trace_command)
+    # print(trace_command)
     execute_command(trace_command)
     sym_file_path = binary_path + "/klee-last/test000001.smt2 "
     return sym_file_path
@@ -98,19 +101,19 @@ def generate_trace_donor():
     global function_list_a, function_list_b
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.normal(Common.VALUE_PATH_A)
-    binary_path, binary_name = extract_bitcode(Common.VALUE_PATH_A + Common.VALUE_EXPLOIT_A.split(" ")[0])
-    sym_file_path = concolic_execution(" ".join(Common.VALUE_EXPLOIT_A.split(" ")[1:]), binary_path, binary_name, FILE_KLEE_LOG_A, True)
-    copy_command = "cp " + sym_file_path + " " + FILE_SYM_PATH_A
-    execute_command(copy_command)
+    # binary_path, binary_name = extract_bitcode(Common.VALUE_PATH_A + Common.VALUE_EXPLOIT_A.split(" ")[0])
+    # sym_file_path = concolic_execution(" ".join(Common.VALUE_EXPLOIT_A.split(" ")[1:]), binary_path, binary_name, FILE_KLEE_LOG_A, True)
+    # copy_command = "cp " + sym_file_path + " " + FILE_SYM_PATH_A
+    # execute_command(copy_command)
     list_trace_a = Tracer.list_trace_a
     sym_path_a = collect_symbolic_path(FILE_KLEE_LOG_A, Common.VALUE_PATH_A)
     # Mapper.var_expr_map_a = Mapper.collect_symbolic_expressions(FILE_KLEE_LOG_A)
 
     Output.normal(Common.VALUE_PATH_B)
-    binary_path, binary_name = extract_bitcode(Common.VALUE_PATH_B + Common.VALUE_EXPLOIT_A.split(" ")[0])
-    sym_file_path = concolic_execution(" ".join(Common.VALUE_EXPLOIT_A.split(" ")[1:]), binary_path, binary_name, FILE_KLEE_LOG_B, True)
-    copy_command = "cp " + sym_file_path + " " + FILE_SYM_PATH_B
-    execute_command(copy_command)
+    # binary_path, binary_name = extract_bitcode(Common.VALUE_PATH_B + Common.VALUE_EXPLOIT_A.split(" ")[0])
+    # sym_file_path = concolic_execution(" ".join(Common.VALUE_EXPLOIT_A.split(" ")[1:]), binary_path, binary_name, FILE_KLEE_LOG_B, True)
+    # copy_command = "cp " + sym_file_path + " " + FILE_SYM_PATH_B
+    # execute_command(copy_command)
     list_trace_b = Tracer.list_trace_b
     sym_path_b = collect_symbolic_path(FILE_KLEE_LOG_B, Common.VALUE_PATH_B)
     # Mapper.var_expr_map_b = Mapper.collect_symbolic_expressions(FILE_KLEE_LOG_B)
@@ -120,10 +123,10 @@ def generate_trace_target():
     global sym_path_c, list_trace_c, function_list_c
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.normal(Common.VALUE_PATH_C)
-    binary_path, binary_name = extract_bitcode(Common.VALUE_PATH_C + Common.VALUE_EXPLOIT_C.split(" ")[0])
-    sym_file_path = concolic_execution(" ".join(Common.VALUE_EXPLOIT_C.split(" ")[1:]), binary_path, binary_name, FILE_KLEE_LOG_C, True)
-    copy_command = "cp " + sym_file_path + " " + FILE_SYM_PATH_C
-    execute_command(copy_command)
+    # binary_path, binary_name = extract_bitcode(Common.VALUE_PATH_C + Common.VALUE_EXPLOIT_C.split(" ")[0])
+    # sym_file_path = concolic_execution(" ".join(Common.VALUE_EXPLOIT_C.split(" ")[1:]), binary_path, binary_name, FILE_KLEE_LOG_C, True)
+    # copy_command = "cp " + sym_file_path + " " + FILE_SYM_PATH_C
+    # execute_command(copy_command)
     list_trace_c = Tracer.list_trace_c
     sym_path_c = collect_symbolic_path(FILE_KLEE_LOG_C, Common.VALUE_PATH_C)
 

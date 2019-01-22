@@ -189,6 +189,7 @@ def generate_available_variable_list(source_path, line_number):
             break
 
         if child_node_type in ["IfStmt", "ForStmt"]:
+            continue
             filter_var_ref_list = list()
             for var_ref in child_var_ref_list:
                 if var_ref in child_var_dec_list:
@@ -230,9 +231,9 @@ def generate_symbolic_expressions(source_path, line_number, output_log):
     instrument_code_for_klee(source_path, line_number)
     build_instrumented_code(source_directory)
     extract_bitcode(binary_path)
-    Concolic.concolic_execution(binary_args, binary_directory, binary_name, output_log, True)
+    Concolic.concolic_execution(binary_args, binary_directory, binary_name, output_log, True, True)
     restore_file("original-bitcode", binary_path)
-    # reset_git(source_directory)
+    reset_git(source_directory)
 
 
 def get_model_from_solver(str_formula):
@@ -258,19 +259,50 @@ def extract_values_from_model(model):
     return byte_array
 
 
-def generate_z3_code_for_expr(var_expr):
+def create_z3_code(var_expr, var_name, bit_size):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    var_name = var_name + "_" + str(bit_size)
+    if bit_size == 64:
+        zero = "x0000000000000000"
+    else:
+        zero = "x00000000"
     code = "(set-logic QF_AUFBV )\n"
     code += "(declare-fun A-data () (Array (_ BitVec 32) (_ BitVec 8) ) )\n"
-    code += "(declare-fun a () (_ BitVec 32))\n"
-    code += "(declare-fun b () (_ BitVec 32))\n"
-    code += "(assert (= a " + var_expr + "))\n"
-    code += "(assert (not (= b #x00000000)))\n"
-    code += "(assert  (= a b) )\n"
+    code += "(declare-fun " + var_name + "() (_ BitVec " + str(bit_size) + "))\n"
+    # code += "(declare-fun b () (_ BitVec " + str(bit_size) + "))\n"
+    code += "(assert (= " + var_name + " " + var_expr + "))\n"
+    # code += "(assert (not (= b #" + zero + ")))\n"
+    code += "(assert  (not (= " + var_name + " #" + zero + ")))\n"
     code += "(check-sat)"
     return code
 
 
+def generate_z3_code_for_expr(var_expr, var_name):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    var_name = str(var_name).replace("->", "")
+
+    count_64 = int(var_expr.count("64)"))
+    count_bracket = int(var_expr.count(")"))
+
+    if count_bracket == 1:
+        if count_64 == 1:
+            code = create_z3_code(var_expr, var_name, 64)
+        else:
+            code = create_z3_code(var_expr, var_name, 32)
+    else:
+
+        try:
+            code = create_z3_code(var_expr, var_name, 32)
+            parser = SmtLibParser()
+            script = parser.get_script(cStringIO(code))
+            formula = script.get_last_formula()
+        except Exception as exception:
+            code = create_z3_code(var_expr, var_name, 64)
+    return code
+
+
 def get_input_bytes_used(sym_expr):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     model_a = get_model_from_solver(sym_expr)
     input_byte_list = list()
     if model_a is not None:
@@ -282,15 +314,20 @@ def get_input_bytes_used(sym_expr):
 def generate_mapping(var_map_a, var_map_b):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.normal("\t\tgenerating variable map")
-    print(var_map_a)
-    print(var_map_b)
+    var_map = dict()
     for var_a in var_map_a:
-        sym_expr = generate_z3_code_for_expr(var_map_a[var_a])
+        sym_expr = generate_z3_code_for_expr(var_map_a[var_a], var_a)
         input_bytes_a = get_input_bytes_used(sym_expr)
         candidate_list = list()
         for var_b in var_map_b:
-            sym_expr = generate_z3_code_for_expr(var_map_b[var_b])
+            sym_expr = generate_z3_code_for_expr(var_map_b[var_b], var_b)
             input_bytes_b = get_input_bytes_used(sym_expr)
-            if input_bytes_a == input_bytes_b:
+            if input_bytes_a and input_bytes_a == input_bytes_b:
                 candidate_list.append(var_b)
-
+        if len(candidate_list) == 1:
+            var_map[var_a] = candidate_list[0]
+        elif len(candidate_list) > 1:
+            print(candidate_list)
+            print("more than one candidate")
+            exit()
+    return var_map
