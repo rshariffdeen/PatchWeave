@@ -31,6 +31,9 @@ TOOL_AST_PATCH = "patchweave"
 FILE_VAR_EXPR_LOG_A = Common.DIRECTORY_OUTPUT + "/log-sym-expr-a"
 FILE_VAR_EXPR_LOG_B = Common.DIRECTORY_OUTPUT + "/log-sym-expr-b"
 FILE_VAR_EXPR_LOG_C = Common.DIRECTORY_OUTPUT + "/log-sym-expr-c"
+FILE_VAR_MAP = Common.DIRECTORY_OUTPUT + "/var-map"
+FILE_AST_SCRIPT = Common.DIRECTORY_OUTPUT + "/ast-script"
+FILE_TEMP_FIX = Common.DIRECTORY_OUTPUT + "/temp-fix"
 
 
 def extract_source_list(trace_list):
@@ -334,8 +337,36 @@ def filter_ast_script(ast_script, line_range, ast_node):
                 filtered_ast_script.append(script_line)
     return filtered_ast_script
 
-def execute_ast_transformation():
+
+def output_var_map(var_map):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    content = ""
+    for var in var_map:
+        content += var + ":" + var_map[var] + "\n"
+    with open(FILE_VAR_MAP, 'w') as map_file:
+        map_file.writelines(content)
+
+
+def output_ast_script(ast_script):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    with open(FILE_AST_SCRIPT, 'w') as script_file:
+        script_file.writelines(ast_script)
+
+
+def execute_ast_transformation(source_path_b, source_path_d):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    parameters = " -map=" + FILE_VAR_MAP + " -script=" + FILE_AST_SCRIPT
+    parameters += " -source=" + source_path_b + " -target=" + source_path_d
+    transform_command = TOOL_AST_PATCH + parameters + " > " + FILE_TEMP_FIX
+    # print(transform_command)
+    ret_code = int(execute_command(transform_command))
+    if ret_code != 0:
+        print(ret_code)
+        error_exit("Error Transforming!!!")
+    else:
+        move_command = "cp " + FILE_TEMP_FIX + " " + source_path_d
+        execute_command(move_command)
+
 
 def transplant_code():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
@@ -371,8 +402,6 @@ def transplant_code():
             filtered_ast_script = filter_ast_script(ast_script, (start_line_b, end_line_b), ast_map_b)
             # Mapper.generate_symbolic_expressions(source_path_b, end_line_b, FILE_VAR_EXPR_LOG_B)
             var_expr_map_b = Mapper.collect_symbolic_expressions(FILE_VAR_EXPR_LOG_B)
-            print(var_expr_map_b)
-            exit()
             insertion_loc_list = identify_insertion_points(estimate_loc)
             ast_script_c = list()
             for insertion_loc in insertion_loc_list:
@@ -390,9 +419,12 @@ def transplant_code():
                 Mapper.generate_symbolic_expressions(source_path_d, line_number_c, FILE_VAR_EXPR_LOG_C)
                 var_expr_map_c = Mapper.collect_symbolic_expressions(FILE_VAR_EXPR_LOG_C)
                 var_map = Mapper.generate_mapping(var_expr_map_b, var_expr_map_c)
-                print(var_map)
-                exit()
-                print(ast_script_c)
+                # print(var_map)
+                # print(ast_script_c)
+                output_var_map(var_map)
+                output_ast_script(ast_script_c)
+                execute_ast_transformation(source_path_b, source_path_d)
+
         elif operation == 'modify':
             start_line_b, end_line_b = diff_info['new-lines']
             start_line_a, end_line_a = diff_info['old-lines']
@@ -406,12 +438,13 @@ def transplant_code():
             filtered_ast_script = list(set(filtered_ast_script_b + filtered_ast_script_a))
             insertion_loc_list = identify_insertion_points(estimate_loc)
             ast_script_c = list()
+            # print(insertion_loc_list)
             for insertion_loc in insertion_loc_list:
                 Output.normal("\t\t" + insertion_loc)
                 source_path_c, line_number_c = insertion_loc.split(":")
                 source_path_d = source_path_c.replace(Common.Project_C.path, Common.Project_D.path)
                 ast_map_c = Generator.get_ast_json(source_path_c)
-                print(insertion_loc)
+                # print(insertion_loc)
                 function_node = get_fun_node(ast_map_c, int(line_number_c), source_path_c)
                 position_c = get_ast_node_position(function_node, int(line_number_c))
                 for script_line in filtered_ast_script:
@@ -423,8 +456,13 @@ def transplant_code():
                 # Mapper.generate_symbolic_expressions(source_path_d, line_number_c, FILE_VAR_EXPR_LOG_C)
                 var_expr_map_c = Mapper.collect_symbolic_expressions(FILE_VAR_EXPR_LOG_C)
                 var_map = Mapper.generate_mapping(var_expr_map_a, var_expr_map_c)
-                print(var_map)
-                print(ast_script_c)
+                # print(var_map)
+                # print(ast_script_c)
+                output_var_map(var_map)
+                output_ast_script(ast_script_c)
+                execute_ast_transformation(source_path_b, source_path_d)
+
+
         else:
             continue
         #
