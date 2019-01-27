@@ -12,8 +12,8 @@ import Logger
 
 CC = "clang"
 CXX = "clang++"
-C_FLAGS = "-g -O0 -static -ftrapv -fPIC"
-CXX_FLAGS = "-g -O0 -static -ftrapv -fPIC"
+C_FLAGS = "-g -O0 -ftrapv -fPIC"
+CXX_FLAGS = "-g -O0 -ftrapv -fPIC"
 LD_FLAGS = ""
 
 
@@ -49,10 +49,11 @@ def config_project(project_path, is_llvm):
         error_exit("CONFIGURATION FAILED!!\nExit Code: " + str(ret_code))
 
 
-def build_project(project_path):
+def build_project(project_path, build_command=None):
     dir_command = "cd " + project_path + ";"
-    build_command = "bear make CFLAGS=" + C_FLAGS + " "
-    build_command += "CXXFLAGS=" + CXX_FLAGS + " > " + Common.FILE_MAKE_LOG
+    if build_command is None:
+        build_command = "bear make CFLAGS=" + C_FLAGS + " "
+        build_command += "CXXFLAGS=" + CXX_FLAGS + " > " + Common.FILE_MAKE_LOG
     build_command = dir_command + build_command
     # print(build_command)
     ret_code = execute_command(build_command)
@@ -63,26 +64,50 @@ def build_project(project_path):
 
 def build_all():
     Output.normal("building")
+
     Output.normal("\t" + Common.Project_A.path)
-    build_project(Common.Project_A.path)
+    if not Common.VALUE_BUILD_COMMAND_A:
+        build_project(Common.Project_A.path)
+    else:
+        build_project(Common.Project_A.path, Common.VALUE_BUILD_COMMAND_A)
+
     Output.normal("\t" + Common.Project_B.path)
-    build_project(Common.Project_B.path)
+    if not Common.VALUE_BUILD_COMMAND_A:
+        build_project(Common.Project_B.path)
+    else:
+        build_project(Common.Project_B.path, Common.VALUE_BUILD_COMMAND_A)
+
     Output.normal("\t" + Common.Project_C.path)
-    build_project(Common.Project_C.path)
+    if not Common.VALUE_BUILD_COMMAND_C:
+        build_project(Common.Project_C.path)
+    else:
+        build_project(Common.Project_C.path, Common.VALUE_BUILD_COMMAND_C)
+
     Output.normal("\t" + Common.Project_D.path)
-    build_project(Common.Project_D.path)
+    if not Common.VALUE_BUILD_COMMAND_C:
+        build_project(Common.Project_D.path)
+    else:
+        build_project(Common.Project_D.path, Common.VALUE_BUILD_COMMAND_C)
 
 
 def config_all(is_llvm=False):
     Output.normal("configuring projects")
+
     Output.normal("\t" + Common.Project_A.path)
-    config_project(Common.Project_A.path, is_llvm)
+    if not Common.VALUE_BUILD_COMMAND_A:
+        config_project(Common.Project_A.path, is_llvm)
+
     Output.normal("\t" + Common.Project_B.path)
-    config_project(Common.Project_B.path, is_llvm)
+    if not Common.VALUE_BUILD_COMMAND_A:
+        config_project(Common.Project_B.path, is_llvm)
+
     Output.normal("\t" + Common.Project_C.path)
-    config_project(Common.Project_C.path, is_llvm)
+    if not Common.VALUE_BUILD_COMMAND_C:
+        config_project(Common.Project_C.path, is_llvm)
+
     Output.normal("\t" + Common.Project_D.path)
-    config_project(Common.Project_D.path, is_llvm)
+    if not Common.VALUE_BUILD_COMMAND_C:
+        config_project(Common.Project_D.path, is_llvm)
 
 
 def build_normal():
@@ -133,6 +158,7 @@ def restore_project(project_path):
         restore_command += "git clean -fd; git reset --hard HEAD"
     elif os.path.exists(project_path + "/.svn"):
         restore_command += "svn revert -R .; svn status --no-ignore | grep '^\?' | sed 's/^\?     //'  | xargs rm -rf"
+    # print(restore_command)
     execute_command(restore_command)
 
 

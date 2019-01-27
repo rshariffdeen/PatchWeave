@@ -69,10 +69,12 @@ def read_conf():
             Common.VALUE_EXPLOIT_PREPARE = configuration.replace(Common.CONF_EXPLOIT_PREPARE, '')
         elif Common.CONF_FLAGS_A in configuration:
             Common.VALUE_BUILD_FLAGS_A = configuration.replace(Common.CONF_FLAGS_A, '')
-        elif Common.CONF_FLAGS_B in configuration:
-            Common.VALUE_BUILD_FLAGS_B = configuration.replace(Common.CONF_FLAGS_B, '')
         elif Common.CONF_FLAGS_C in configuration:
             Common.VALUE_BUILD_FLAGS_C = configuration.replace(Common.CONF_FLAGS_C, '')
+        elif Common.CONF_BUILD_COMMAND_A in configuration:
+            Common.VALUE_BUILD_COMMAND_A = configuration.replace(Common.CONF_BUILD_COMMAND_A, '')
+        elif Common.CONF_BUILD_COMMAND_C in configuration:
+            Common.VALUE_BUILD_COMMAND_C = configuration.replace(Common.CONF_BUILD_COMMAND_C, '')
 
 
 def initialize():
