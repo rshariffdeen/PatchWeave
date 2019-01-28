@@ -74,7 +74,7 @@ def collect_symbolic_path(file_path, project_path):
     return constraints
 
 
-def concolic_execution(binary_arguments, binary_path, binary_name, log_path, print_path=False):
+def concolic_execution(binary_arguments, binary_path, binary_name, log_path, print_path=False, no_error_exit=False):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     global SYMBOLIC_ARGUMENTS
     Output.normal("\tgenerating symbolic trace for exploit")
@@ -82,6 +82,9 @@ def concolic_execution(binary_arguments, binary_path, binary_name, log_path, pri
     sym_args = SYMBOLIC_ARGUMENTS
     if print_path:
         sym_args = " -print-path " + sym_args
+
+    if no_error_exit:
+        sym_args = " -no-exit-on-error " + sym_args
 
     trace_command += SYMBOLIC_ENGINE + sym_args.replace("$KTEST", FILE_SYMBOLIC_POC) + " " + binary_name + ".bc "\
                      + binary_arguments.replace("$POC", "A") + " --sym-files 1 " + str(VALUE_BIT_SIZE) + "  > " + log_path + \
