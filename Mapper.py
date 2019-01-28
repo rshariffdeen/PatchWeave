@@ -40,7 +40,7 @@ def collect_symbolic_expressions(trace_file_path):
 
 def build_instrumented_code(source_directory):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal("\t\t\tbuilding instrumented code")
+    Output.normal("\t\tbuilding instrumented code")
     CXX_FLAGS = "'-g -O0 -static -DNDEBUG -ftrapv'"
     C_FLAGS = "'-g -O0 -static -ftrapv -L/home/rshariffdeen/workspace/klee/build-rshariffdeen/lib -lkleeRuntest'"
     build_command = "cd " + source_directory + ";"
@@ -72,7 +72,7 @@ def read_variable_name(source_path, start_pos, end_pos):
 
 def instrument_code_for_klee(source_path, line_number):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal("\t\t\tinstrumenting source code")
+    Output.normal("\t\tinstrumenting source code")
     variable_list = generate_available_variable_list(source_path, line_number)
     insert_code = "\n"
     for variable in variable_list:
@@ -164,7 +164,7 @@ def collect_var_ref_list(ast_node, line_number):
 
 def generate_available_variable_list(source_path, line_number):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal("\t\t\t\tgenerating variable(available) list")
+    Output.normal("\t\t\tgenerating variable(available) list")
     variable_list = list()
     ast_map = Generator.get_ast_json(source_path)
     func_node = Weaver.get_fun_node(ast_map, int(line_number), source_path)
@@ -208,7 +208,7 @@ def generate_available_variable_list(source_path, line_number):
 
 def generate_symbolic_expressions(source_path, line_number, output_log):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal("\t\tgenerating symbolic expressions")
+    Output.normal("\tgenerating symbolic expressions")
     source_file_name = str(source_path).split("/")[-1]
     source_directory = "/".join(str(source_path).split("/")[:-1])
 
@@ -232,7 +232,7 @@ def generate_symbolic_expressions(source_path, line_number, output_log):
     instrument_code_for_klee(source_path, line_number)
     build_instrumented_code(source_directory)
     extract_bitcode(binary_path)
-    Concolic.concolic_execution(binary_args, binary_directory, binary_name, output_log, True, True)
+    Concolic.generate_var_expressions(binary_args, binary_directory, binary_name, output_log, True)
     restore_file("original-bitcode", binary_path)
     reset_git(source_directory)
 
