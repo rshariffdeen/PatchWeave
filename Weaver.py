@@ -66,16 +66,31 @@ def extract_trace_function_list(source_list, trace_list):
             source_line_map[source_path] = list()
         source_line_map[source_path].append(int(line_number))
 
+    trace_function_info = dict()
+
     for source_path in source_line_map:
         function_list = source_function_map[source_path]
         trace_line_list = source_line_map[source_path]
         for line_number in trace_line_list:
             for function_name, begin_line, finish_line in function_list:
                 if line_number in range(begin_line, finish_line):
-                    trace_function = source_path + ":" + function_name
-                    trace_function += ":" + str(begin_line) + ":" + str(finish_line)
-                    if trace_function not in trace_function_list:
-                        trace_function_list.append(trace_function)
+                    function_id = source_path + ":" + function_name
+                    if function_id not in trace_function_info.keys():
+                        trace_function_info[function_id] = dict()
+                        trace_function_info[function_id]['start'] = begin_line
+                        trace_function_info[function_id]['end'] = finish_line
+                        trace_function_info[function_id]['last'] = int(line_number)
+                    elif trace_function_info[function_id]['last'] < line_number:
+                        trace_function_info[function_id]['last'] = line_number
+                    break
+    for function_id in trace_function_info:
+        begin_line = trace_function_info[function_id]['start']
+        last_line = trace_function_info[function_id]['last']
+        trace_function = function_id
+        trace_function += ":" + str(begin_line) + ":" + str(last_line)
+        if trace_function not in trace_function_list:
+            trace_function_list.append(trace_function)
+
     return trace_function_list
 
 
@@ -86,14 +101,31 @@ def generate_candidate_function_list(estimate_loc):
     trace_list = Concolic.list_trace_c
     length = len(trace_list)
     filtered_trace_list = list()
-    for n in range (length-1, 0, -1):
+    candidate_function_list = dict()
+    for n in range(length-1, 0, -1):
         filtered_trace_list.append(trace_list[n])
         if estimate_loc is trace_list[n]:
             break
     filtered_trace_list.reverse()
     source_list_c = extract_source_list(filtered_trace_list)
-    candidate_list = extract_trace_function_list(source_list_c, filtered_trace_list)
-    return candidate_list
+    trace_function_list = extract_trace_function_list(source_list_c, filtered_trace_list)
+
+    for function_info in trace_function_list:
+        source_path, function_name, start_line, last_line = str(function_info).split(":")
+        ast_map_c = Generator.get_ast_json(source_path)
+        function_node = get_fun_node(ast_map_c, int(last_line), source_path)
+        Mapper.generate_symbolic_expressions(source_path, last_line)
+        sym_expr_map = Mapper.collect_symbolic_expressions(FILE_VAR_EXPR_LOG)
+        var_map = Mapper.generate_mapping(Mapper.var_expr_map_a, sym_expr_map)
+        if var_map.size() == Mapper.var_expr_map_a.size():
+            function_id = source_path + ":" + function_name
+            info = dict()
+            info['var-map'] = var_map
+            info['start-line'] = start_line
+            info['last-line'] = last_line
+            candidate_function_list[function_id] = info
+
+    return candidate_function_list
 
 
 def estimate_divergent_point(byte_list):
@@ -159,6 +191,7 @@ def compute_common_bytes(div_source_loc):
     last_sympath_c = Concolic.sym_path_c[Concolic.sym_path_c.keys()[-1]]
     model_a = Mapper.get_model_from_solver(div_sympath)
     bytes_a = Mapper.extract_values_from_model(model_a)
+    print(bytes_a)
     model_c = Mapper.get_model_from_solver(last_sympath_c)
     bytes_c = Mapper.extract_values_from_model(model_c)
     return list(set(bytes_a.keys()).intersection(bytes_c.keys()))
@@ -438,7 +471,6 @@ def get_diff_variable_list(ast_script, ast_node):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
 
 
-
 def get_function_range_from_trace(function_list):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     stack_info = Tracer.stack_c
@@ -481,13 +513,14 @@ def identify_insertion_points(estimated_loc):
     insertion_point_list = list()
     function_list = generate_candidate_function_list(estimated_loc)
     stack_info = Tracer.stack_c
-    range_map = get_function_range_from_trace(function_list)
+    # range_map = get_function_range_from_trace(function_list)
 
-    for function_def in range_map:
-        start_line = int(range_map[function_def]['start'])
-        end_line = int(range_map[function_def]['end'])
-        for n in range(start_line, end_line + 1):
-            source_path = function_def.split(":")[0]
+    for function_id in function_list:
+        source_path, function_name = function_id.split(":")
+        info = function_list[function_id]
+        start_line = int(info['start-line'])
+        last_line = int(info['last-line'])
+        for n in range(start_line, last_line + 1):
             insertion_point_list.append(source_path + ":" + str(n))
     return insertion_point_list
 

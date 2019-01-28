@@ -248,7 +248,9 @@ def extract_values_from_model(model):
     byte_array = dict()
     for dec in model.decls():
         if dec.name() == "A-data":
-            var_list = model[dec].as_list()
+            print(list(model[dec]))
+            help(model[dec])
+            var_list = model[dec].as_ast()
             for pair in var_list:
                 if type(pair) == list:
                     byte_array[pair[0]] = pair[1]
