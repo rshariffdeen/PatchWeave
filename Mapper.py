@@ -232,7 +232,7 @@ def generate_symbolic_expressions(source_path, line_number, output_log):
     instrument_code_for_klee(source_path, line_number)
     build_instrumented_code(source_directory)
     extract_bitcode(binary_path)
-    Concolic.generate_var_expressions(binary_args, binary_directory, binary_name, output_log, True)
+    Concolic.generate_var_expressions(binary_args, binary_directory, binary_name, output_log)
     restore_file("original-bitcode", binary_path)
     reset_git(source_directory)
 
