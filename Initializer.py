@@ -39,10 +39,18 @@ def read_conf():
         for arg in sys.argv:
             if Common.ARG_DEBUG in arg:
                 Common.DEBUG = True
-            if Common.ARG_NO_BUILD in arg:
+            elif Common.ARG_NO_BUILD in arg:
                 Common.NO_BUILD = True
             elif Common.ARG_CONF_FILE in arg:
                 Common.FILE_CONFIGURATION = str(arg).replace(Common.ARG_CONF_FILE, '')
+            elif Common.ARG_NO_SYM_TRACE_GEN in arg:
+                Common.ARG_NO_SYM_TRACE_GEN = True
+            elif arg == "PatchWeave.py":
+                continue
+            else:
+                Output.error("Invalid argument")
+                Output.help()
+                exit()
     else:
         Output.help()
         exit()

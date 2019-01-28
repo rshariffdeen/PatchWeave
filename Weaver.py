@@ -199,6 +199,7 @@ def compute_common_bytes(div_source_loc):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.normal("\tanalysing common bytes in symbolic paths")
     div_sympath = get_sym_path(div_source_loc)
+    print(div_sympath)
     last_sympath_c = Concolic.sym_path_c[Concolic.sym_path_c.keys()[-1]]
     model_a = Mapper.get_model_from_solver(div_sympath)
     bytes_a = Mapper.extract_values_from_model(model_a)

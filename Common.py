@@ -9,6 +9,8 @@ Project_D = None
 
 DEBUG = False
 NO_BUILD = False
+NO_SYM_TRACE_GEN = False
+
 PROJECT_A_FUNCTION_LIST = ""
 PROJECT_B_FUNCTION_LIST = ""
 PROJECT_C_FUNCTION_LIST = ""
@@ -83,6 +85,7 @@ KEY_DURATION_CLONE_DETECTION = 'clone-detection'
 # ---------------- ARGUMENTS ---------------------------
 ARG_CONF_FILE = "--conf="
 ARG_DEBUG = "--debug"
+ARG_NO_SYM_TRACE_GEN = "--no-sym-trace-gen"
 ARG_NO_BUILD = "--no-build"
 
 # ----------------- TOOLS --------------------------------

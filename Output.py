@@ -94,5 +94,5 @@ def help():
     print("Usage: python patchweave [OPTIONS] " + Common.ARG_CONF_FILE + "$FILE_PATH")
     print("Options are:")
     print("\t" + Common.ARG_DEBUG + "\t| " + "enable debugging information")
-
-
+    print("\t" + Common.ARG_NO_BUILD + "\t| " + "disable project build")
+    print("\t" + Common.ARG_NO_SYM_TRACE_GEN + "\t| " + "disable symbolic trace generation")
