@@ -38,7 +38,7 @@ FILE_TEMP_FIX = Common.DIRECTORY_OUTPUT + "/temp-fix"
 
 def extract_source_list(trace_list):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal("\tcollecting source file list from trace ...")
+    Output.normal("\t\tcollecting source file list from trace ...")
     source_list = list()
     for trace_line in trace_list:
         source_path, line_number = str(trace_line).split(":")
@@ -50,7 +50,7 @@ def extract_source_list(trace_list):
 
 def get_function_map(source_list):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal("\tcollecting function list from source files ...")
+    Output.normal("\t\tcollecting function list from source files ...")
     source_function_map = dict()
     for source_path in source_list:
         if source_path in source_function_map.keys():
@@ -64,11 +64,10 @@ def get_function_map(source_list):
     return source_function_map
 
 
-def extract_trace_function_list(source_list, trace_list):
+def extract_trace_function_list(source_function_map, trace_list):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal("\textracting function list from trace ...")
+    Output.normal("\t\textracting function list from trace ...")
     trace_function_list = list()
-    source_function_map = get_function_map(source_list)
     unique_trace_list = list(set(trace_list))
     source_line_map = dict()
     for trace_line in unique_trace_list:
@@ -105,7 +104,7 @@ def extract_trace_function_list(source_list, trace_list):
     return trace_function_list
 
 
-def generate_candidate_function_list(estimate_loc):
+def generate_candidate_function_list(estimate_loc, var_expr_map):
     global filtered_trace_list
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.normal("\tgenerating candidate functions")
@@ -119,23 +118,25 @@ def generate_candidate_function_list(estimate_loc):
             break
     filtered_trace_list.reverse()
     source_list_c = extract_source_list(filtered_trace_list)
-    trace_function_list = extract_trace_function_list(source_list_c, filtered_trace_list)
+    source_function_map = get_function_map(source_list_c)
+    trace_function_list = extract_trace_function_list(source_function_map, filtered_trace_list)
 
     for function_info in trace_function_list:
         source_path, function_name, start_line, last_line = str(function_info).split(":")
         ast_map_c = Generator.get_ast_json(source_path)
         function_node = get_fun_node(ast_map_c, int(last_line), source_path)
-        Mapper.generate_symbolic_expressions(source_path, last_line)
-        sym_expr_map = Mapper.collect_symbolic_expressions(FILE_VAR_EXPR_LOG)
-        var_map = Mapper.generate_mapping(Mapper.var_expr_map_a, sym_expr_map)
-        if var_map.size() == Mapper.var_expr_map_a.size():
+        Mapper.generate_symbolic_expressions(source_path, last_line, FILE_VAR_EXPR_LOG_C)
+        sym_expr_map = Mapper.collect_symbolic_expressions(FILE_VAR_EXPR_LOG_C)
+        var_map = Mapper.generate_mapping(var_expr_map, sym_expr_map)
+        if var_map.size() == var_expr_map.size():
             function_id = source_path + ":" + function_name
             info = dict()
             info['var-map'] = var_map
             info['start-line'] = start_line
             info['last-line'] = last_line
             candidate_function_list[function_id] = info
-
+    print(candidate_function_list)
+    exit()
     return candidate_function_list
 
 
@@ -199,11 +200,9 @@ def compute_common_bytes(div_source_loc):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.normal("\tanalysing common bytes in symbolic paths")
     div_sympath = get_sym_path(div_source_loc)
-    print(div_sympath)
     last_sympath_c = Concolic.sym_path_c[Concolic.sym_path_c.keys()[-1]]
     model_a = Mapper.get_model_from_solver(div_sympath)
     bytes_a = Mapper.extract_values_from_model(model_a)
-    print(bytes_a)
     model_c = Mapper.get_model_from_solver(last_sympath_c)
     bytes_c = Mapper.extract_values_from_model(model_c)
     return list(set(bytes_a.keys()).intersection(bytes_c.keys()))
@@ -434,9 +433,9 @@ def transplant_code():
         if operation == 'insert':
             start_line_b, end_line_b = diff_info['new-lines']
             filtered_ast_script = filter_ast_script(ast_script, (start_line_b, end_line_b), ast_map_b)
-            # Mapper.generate_symbolic_expressions(source_path_b, end_line_b, FILE_VAR_EXPR_LOG_B)
+            Mapper.generate_symbolic_expressions(source_path_b, end_line_b, FILE_VAR_EXPR_LOG_B)
             var_expr_map_b = Mapper.collect_symbolic_expressions(FILE_VAR_EXPR_LOG_B)
-            insertion_loc_list = identify_insertion_points(estimate_loc)
+            insertion_loc_list = identify_insertion_points(estimate_loc, var_expr_map_b)
             ast_script_c = list()
             for insertion_loc in insertion_loc_list:
                 Output.normal("\t\t" + insertion_loc)
@@ -460,41 +459,42 @@ def transplant_code():
                 execute_ast_transformation(source_path_b, source_path_d)
 
         elif operation == 'modify':
+            continue
             start_line_b, end_line_b = diff_info['new-lines']
             start_line_a, end_line_a = diff_info['old-lines']
             filtered_ast_script_b = filter_ast_script(ast_script, (start_line_b, end_line_b), ast_map_b)
             # print(filtered_ast_script_b)
             # Mapper.generate_symbolic_expressions(source_path_b, end_line_b, FILE_VAR_EXPR_LOG_B)
-            var_expr_map_b = Mapper.collect_symbolic_expressions(FILE_VAR_EXPR_LOG_B)
-            filtered_ast_script_a = filter_ast_script(ast_script, (start_line_a, end_line_a), ast_map_a)
-            # Mapper.generate_symbolic_expressions(source_path_a, end_line_a, FILE_VAR_EXPR_LOG_A)
-            var_expr_map_a = Mapper.collect_symbolic_expressions(FILE_VAR_EXPR_LOG_A)
-            filtered_ast_script = list(set(filtered_ast_script_b + filtered_ast_script_a))
-            insertion_loc_list = identify_insertion_points(estimate_loc)
-            ast_script_c = list()
-            # print(insertion_loc_list)
-            for insertion_loc in insertion_loc_list:
-                Output.normal("\t\t" + insertion_loc)
-                source_path_c, line_number_c = insertion_loc.split(":")
-                source_path_d = source_path_c.replace(Common.Project_C.path, Common.Project_D.path)
-                ast_map_c = Generator.get_ast_json(source_path_c)
-                # print(insertion_loc)
-                function_node = get_fun_node(ast_map_c, int(line_number_c), source_path_c)
-                position_c = get_ast_node_position(function_node, int(line_number_c))
-                for script_line in filtered_ast_script:
-                    translated_command = script_line
-                    if "Insert" in script_line:
-                        inserting_node = script_line.split(" into ")[0]
-                        translated_command = inserting_node + " into " + position_c
-                    ast_script_c.append(translated_command)
-                # Mapper.generate_symbolic_expressions(source_path_d, line_number_c, FILE_VAR_EXPR_LOG_C)
-                var_expr_map_c = Mapper.collect_symbolic_expressions(FILE_VAR_EXPR_LOG_C)
-                var_map = Mapper.generate_mapping(var_expr_map_a, var_expr_map_c)
-                # print(var_map)
-                # print(ast_script_c)
-                output_var_map(var_map)
-                output_ast_script(ast_script_c)
-                execute_ast_transformation(source_path_b, source_path_d)
+            # var_expr_map_b = Mapper.collect_symbolic_expressions(FILE_VAR_EXPR_LOG_B)
+            # filtered_ast_script_a = filter_ast_script(ast_script, (start_line_a, end_line_a), ast_map_a)
+            # # Mapper.generate_symbolic_expressions(source_path_a, end_line_a, FILE_VAR_EXPR_LOG_A)
+            # var_expr_map_a = Mapper.collect_symbolic_expressions(FILE_VAR_EXPR_LOG_A)
+            # filtered_ast_script = list(set(filtered_ast_script_b + filtered_ast_script_a))
+            # insertion_loc_list = identify_insertion_points(estimate_loc)
+            # ast_script_c = list()
+            # # print(insertion_loc_list)
+            # for insertion_loc in insertion_loc_list:
+            #     Output.normal("\t\t" + insertion_loc)
+            #     source_path_c, line_number_c = insertion_loc.split(":")
+            #     source_path_d = source_path_c.replace(Common.Project_C.path, Common.Project_D.path)
+            #     ast_map_c = Generator.get_ast_json(source_path_c)
+            #     # print(insertion_loc)
+            #     function_node = get_fun_node(ast_map_c, int(line_number_c), source_path_c)
+            #     position_c = get_ast_node_position(function_node, int(line_number_c))
+            #     for script_line in filtered_ast_script:
+            #         translated_command = script_line
+            #         if "Insert" in script_line:
+            #             inserting_node = script_line.split(" into ")[0]
+            #             translated_command = inserting_node + " into " + position_c
+            #         ast_script_c.append(translated_command)
+            #     # Mapper.generate_symbolic_expressions(source_path_d, line_number_c, FILE_VAR_EXPR_LOG_C)
+            #     var_expr_map_c = Mapper.collect_symbolic_expressions(FILE_VAR_EXPR_LOG_C)
+            #     var_map = Mapper.generate_mapping(var_expr_map_a, var_expr_map_c)
+            #     # print(var_map)
+            #     # print(ast_script_c)
+            #     output_var_map(var_map)
+            #     output_ast_script(ast_script_c)
+            #     execute_ast_transformation(source_path_b, source_path_d)
 
 
         else:
@@ -564,10 +564,10 @@ def get_function_range_from_trace(function_list):
     return range_map
 
 
-def identify_insertion_points(estimated_loc):
+def identify_insertion_points(estimated_loc, var_expr_map):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     insertion_point_list = list()
-    function_list = generate_candidate_function_list(estimated_loc)
+    function_list = generate_candidate_function_list(estimated_loc, var_expr_map)
     stack_info = Tracer.stack_c
     # range_map = get_function_range_from_trace(function_list)
 

@@ -44,7 +44,7 @@ def read_conf():
             elif Common.ARG_CONF_FILE in arg:
                 Common.FILE_CONFIGURATION = str(arg).replace(Common.ARG_CONF_FILE, '')
             elif Common.ARG_NO_SYM_TRACE_GEN in arg:
-                Common.ARG_NO_SYM_TRACE_GEN = True
+                Common.NO_SYM_TRACE_GEN = True
             elif arg == "PatchWeave.py":
                 continue
             else:

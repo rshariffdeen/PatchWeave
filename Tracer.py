@@ -136,15 +136,17 @@ def generate_trace_donor():
 
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.normal(Common.VALUE_PATH_A)
-    binary_path, binary_name = extract_bitcode(Common.VALUE_PATH_A + Common.VALUE_EXPLOIT_A.split(" ")[0])
-    trace_exploit(" ".join(Common.VALUE_EXPLOIT_A.split(" ")[1:]), binary_path, binary_name, FILE_TRACE_LOG_A)
+    if not Common.NO_SYM_TRACE_GEN:
+        binary_path, binary_name = extract_bitcode(Common.VALUE_PATH_A + Common.VALUE_EXPLOIT_A.split(" ")[0])
+        trace_exploit(" ".join(Common.VALUE_EXPLOIT_A.split(" ")[1:]), binary_path, binary_name, FILE_TRACE_LOG_A)
     list_trace_a = collect_trace(FILE_TRACE_LOG_A, Common.VALUE_PATH_A)
     crash_location_a = extract_crash_point(FILE_TRACE_LOG_A)
     stack_a = extract_stack_info(FILE_TRACE_LOG_A)
 
     Output.normal(Common.VALUE_PATH_B)
-    binary_path, binary_name = extract_bitcode(Common.VALUE_PATH_B + Common.VALUE_EXPLOIT_A.split(" ")[0])
-    trace_exploit(" ".join(Common.VALUE_EXPLOIT_A.split(" ")[1:]), binary_path, binary_name, FILE_TRACE_LOG_B)
+    if not Common.NO_SYM_TRACE_GEN:
+        binary_path, binary_name = extract_bitcode(Common.VALUE_PATH_B + Common.VALUE_EXPLOIT_A.split(" ")[0])
+        trace_exploit(" ".join(Common.VALUE_EXPLOIT_A.split(" ")[1:]), binary_path, binary_name, FILE_TRACE_LOG_B)
     list_trace_b = collect_trace(FILE_TRACE_LOG_B, Common.VALUE_PATH_B)
     # extract_divergent_point()
 
@@ -184,9 +186,9 @@ def generate_trace_target():
 
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.normal(Common.VALUE_PATH_C)
-
-    binary_path, binary_name = extract_bitcode(Common.VALUE_PATH_C + Common.VALUE_EXPLOIT_C.split(" ")[0])
-    trace_exploit(" ".join(Common.VALUE_EXPLOIT_C.split(" ")[1:]), binary_path, binary_name, FILE_TRACE_LOG_C)
+    if not Common.NO_SYM_TRACE_GEN:
+        binary_path, binary_name = extract_bitcode(Common.VALUE_PATH_C + Common.VALUE_EXPLOIT_C.split(" ")[0])
+        trace_exploit(" ".join(Common.VALUE_EXPLOIT_C.split(" ")[1:]), binary_path, binary_name, FILE_TRACE_LOG_C)
     list_trace_c = collect_trace(FILE_TRACE_LOG_C, Common.VALUE_PATH_C)
     crash_location_c = extract_crash_point(FILE_TRACE_LOG_C)
     stack_c = extract_stack_info(FILE_TRACE_LOG_C)

@@ -81,7 +81,8 @@ def instrument_code_for_klee(source_path, line_number):
     if os.path.exists(source_path):
         with open(source_path, 'r') as source_file:
             content = source_file.readlines()
-            content[int(line_number)-1] = insert_code
+            existing_line = content[int(line_number)-1]
+            content[int(line_number)-1] = insert_code + existing_line
     with open(source_path, 'w') as source_file:
         source_file.writelines(content)
 
