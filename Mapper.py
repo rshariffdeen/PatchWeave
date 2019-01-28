@@ -70,10 +70,10 @@ def read_variable_name(source_path, start_pos, end_pos):
     return var_name.strip()
 
 
-def instrument_code_for_klee(source_path, line_number):
+def instrument_code_for_klee(source_path, start_line, end_line, only_in_range):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.normal("\t\tinstrumenting source code")
-    variable_list = generate_available_variable_list(source_path, line_number)
+    variable_list = generate_available_variable_list(source_path, start_line, end_line, only_in_range)
     insert_code = "\n"
     for variable in variable_list:
         insert_code += "klee_print_expr(\"[var-expr] " + variable + "\", " + variable + ");\n"
@@ -81,24 +81,28 @@ def instrument_code_for_klee(source_path, line_number):
     if os.path.exists(source_path):
         with open(source_path, 'r') as source_file:
             content = source_file.readlines()
-            existing_line = content[int(line_number)-1]
-            content[int(line_number)-1] = insert_code + existing_line
+            existing_line = content[int(end_line)-1]
+            content[int(end_line)-1] = existing_line + insert_code
     with open(source_path, 'w') as source_file:
         source_file.writelines(content)
 
 
-def collect_var_dec_list(ast_node, line_number):
+def collect_var_dec_list(ast_node, start_line, end_line, only_in_range):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     var_list = list()
     child_count = len(ast_node['children'])
-    start_line = int(ast_node['start line'])
-    end_line = int(ast_node['end line'])
+    node_start_line = int(ast_node['start line'])
+    node_end_line = int(ast_node['end line'])
     start_column = int(ast_node['start column'])
     end_column = int(ast_node['end column'])
     node_type = ast_node['type']
 
-    if start_line == int(line_number):
-        return var_list
+    if only_in_range:
+        if node_start_line > int(end_line) or node_start_line < int(start_line):
+            return var_list
+    else:
+        if node_start_line > int(end_line):
+            return var_list
 
     if node_type in ["ParmVarDecl", "VarDecl"]:
         var_name = str(ast_node['identifier'])
@@ -107,22 +111,26 @@ def collect_var_dec_list(ast_node, line_number):
 
     if child_count:
         for child_node in ast_node['children']:
-            var_list = var_list + list(set(collect_var_dec_list(child_node, line_number)))
+            var_list = var_list + list(set(collect_var_dec_list(child_node, start_line, end_line, only_in_range)))
     return list(set(var_list))
 
 
-def collect_var_ref_list(ast_node, line_number):
+def collect_var_ref_list(ast_node, start_line, end_line, only_in_range):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     var_list = list()
     child_count = len(ast_node['children'])
-    start_line = int(ast_node['start line'])
-    end_line = int(ast_node['end line'])
+    node_start_line = int(ast_node['start line'])
+    node_end_line = int(ast_node['end line'])
     start_column = int(ast_node['start column'])
     end_column = int(ast_node['end column'])
     node_type = ast_node['type']
 
-    if start_line == int(line_number):
-        return var_list
+    if only_in_range:
+        if node_start_line > int(end_line) or node_start_line < int(start_line):
+            return var_list
+    else:
+        if node_start_line > int(end_line):
+            return var_list
 
     if node_type in ["MemberExpr"]:
         node_value = ast_node['value']
@@ -158,23 +166,24 @@ def collect_var_ref_list(ast_node, line_number):
         return var_list
     if child_count:
         for child_node in ast_node['children']:
-            var_list = var_list + list(set(collect_var_ref_list(child_node, line_number)))
+            var_list = var_list + list(set(collect_var_ref_list(child_node, start_line, end_line, only_in_range)))
     return list(set(var_list))
 
 
-def generate_available_variable_list(source_path, line_number):
+def generate_available_variable_list(source_path, start_line, end_line, only_in_range):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.normal("\t\t\tgenerating variable(available) list")
     variable_list = list()
     ast_map = Generator.get_ast_json(source_path)
-    func_node = Weaver.get_fun_node(ast_map, int(line_number), source_path)
-    param_node = func_node['children'][0]
-    for child_node in param_node['children']:
-        child_node_type = child_node['type']
-        if child_node_type == "ParmVarDecl":
-            var_name = str(child_node['identifier'])
-            if var_name not in variable_list:
-                variable_list.append(var_name)
+    func_node = Weaver.get_fun_node(ast_map, int(end_line), source_path)
+    if not only_in_range:
+        param_node = func_node['children'][0]
+        for child_node in param_node['children']:
+            child_node_type = child_node['type']
+            if child_node_type == "ParmVarDecl":
+                var_name = str(child_node['identifier'])
+                if var_name not in variable_list:
+                    variable_list.append(var_name)
 
     compound_node = func_node['children'][1]
     for child_node in compound_node['children']:
@@ -182,10 +191,10 @@ def generate_available_variable_list(source_path, line_number):
         child_node_start_line = child_node['start line']
         child_node_end_line = child_node['end line']
         filter_declarations = False
-        child_var_dec_list = collect_var_dec_list(child_node, line_number)
-        child_var_ref_list = collect_var_ref_list(child_node, line_number)
+        child_var_dec_list = collect_var_dec_list(child_node, start_line, end_line, only_in_range)
+        child_var_ref_list = collect_var_ref_list(child_node, start_line, end_line, only_in_range)
 
-        if child_node_start_line <= line_number <= child_node_end_line:
+        if child_node_start_line <= end_line <= child_node_end_line:
             variable_list = list(set(variable_list + child_var_ref_list + child_var_dec_list))
             break
 
@@ -206,7 +215,7 @@ def generate_available_variable_list(source_path, line_number):
     return variable_list
 
 
-def generate_symbolic_expressions(source_path, line_number, output_log):
+def generate_symbolic_expressions(source_path, start_line, end_line, output_log, only_in_range=True):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.normal("\tgenerating symbolic expressions")
     source_file_name = str(source_path).split("/")[-1]
@@ -229,7 +238,7 @@ def generate_symbolic_expressions(source_path, line_number, output_log):
     binary_directory = "/".join(str(binary_path).split("/")[:-1])
     backup_file(binary_path, "original-bitcode")
 
-    instrument_code_for_klee(source_path, line_number)
+    instrument_code_for_klee(source_path, start_line, end_line, only_in_range)
     build_instrumented_code(source_directory)
     extract_bitcode(binary_path)
     Concolic.generate_var_expressions(binary_args, binary_directory, binary_name, output_log)
