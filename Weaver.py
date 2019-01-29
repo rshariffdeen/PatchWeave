@@ -330,7 +330,7 @@ def get_child_id_list(ast_node):
     return id_list
 
 
-def merge_ast_script(ast_script, ast_node):
+def merge_ast_script(ast_script, ast_node_a, ast_node_b):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     merged_ast_script = list()
     inserted_node_list = list()
@@ -346,40 +346,68 @@ def merge_ast_script(ast_script, ast_node):
             node_id = int((script_line.split("(")[1]).split(")")[0])
             if node_id in deleted_node_list:
                 continue
-            node = get_ast_node_by_id(ast_node, node_id)
+            node = get_ast_node_by_id(ast_node_a, node_id)
             child_id_list = get_child_id_list(node)
             deleted_node_list = deleted_node_list + child_id_list
             merged_ast_script.append(script_line)
+        elif "Move" in script_line:
+            move_position = int((script_line.split(" at ")[1]))
+            move_node_str = (script_line.split(" into ")[0]).replace("Move ", "")
+            target_node_id_b = int(((script_line.split(" into ")[1]).split("(")[1]).split(")")[0])
+            target_node_id_a = mapping_ba[target_node_id_b]
+            target_node_a = get_ast_node_by_id(ast_node_a, target_node_id_a)
+            replacing_node = target_node_a['children'][move_position]
+            replacing_node_str = replacing_node['type'] + "(" + str(replacing_node['id']) + ")"
+            script_line = "Replace " + replacing_node_str + " with " + move_node_str
+            merged_ast_script.append(script_line)
+            deleted_node_list.append(replacing_node['id'])
+            child_id_list = get_child_id_list(replacing_node)
+            deleted_node_list = deleted_node_list + child_id_list
+
     return merged_ast_script
 
 
-def filter_ast_script(ast_script, line_range, ast_node):
+def filter_ast_script(ast_script, line_range_a, line_range_b, ast_node_a, ast_node_b):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     filtered_ast_script = list()
     print(ast_script)
-    line_range_start, line_range_end = line_range
-    line_numbers = set(range(int(line_range_start), int(line_range_end) + 1))
-    merged_ast_script = merge_ast_script(ast_script, ast_node)
+    line_range_start_a, line_range_end_a = line_range_a
+    line_range_start_b, line_range_end_b = line_range_b
+    line_numbers_a = set(range(int(line_range_start_a), int(line_range_end_a) + 1))
+    line_numbers_b = set(range(int(line_range_start_b), int(line_range_end_b) + 1))
+
+    merged_ast_script = merge_ast_script(ast_script, ast_node_a, ast_node_b)
     print(merged_ast_script)
     for script_line in merged_ast_script:
         if "Insert" in script_line:
             node_id_b = int(((script_line.split(" into ")[0]).split("(")[1]).split(")")[0])
-            node_b = get_ast_node_by_id(ast_node, node_id_b)
+            node_b = get_ast_node_by_id(ast_node_b, node_id_b)
             node_line_start = int(node_b['start line'])
             node_line_end = int(node_b['end line']) + 1
             node_line_numbers = set(range(node_line_start, node_line_end))
-            intersection = line_numbers.intersection(node_line_numbers)
+            intersection = line_numbers_b.intersection(node_line_numbers)
             if intersection:
                 filtered_ast_script.append(script_line)
         elif "Delete" in script_line:
             node_id_a = int((script_line.split("(")[1]).split(")")[0])
-            node_a = get_ast_node_by_id(ast_node, node_id_a)
+            node_a = get_ast_node_by_id(ast_node_a, node_id_a)
             node_line_start = int(node_a['start line'])
             node_line_end = int(node_a['end line']) + 1
             node_line_numbers = set(range(node_line_start, node_line_end))
-            intersection = line_numbers.intersection(node_line_numbers)
+            intersection = line_numbers_a.intersection(node_line_numbers)
             if intersection:
                 filtered_ast_script.append(script_line)
+        elif "Replace" in script_line:
+            node_id_a = int(((script_line.split(" with ")[0]).split("(")[1]).split(")")[0])
+            node_a = get_ast_node_by_id(ast_node_a, node_id_a)
+            node_line_start = int(node_a['start line'])
+            node_line_end = int(node_a['end line']) + 1
+            node_line_numbers = set(range(node_line_start, node_line_end))
+            intersection = line_numbers_a.intersection(node_line_numbers)
+            if intersection:
+                filtered_ast_script.append(script_line)
+    print(filtered_ast_script)
+    exit()
     return filtered_ast_script
 
 
@@ -432,6 +460,7 @@ def show_final_patch(source_path_a, source_path_b, source_path_c, source_path_d)
 
 
 def transplant_code(diff_info, diff_loc):
+    global mapping_ba, var_expr_map_a, var_expr_map_b, var_expr_map_c
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     byte_list = compute_common_bytes(diff_loc)
     estimate_loc = estimate_divergent_point(byte_list)
@@ -445,7 +474,9 @@ def transplant_code(diff_info, diff_loc):
 
     if operation == 'insert':
         start_line_b, end_line_b = diff_info['new-lines']
-        filtered_ast_script = filter_ast_script(ast_script, (start_line_b, end_line_b), ast_map_b)
+        line_range_b = (start_line_b, end_line_b)
+        line_range_a = (-1, -1)
+        filtered_ast_script = filter_ast_script(ast_script, line_range_a, line_range_b, ast_map_a, ast_map_b)
         Mapper.generate_symbolic_expressions(source_path_b, start_line_b,  end_line_b, FILE_VAR_EXPR_LOG_B)
         var_expr_map_b = Mapper.collect_symbolic_expressions(FILE_VAR_EXPR_LOG_B)
         insertion_loc_list = identify_insertion_points(estimate_loc, var_expr_map_b)
@@ -470,17 +501,13 @@ def transplant_code(diff_info, diff_loc):
             output_ast_script(ast_script_c)
             execute_ast_transformation(source_path_b, source_path_d)
     elif operation == 'modify':
-        start_line_b, end_line_b = diff_info['new-lines']
-        start_line_a, end_line_a = diff_info['old-lines']
-        filtered_ast_script_b = filter_ast_script(ast_script, (start_line_b, end_line_b), ast_map_b)
-        print(filtered_ast_script_b)
-        Mapper.generate_symbolic_expressions(source_path_b, start_line_b, end_line_b, FILE_VAR_EXPR_LOG_B)
+        line_range_a = diff_info['old-lines']
+        line_range_b = diff_info['new-lines']
+        filtered_ast_script = filter_ast_script(ast_script, line_range_a, line_range_b, ast_map_a, ast_map_b)
+        Mapper.generate_symbolic_expressions(source_path_b, line_range_b[0], line_range_b[1], FILE_VAR_EXPR_LOG_B)
         var_expr_map_b = Mapper.collect_symbolic_expressions(FILE_VAR_EXPR_LOG_B)
-        filtered_ast_script_a = filter_ast_script(ast_script, (start_line_a, end_line_a), ast_map_a)
-        print(filtered_ast_script_a)
-        Mapper.generate_symbolic_expressions(source_path_a, start_line_a, end_line_a, FILE_VAR_EXPR_LOG_A)
+        Mapper.generate_symbolic_expressions(source_path_a, line_range_a[0], line_range_a[1], FILE_VAR_EXPR_LOG_A)
         var_expr_map_a = Mapper.collect_symbolic_expressions(FILE_VAR_EXPR_LOG_A)
-        filtered_ast_script = list(set(filtered_ast_script_b + filtered_ast_script_a))
         print(filtered_ast_script)
         insertion_loc_list = identify_insertion_points(estimate_loc, var_expr_map_a)
         print(insertion_loc_list)
@@ -516,7 +543,6 @@ def transplant_code(diff_info, diff_loc):
 
 def transplant_patch():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    global mapping_ba, var_expr_map_a, var_expr_map_b, var_expr_map_c
 
     for diff_loc in Differ.diff_info.keys():
         Output.normal(diff_loc)
