@@ -20,10 +20,15 @@ function_list_b = list()
 function_list_c = list()
 target_candidate_function_list = list()
 mapping_ba = dict()
+missing_function_list = dict()
 
 var_expr_map_a = dict()
 var_expr_map_b = dict()
 var_expr_map_c = dict()
+
+ast_map_a = dict()
+ast_map_b = dict()
+ast_map_c = dict()
 
 TOOL_AST_PATCH = "patchweave"
 
@@ -537,14 +542,11 @@ def execute_ast_transformation(source_path_b, source_path_d):
     parameters += " -source=" + source_path_b + " -target=" + source_path_d
     transform_command = TOOL_AST_PATCH + parameters + " > " + FILE_TEMP_FIX
     ret_code = int(execute_command(transform_command))
-    if ret_code != 0:
-        print(ret_code)
-        print(transform_command)
-        error_exit("Error Transforming!!!")
-    else:
+    if ret_code == 0:
         move_command = "cp " + FILE_TEMP_FIX + " " + source_path_d
         show_partial_diff(source_path_d, FILE_TEMP_FIX)
         execute_command(move_command)
+    return ret_code
 
 
 def show_partial_diff(source_path_a, source_path_b):
@@ -563,8 +565,98 @@ def show_final_patch(source_path_a, source_path_b, source_path_c, source_path_d)
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
 
 
+def extract_function_calls(ast_node):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    call_expr_list = list()
+    node_type = str(ast_node["type"])
+    if node_type == "CallExpr":
+        call_expr_list.append(ast_node)
+    else:
+        if len(ast_node['children']) > 0:
+            for child_node in ast_node['children']:
+                child_call_list = extract_function_calls(child_node)
+                call_expr_list = call_expr_list + child_call_list
+    return call_expr_list
+
+
+def get_function_node_id(ast_node, function_name):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    for child_node in ast_node['children']:
+        child_node_type = child_node['type']
+        if child_node_type == "FunctionDecl":
+            child_node_identifier = child_node['identifier']
+            if child_node_identifier == function_name:
+                return int(child_node['id'])
+    return -1
+
+
+def identify_missing_functions(ast_node, source_path_b, source_path_d):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    global missing_function_list
+    print("identiyfnig missing func")
+    print(ast_node)
+    call_list = extract_function_calls(ast_node)
+    for call_expr in call_list:
+        print(call_expr)
+        function_ref_node = call_expr['children'][0]
+        function_name = function_ref_node['value']
+        function_node_id = get_function_node_id(ast_map_a, function_name)
+        if function_node_id != -1:
+            if function_name not in missing_function_list.keys():
+                info = dict()
+                info['node_id'] = function_node_id
+                info['source_b'] = source_path_b
+                info['source_d'] = source_path_d
+                missing_function_list[function_name] = info
+            else:
+                print("MULTIPLE FUNCTION REFERENCES FOUND!!!")
+                print(missing_function_list[function_name])
+                exit()
+
+
+def get_function_insertion_point(source_path):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    file_name = source_path.split("/")[-1]
+    ast_node = Generator.get_ast_json(source_path)
+    for child_node in ast_node['children']:
+        child_node_type = child_node['type']
+        if child_node_type == "FunctionDecl":
+            child_node_file_name = child_node['file']
+            if child_node_file_name == file_name:
+                return int(child_node['start line'])
+    return -1
+
+
+def transplant_missing_functions():
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    Output.sub_title("transplanting missing functions")
+    for function_name in missing_function_list:
+        info = missing_function_list[function_name]
+        node_id = info['node_id']
+        source_path_b = info['source_b']
+        source_path_d = info['source_d']
+        Output.normal(function_name)
+        function_node = get_ast_node_by_id(ast_map_a, int(node_id))
+        source_path_b = "/".join(source_path_b.split("/")[:-1])
+        function_source_file = source_path_b + "/" + function_node['file']
+        start_line = function_node["start line"]
+        end_line = function_node["end line"]
+        original_function = ""
+        for i in range(int(start_line), int(end_line + 1)):
+            original_function += get_code(function_source_file, int(i)) + "\n"
+        # translated_patch = translate_patch(original_patch, var_map_ac)
+        print(original_function)
+        line_number = get_function_insertion_point(source_path_d)
+        print(line_number)
+        backup_file(source_path_d, FILE_TEMP_FIX)
+        insert_patch(original_function, source_path_d, line_number)
+        show_partial_diff(source_path_d, FILE_TEMP_FIX)
+        restore_file(FILE_TEMP_FIX, source_path_d)
+
+
 def transplant_code(diff_info, diff_loc):
     global mapping_ba, var_expr_map_a, var_expr_map_b, var_expr_map_c
+    global ast_map_a, ast_map_b, ast_map_c
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     byte_list = compute_common_bytes(diff_loc)
     estimate_loc = estimate_divergent_point(byte_list)
@@ -593,8 +685,11 @@ def transplant_code(diff_info, diff_loc):
             function_node = get_fun_node(ast_map_c, int(line_number_c), source_path_c)
             position_c = get_ast_node_position(function_node, int(line_number_c))
             for script_line in filtered_ast_script:
-                inserting_node = script_line.split(" into ")[0]
-                translated_command = inserting_node + " into " + position_c
+                inserting_node_str = script_line.split(" into ")[0]
+                inserting_node_id = int((inserting_node_str.split("(")[1]).split(")")[0])
+                inserting_node = get_ast_node_by_id(ast_map_b, inserting_node_id)
+                translated_command = inserting_node_str + " into " + position_c
+                identify_missing_functions(inserting_node, source_path_b, source_path_d)
                 ast_script_c.append(translated_command)
             # Mapper.generate_symbolic_expressions(source_path_d, line_number_c, line_number_c, FILE_VAR_EXPR_LOG_C, False)
             var_expr_map_c = Mapper.collect_symbolic_expressions(FILE_VAR_EXPR_LOG_C)
@@ -603,7 +698,9 @@ def transplant_code(diff_info, diff_loc):
             # print(ast_script_c)
             output_var_map(var_map)
             output_ast_script(ast_script_c)
-            execute_ast_transformation(source_path_b, source_path_d)
+            ret_code = execute_ast_transformation(source_path_b, source_path_d)
+            if ret_code == 0:
+                break
     elif operation == 'modify':
         line_range_a = diff_info['old-lines']
         line_range_b = diff_info['new-lines']
@@ -628,10 +725,16 @@ def transplant_code(diff_info, diff_loc):
             var_map_ac = Mapper.generate_mapping(var_expr_map_a, var_expr_map_c)
             var_map_bc = Mapper.generate_mapping(var_expr_map_b, var_expr_map_c)
             for script_line in filtered_ast_script:
+                print(script_line)
                 translated_command = script_line
                 if "Insert" in script_line:
-                    inserting_node = script_line.split(" into ")[0]
-                    translated_command = inserting_node + " into " + position_c
+                    inserting_node_str = script_line.split(" into ")[0]
+                    inserting_node_id = int((inserting_node_str.split("(")[1]).split(")")[0])
+                    inserting_node = get_ast_node_by_id(ast_map_b, inserting_node_id)
+                    translated_command = inserting_node_str + " into " + position_c
+                    print(translated_command)
+                    identify_missing_functions(inserting_node, source_path_b, source_path_d)
+                    print("fin")
                     ast_script_c.append(translated_command)
                 elif "Replace" in script_line:
                     replacing_node_str = (script_line.split(" with ")[0]).replace("Replace ", "")
@@ -641,6 +744,7 @@ def transplant_code(diff_info, diff_loc):
                     if target_node_str is None:
                         continue
                     elif "Macro" in target_node_str:
+                        print("insdie macro")
                         target_node_id = int((target_node_str.split("(")[1]).split(")")[0])
                         target_node = get_ast_node_by_id(ast_map_c, target_node_id)
                         ast_script_c.append(translated_command)
@@ -660,18 +764,18 @@ def transplant_code(diff_info, diff_loc):
             print(ast_script_c)
             output_var_map(var_map_ac)
             output_ast_script(ast_script_c)
-            execute_ast_transformation(source_path_b, source_path_d)
-            exit()
+            ret_code = execute_ast_transformation(source_path_b, source_path_d)
+            if ret_code == 0:
+                break
 
 
 def transplant_patch():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-
     for diff_loc in Differ.diff_info.keys():
         Output.normal(diff_loc)
         diff_info = Differ.diff_info[diff_loc]
         transplant_code(diff_info, diff_loc)
-
+    transplant_missing_functions()
 
     #Verify Patch
 
@@ -751,6 +855,11 @@ def transplant_patch():
 
 def get_diff_variable_list(ast_script, ast_node):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+
+
+def get_best_insertion_point(insertion_point_list):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    return insertion_point_list[0]
 
 
 def identify_insertion_points(estimated_loc, var_expr_map):
