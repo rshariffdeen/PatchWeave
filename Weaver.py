@@ -667,7 +667,7 @@ def transplant_code(diff_info, diff_loc):
         line_range_b = (start_line_b, end_line_b)
         line_range_a = (-1, -1)
         filtered_ast_script = filter_ast_script(ast_script, line_range_a, line_range_b, ast_map_a, ast_map_b)
-        # Mapper.generate_symbolic_expressions(source_path_b, start_line_b,  end_line_b, FILE_VAR_EXPR_LOG_B)
+        Mapper.generate_symbolic_expressions(source_path_b, start_line_b,  end_line_b, FILE_VAR_EXPR_LOG_B)
         var_expr_map_b = Mapper.collect_symbolic_expressions(FILE_VAR_EXPR_LOG_B)
         insertion_loc_list = identify_insertion_points(estimate_loc, var_expr_map_b)
         ast_script_c = list()
@@ -685,7 +685,7 @@ def transplant_code(diff_info, diff_loc):
                 translated_command = inserting_node_str + " into " + position_c
                 identify_missing_functions(inserting_node, source_path_b, source_path_d)
                 ast_script_c.append(translated_command)
-            # Mapper.generate_symbolic_expressions(source_path_d, line_number_c, line_number_c, FILE_VAR_EXPR_LOG_C, False)
+            Mapper.generate_symbolic_expressions(source_path_c, line_number_c, line_number_c, FILE_VAR_EXPR_LOG_C, False)
             var_expr_map_c = Mapper.collect_symbolic_expressions(FILE_VAR_EXPR_LOG_C)
             var_map = Mapper.generate_mapping(var_expr_map_b, var_expr_map_c)
             # print(var_map)
@@ -699,9 +699,9 @@ def transplant_code(diff_info, diff_loc):
         line_range_a = diff_info['old-lines']
         line_range_b = diff_info['new-lines']
         filtered_ast_script = filter_ast_script(ast_script, line_range_a, line_range_b, ast_map_a, ast_map_b)
-        # Mapper.generate_symbolic_expressions(source_path_b, line_range_b[0], line_range_b[1], FILE_VAR_EXPR_LOG_B)
+        Mapper.generate_symbolic_expressions(source_path_b, line_range_b[0], line_range_b[1], FILE_VAR_EXPR_LOG_B)
         var_expr_map_b = Mapper.collect_symbolic_expressions(FILE_VAR_EXPR_LOG_B)
-        # Mapper.generate_symbolic_expressions(source_path_a, line_range_a[0], line_range_a[1], FILE_VAR_EXPR_LOG_A)
+        Mapper.generate_symbolic_expressions(source_path_a, line_range_a[0], line_range_a[1], FILE_VAR_EXPR_LOG_A)
         var_expr_map_a = Mapper.collect_symbolic_expressions(FILE_VAR_EXPR_LOG_A)
         insertion_loc_list = identify_insertion_points(estimate_loc, var_expr_map_a)
         # print(insertion_loc_list)
@@ -714,7 +714,7 @@ def transplant_code(diff_info, diff_loc):
             # print(insertion_loc)
             function_node = get_fun_node(ast_map_c, int(line_number_c), source_path_c)
             position_c = get_ast_node_position(function_node, int(line_number_c))
-            # Mapper.generate_symbolic_expressions(source_path_d, line_number_c, line_number_c, FILE_VAR_EXPR_LOG_C, False)
+            Mapper.generate_symbolic_expressions(source_path_c, line_number_c, line_number_c, FILE_VAR_EXPR_LOG_C, False)
             var_expr_map_c = Mapper.collect_symbolic_expressions(FILE_VAR_EXPR_LOG_C)
             var_map_ac = Mapper.generate_mapping(var_expr_map_a, var_expr_map_c)
             var_map_bc = Mapper.generate_mapping(var_expr_map_b, var_expr_map_c)
@@ -766,81 +766,8 @@ def transplant_patch():
         diff_info = Differ.diff_info[diff_loc]
         transplant_code(diff_info, diff_loc)
     transplant_missing_functions()
-
     #Verify Patch
-
     #Test for More Bugs
-
-
-        # source_path_a, line_number_a = diff_loc.split(":")
-        # source_path_b = str(source_path_a).replace(Common.VALUE_PATH_A, Common.VALUE_PATH_B)
-        # execute_ast_transformation(source_path_b, source_path_d)
-        #
-        #
-        #
-        # elif operation == 'modify':
-        #     continue
-        #     start_line_b, end_line_b = diff_info['new-lines']
-        #     start_line_a, end_line_a = diff_info['old-lines']
-        #     filtered_ast_script_b = filter_ast_script(ast_script, (start_line_b, end_line_b), ast_map_b)
-            # print(filtered_ast_script_b)
-            # Mapper.generate_symbolic_expressions(source_path_b, end_line_b, FILE_VAR_EXPR_LOG_B)
-            # var_expr_map_b = Mapper.collect_symbolic_expressions(FILE_VAR_EXPR_LOG_B)
-            # filtered_ast_script_a = filter_ast_script(ast_script, (start_line_a, end_line_a), ast_map_a)
-            # # Mapper.generate_symbolic_expressions(source_path_a, end_line_a, FILE_VAR_EXPR_LOG_A)
-            # var_expr_map_a = Mapper.collect_symbolic_expressions(FILE_VAR_EXPR_LOG_A)
-            # filtered_ast_script = list(set(filtered_ast_script_b + filtered_ast_script_a))
-            # insertion_loc_list = identify_insertion_points(estimate_loc)
-            # ast_script_c = list()
-            # # print(insertion_loc_list)
-            # for insertion_loc in insertion_loc_list:
-            #     Output.normal("\t\t" + insertion_loc)
-            #     source_path_c, line_number_c = insertion_loc.split(":")
-            #     source_path_d = source_path_c.replace(Common.Project_C.path, Common.Project_D.path)
-            #     ast_map_c = Generator.get_ast_json(source_path_c)
-            #     # print(insertion_loc)
-            #     function_node = get_fun_node(ast_map_c, int(line_number_c), source_path_c)
-            #     position_c = get_ast_node_position(function_node, int(line_number_c))
-            #     for script_line in filtered_ast_script:
-            #         translated_command = script_line
-            #         if "Insert" in script_line:
-            #             inserting_node = script_line.split(" into ")[0]
-            #             translated_command = inserting_node + " into " + position_c
-            #         ast_script_c.append(translated_command)
-            #     # Mapper.generate_symbolic_expressions(source_path_d, line_number_c, FILE_VAR_EXPR_LOG_C)
-            #     var_expr_map_c = Mapper.collect_symbolic_expressions(FILE_VAR_EXPR_LOG_C)
-            #     var_map = Mapper.generate_mapping(var_expr_map_a, var_expr_map_c)
-            #     # print(var_map)
-            #     # print(ast_script_c)
-            #     output_var_map(var_map)
-            #     output_ast_script(ast_script_c)
-            #     execute_ast_transformation(source_path_b, source_path_d)
-
-
-        # else:
-        #     continue
-        #
-        # for insertion_loc in insertion_loc_list:
-        #     Output.normal("\t" + insertion_loc)
-        #     source_path_c, line_number_c = insertion_loc.split(":")
-        #     Mapper.generate_symbolic_expressions(source_path_c, line_number_c)
-        #     sym_expr_map = Mapper.collect_symbolic_expressions(FILE_VAR_EXPR_LOG)
-        #     var_map = Mapper.generate_mapping(Mapper.var_expr_map_a, sym_expr_map)
-        #
-        #     if operation == 'insert':
-        #
-        #         ast_map_b = Generator.generate_json(source_path_b)
-        #         start_line, end_line = diff_info['new-lines']
-        #         original_patch = ""
-        #         for i in range(int(start_line), int(end_line + 1)):
-        #             original_patch += get_code(source_path_b, int(i)) + "\n"
-        #         print(original_patch)
-        #         translated_patch = translate_patch(original_patch, var_map)
-        #         print(translated_patch)
-        #         insert_patch(translated_patch, source_path_c, line_number_c)
-        #
-        #     elif operation == 'delete':
-        #         original_patch = get_code(source_path_a, int(line_number_a))
 
 
 def get_diff_variable_list(ast_script, ast_node):
