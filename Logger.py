@@ -59,9 +59,11 @@ def warning(message):
 def end(time_duration):
     output("[END] PatchWeave ended at " + str(datetime.datetime.now()) + "\n\n")
     output("\nTime duration\n----------------------\n\n")
-    output("Initialization: " + time_duration[Common.KEY_DURATION_INITIALIZATION] + " seconds\n")
-    output("Clone Detection: " + time_duration[Common.KEY_DURATION_CLONE_DETECTION] + " seconds\n")
-    output("Translation: " + time_duration[Common.KEY_DURATION_TRANSLATION] + " seconds\n")
-    output("Transplantation: " + time_duration[Common.KEY_DURATION_TRANSPLANTATION] + " seconds\n")
+    output("Initialization: " + time_duration[Common.KEY_DURATION_INITIALIZATION] + " seconds")
+    output("Build: " + time_duration[Common.KEY_DURATION_BUILD] + " seconds")
+    output("Diff Analysis: " + time_duration[Common.KEY_DURATION_DIFF_ANALYSIS] + " seconds")
+    output("Trace Analysis: " + time_duration[Common.KEY_DURATION_TRACE_ANALYSIS] + " seconds")
+    output("Symbolic Trace Analysis: " + time_duration[Common.KEY_DURATION_SYMBOLIC_TRACE_ANALYSIS] + " seconds")
+    output("Transplantation: " + time_duration[Common.KEY_DURATION_TRANSPLANTATION] + " seconds")
     output("\nPatchWeave finished successfully after " + time_duration[Common.KEY_DURATION_TOTAL] + " seconds\n")
 

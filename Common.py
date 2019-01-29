@@ -75,11 +75,13 @@ KEY_DURATION_TOTAL = 'run-time'
 KEY_DURATION_INITIALIZATION = 'initialization'
 KEY_DURATION_DIFF_ANALYSIS = 'diff-analysis'
 KEY_DURATION_TRACE_ANALYSIS = "trace-analysis"
+KEY_DURATION_SYMBOLIC_TRACE_ANALYSIS = "sym-trace-analysis"
 KEY_DURATION_FUNCTION_MATCH = "match-functions"
 KEY_DURATION_VARIABLE_MATCH = "match-variables"
 KEY_DURATION_TRANSLATION = 'translation'
 KEY_DURATION_TRANSPLANTATION = "transplantation"
 KEY_DURATION_CLONE_DETECTION = 'clone-detection'
+KEY_DURATION_BUILD = 'build-project'
 
 
 # ---------------- ARGUMENTS ---------------------------

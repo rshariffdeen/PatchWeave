@@ -593,11 +593,8 @@ def get_function_node_id(ast_node, function_name):
 def identify_missing_functions(ast_node, source_path_b, source_path_d):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     global missing_function_list
-    print("identiyfnig missing func")
-    print(ast_node)
     call_list = extract_function_calls(ast_node)
     for call_expr in call_list:
-        print(call_expr)
         function_ref_node = call_expr['children'][0]
         function_name = function_ref_node['value']
         function_node_id = get_function_node_id(ast_map_a, function_name)
@@ -645,13 +642,10 @@ def transplant_missing_functions():
         for i in range(int(start_line), int(end_line + 1)):
             original_function += get_code(function_source_file, int(i)) + "\n"
         # translated_patch = translate_patch(original_patch, var_map_ac)
-        print(original_function)
         line_number = get_function_insertion_point(source_path_d)
-        print(line_number)
         backup_file(source_path_d, FILE_TEMP_FIX)
         insert_patch(original_function, source_path_d, line_number)
         show_partial_diff(source_path_d, FILE_TEMP_FIX)
-        restore_file(FILE_TEMP_FIX, source_path_d)
 
 
 def transplant_code(diff_info, diff_loc):
@@ -725,16 +719,13 @@ def transplant_code(diff_info, diff_loc):
             var_map_ac = Mapper.generate_mapping(var_expr_map_a, var_expr_map_c)
             var_map_bc = Mapper.generate_mapping(var_expr_map_b, var_expr_map_c)
             for script_line in filtered_ast_script:
-                print(script_line)
                 translated_command = script_line
                 if "Insert" in script_line:
                     inserting_node_str = script_line.split(" into ")[0]
                     inserting_node_id = int((inserting_node_str.split("(")[1]).split(")")[0])
                     inserting_node = get_ast_node_by_id(ast_map_b, inserting_node_id)
                     translated_command = inserting_node_str + " into " + position_c
-                    print(translated_command)
                     identify_missing_functions(inserting_node, source_path_b, source_path_d)
-                    print("fin")
                     ast_script_c.append(translated_command)
                 elif "Replace" in script_line:
                     replacing_node_str = (script_line.split(" with ")[0]).replace("Replace ", "")
@@ -761,7 +752,6 @@ def transplant_code(diff_info, diff_loc):
                     else:
                         translated_command = script_line.replace(replacing_node_str, target_node_str)
                         ast_script_c.append(translated_command)
-            print(ast_script_c)
             output_var_map(var_map_ac)
             output_ast_script(ast_script_c)
             ret_code = execute_ast_transformation(source_path_b, source_path_d)

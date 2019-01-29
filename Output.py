@@ -84,8 +84,10 @@ def end(time_info):
     Logger.end(time_info)
     statistics("\nRun time statistics:\n-----------------------\n")
     statistics("Initialization: " + time_info[Common.KEY_DURATION_INITIALIZATION] + " seconds")
-    statistics("Clone Detection: " + time_info[Common.KEY_DURATION_CLONE_DETECTION] + " seconds")
-    statistics("Translation: " + time_info[Common.KEY_DURATION_TRANSLATION] + " seconds")
+    statistics("Build: " + time_info[Common.KEY_DURATION_BUILD] + " seconds")
+    statistics("Diff Analysis: " + time_info[Common.KEY_DURATION_DIFF_ANALYSIS] + " seconds")
+    statistics("Trace Analysis: " + time_info[Common.KEY_DURATION_TRACE_ANALYSIS] + " seconds")
+    statistics("Symbolic Trace Analysis: " + time_info[Common.KEY_DURATION_SYMBOLIC_TRACE_ANALYSIS] + " seconds")
     statistics("Transplantation: " + time_info[Common.KEY_DURATION_TRANSPLANTATION] + " seconds")
     success("\nPatchWeave finished successfully after " + time_info[Common.KEY_DURATION_TOTAL] + " seconds\n")
 
