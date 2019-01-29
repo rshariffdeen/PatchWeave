@@ -337,14 +337,6 @@ def is_node_equal(node_a, node_b, var_map):
     node_type_a = str(node_a['type'])
     node_type_b = str(node_b['type'])
 
-    if node_type_b == "Macro":
-        node_value_a = get_node_str(node_a)
-        node_value_b = str(node_b['value'])
-        if node_type_a in node_value_b:
-            return True
-        else:
-            return False
-
     if node_type_a != node_type_b:
         return False
 
@@ -386,7 +378,7 @@ def get_matching_node(ast_node, search_node, var_map):
     node_type = str(ast_node['type'])
     search_node_type = str(search_node['type'])
 
-    if node_type == search_node_type or node_type == "Macro":
+    if node_type == search_node_type:
         if is_node_equal(ast_node, search_node, var_map):
             return node_type + "(" + str(node_id) + ")"
 
@@ -544,10 +536,10 @@ def execute_ast_transformation(source_path_b, source_path_d):
     parameters = " -map=" + FILE_VAR_MAP + " -script=" + FILE_AST_SCRIPT
     parameters += " -source=" + source_path_b + " -target=" + source_path_d
     transform_command = TOOL_AST_PATCH + parameters + " > " + FILE_TEMP_FIX
-    # print(transform_command)
     ret_code = int(execute_command(transform_command))
     if ret_code != 0:
         print(ret_code)
+        print(transform_command)
         error_exit("Error Transforming!!!")
     else:
         move_command = "cp " + FILE_TEMP_FIX + " " + source_path_d
@@ -621,7 +613,7 @@ def transplant_code(diff_info, diff_loc):
         # Mapper.generate_symbolic_expressions(source_path_a, line_range_a[0], line_range_a[1], FILE_VAR_EXPR_LOG_A)
         var_expr_map_a = Mapper.collect_symbolic_expressions(FILE_VAR_EXPR_LOG_A)
         insertion_loc_list = identify_insertion_points(estimate_loc, var_expr_map_a)
-        print(insertion_loc_list)
+        # print(insertion_loc_list)
         ast_script_c = list()
         for insertion_loc in insertion_loc_list:
             Output.normal("\t\t" + insertion_loc)
@@ -636,7 +628,6 @@ def transplant_code(diff_info, diff_loc):
             var_map_ac = Mapper.generate_mapping(var_expr_map_a, var_expr_map_c)
             var_map_bc = Mapper.generate_mapping(var_expr_map_b, var_expr_map_c)
             for script_line in filtered_ast_script:
-                print(script_line)
                 translated_command = script_line
                 if "Insert" in script_line:
                     inserting_node = script_line.split(" into ")[0]
@@ -647,16 +638,30 @@ def transplant_code(diff_info, diff_loc):
                     replacing_node_id = (replacing_node_str.split("(")[1]).split(")")[0]
                     replacing_node = get_ast_node_by_id(ast_map_a, int(replacing_node_id))
                     target_node_str = get_matching_node(function_node, replacing_node, var_map_ac)
-                    if target_node_str is not None:
+                    if target_node_str is None:
+                        continue
+                    elif "Macro" in target_node_str:
+                        target_node_id = int((target_node_str.split("(")[1]).split(")")[0])
+                        target_node = get_ast_node_by_id(ast_map_c, target_node_id)
+                        ast_script_c.append(translated_command)
+                        start_line = target_node["start line"]
+                        end_line = target_node["end line"]
+                        original_patch = ""
+                        for i in range(int(start_line), int(end_line + 1)):
+                            original_patch += get_code(source_path_b, int(i)) + "\n"
+                            print(original_patch)
+                        translated_patch = translate_patch(original_patch, var_map_ac)
+                        print(translated_patch)
+                        insert_patch(translated_patch, source_path_c, line_number_c)
+                        exit()
+                    else:
                         translated_command = script_line.replace(replacing_node_str, target_node_str)
                         ast_script_c.append(translated_command)
-
-
             print(ast_script_c)
-            exit()
-            output_var_map(var_map)
+            output_var_map(var_map_ac)
             output_ast_script(ast_script_c)
             execute_ast_transformation(source_path_b, source_path_d)
+            exit()
 
 
 def transplant_patch():
