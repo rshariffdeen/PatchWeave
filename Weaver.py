@@ -31,7 +31,7 @@ FILE_VAR_EXPR_LOG_A = Common.DIRECTORY_OUTPUT + "/log-sym-expr-a"
 FILE_VAR_EXPR_LOG_B = Common.DIRECTORY_OUTPUT + "/log-sym-expr-b"
 FILE_VAR_EXPR_LOG_C = Common.DIRECTORY_OUTPUT + "/log-sym-expr-c"
 FILE_VAR_MAP = Common.DIRECTORY_OUTPUT + "/var-map"
-FILE_AST_SCRIPT = Common.DIRECTORY_OUTPUT + "/ast-script"
+FILE_AST_SCRIPT = Common.DIRECTORY_OUTPUT + "/gen-ast-script"
 FILE_TEMP_FIX = Common.DIRECTORY_OUTPUT + "/temp-fix"
 FILE_PARTIAL_DIFF = Common.DIRECTORY_OUTPUT + "/gen-patch"
 
@@ -284,6 +284,119 @@ def get_ast_node_by_id(ast_node, find_id):
     return get_ast_node_by_id(prev_child_node, int(find_id))
 
 
+def get_member_expr_str(ast_node):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    node_value = ast_node['value']
+    var_name = ""
+    if node_value == "":
+        return ""
+    var_name = str(node_value.split(":")[-1])
+    if "union" in node_value:
+        var_name = "." + var_name
+    else:
+        var_name = "->" + var_name
+    child_node = ast_node['children'][0]
+    while child_node:
+        child_node_type = child_node['type']
+        if child_node_type == "DeclRefExpr":
+            var_name = str(child_node['value']) + var_name
+        elif child_node_type == "ArraySubscriptExpr":
+            return ""
+        elif child_node_type == "MemberExpr":
+            child_node_value = child_node['value']
+            if "union" in child_node_value:
+                var_name = "." + str(child_node_value.split(":")[-1]) + var_name
+            else:
+                var_name = "->" + str(child_node_value.split(":")[-1]) + var_name
+        else:
+            print(ast_node)
+            exit()
+        if len(child_node['children']) > 0:
+            child_node = child_node['children'][0]
+        else:
+            child_node = None
+    return var_name
+
+
+def get_node_str(ast_node):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    node_str = ""
+    node_type = str(ast_node['type'])
+    if node_type in ["DeclStmt", "DeclRefExpr", "VarDecl"]:
+        node_str = str(ast_node['value'])
+    if str(ast_node['type']) == "BinaryOperator":
+        operator = str(ast_node['value'])
+        right_operand = get_node_str(ast_node['children'][1])
+        left_operand = get_node_str(ast_node['children'][0])
+        return left_operand + " " + operator + " " + right_operand
+    return node_str
+
+
+def is_node_equal(node_a, node_b, var_map):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    node_type_a = str(node_a['type'])
+    node_type_b = str(node_b['type'])
+
+    if node_type_b == "Macro":
+        node_value_a = get_node_str(node_a)
+        node_value_b = str(node_b['value'])
+        if node_type_a in node_value_b:
+            return True
+        else:
+            return False
+
+    if node_type_a != node_type_b:
+        return False
+
+    if node_type_a in ["DeclStmt", "DeclRefExpr", "VarDecl"]:
+        node_value_a = node_a['value']
+        node_value_b = node_b['value']
+        if node_value_a == node_value_b or node_value_a == var_map[node_value_b] or \
+                node_value_b == var_map[node_value_a]:
+            return True
+        else:
+            return False
+    elif node_type_a == "MemberExpr":
+        node_value_a = get_member_expr_str(node_a)
+        node_value_b = get_member_expr_str(node_b)
+
+        if node_value_a == node_value_b:
+            return True
+        else:
+            if node_value_b in var_map and node_value_a == var_map[node_value_b]:
+                return True
+            else:
+                return False
+
+    elif node_type_a == "BinaryOperator":
+        left_child_a = node_a['children'][0]
+        right_child_a = node_a['children'][1]
+        left_child_b = node_b['children'][0]
+        right_child_b = node_b['children'][1]
+        if is_node_equal(left_child_a, left_child_b, var_map) and \
+                is_node_equal(right_child_a, right_child_b, var_map):
+            return True
+        else:
+            return False
+
+
+def get_matching_node(ast_node, search_node, var_map):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    node_id = int(ast_node['id'])
+    node_type = str(ast_node['type'])
+    search_node_type = str(search_node['type'])
+
+    if node_type == search_node_type or node_type == "Macro":
+        if is_node_equal(ast_node, search_node, var_map):
+            return node_type + "(" + str(node_id) + ")"
+
+    for child_node in ast_node['children']:
+        if len(child_node['children']) > 0:
+            target_node_str = get_matching_node(child_node, search_node, var_map)
+            if target_node_str is not None:
+                return target_node_str
+
+
 def get_ast_node_position(ast_node, line_number):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     node_id = ast_node['id']
@@ -353,14 +466,17 @@ def merge_ast_script(ast_script, ast_node_a, ast_node_b):
         elif "Move" in script_line:
             move_position = int((script_line.split(" at ")[1]))
             move_node_str = (script_line.split(" into ")[0]).replace("Move ", "")
+            move_node_id = int((move_node_str.split("(")[1]).split(")")[0])
             target_node_id_b = int(((script_line.split(" into ")[1]).split("(")[1]).split(")")[0])
             target_node_id_a = mapping_ba[target_node_id_b]
             target_node_a = get_ast_node_by_id(ast_node_a, target_node_id_a)
             replacing_node = target_node_a['children'][move_position]
+            replacing_node_id = replacing_node['id']
             replacing_node_str = replacing_node['type'] + "(" + str(replacing_node['id']) + ")"
             script_line = "Replace " + replacing_node_str + " with " + move_node_str
+
             merged_ast_script.append(script_line)
-            deleted_node_list.append(replacing_node['id'])
+            deleted_node_list.append(replacing_node_id)
             child_id_list = get_child_id_list(replacing_node)
             deleted_node_list = deleted_node_list + child_id_list
 
@@ -370,14 +486,12 @@ def merge_ast_script(ast_script, ast_node_a, ast_node_b):
 def filter_ast_script(ast_script, line_range_a, line_range_b, ast_node_a, ast_node_b):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     filtered_ast_script = list()
-    print(ast_script)
     line_range_start_a, line_range_end_a = line_range_a
     line_range_start_b, line_range_end_b = line_range_b
     line_numbers_a = set(range(int(line_range_start_a), int(line_range_end_a) + 1))
     line_numbers_b = set(range(int(line_range_start_b), int(line_range_end_b) + 1))
 
     merged_ast_script = merge_ast_script(ast_script, ast_node_a, ast_node_b)
-    print(merged_ast_script)
     for script_line in merged_ast_script:
         if "Insert" in script_line:
             node_id_b = int(((script_line.split(" into ")[0]).split("(")[1]).split(")")[0])
@@ -406,8 +520,6 @@ def filter_ast_script(ast_script, line_range_a, line_range_b, ast_node_a, ast_no
             intersection = line_numbers_a.intersection(node_line_numbers)
             if intersection:
                 filtered_ast_script.append(script_line)
-    print(filtered_ast_script)
-    exit()
     return filtered_ast_script
 
 
@@ -477,7 +589,7 @@ def transplant_code(diff_info, diff_loc):
         line_range_b = (start_line_b, end_line_b)
         line_range_a = (-1, -1)
         filtered_ast_script = filter_ast_script(ast_script, line_range_a, line_range_b, ast_map_a, ast_map_b)
-        Mapper.generate_symbolic_expressions(source_path_b, start_line_b,  end_line_b, FILE_VAR_EXPR_LOG_B)
+        # Mapper.generate_symbolic_expressions(source_path_b, start_line_b,  end_line_b, FILE_VAR_EXPR_LOG_B)
         var_expr_map_b = Mapper.collect_symbolic_expressions(FILE_VAR_EXPR_LOG_B)
         insertion_loc_list = identify_insertion_points(estimate_loc, var_expr_map_b)
         ast_script_c = list()
@@ -492,7 +604,7 @@ def transplant_code(diff_info, diff_loc):
                 inserting_node = script_line.split(" into ")[0]
                 translated_command = inserting_node + " into " + position_c
                 ast_script_c.append(translated_command)
-            Mapper.generate_symbolic_expressions(source_path_d, line_number_c, line_number_c, FILE_VAR_EXPR_LOG_C, False)
+            # Mapper.generate_symbolic_expressions(source_path_d, line_number_c, line_number_c, FILE_VAR_EXPR_LOG_C, False)
             var_expr_map_c = Mapper.collect_symbolic_expressions(FILE_VAR_EXPR_LOG_C)
             var_map = Mapper.generate_mapping(var_expr_map_b, var_expr_map_c)
             # print(var_map)
@@ -504,11 +616,10 @@ def transplant_code(diff_info, diff_loc):
         line_range_a = diff_info['old-lines']
         line_range_b = diff_info['new-lines']
         filtered_ast_script = filter_ast_script(ast_script, line_range_a, line_range_b, ast_map_a, ast_map_b)
-        Mapper.generate_symbolic_expressions(source_path_b, line_range_b[0], line_range_b[1], FILE_VAR_EXPR_LOG_B)
+        # Mapper.generate_symbolic_expressions(source_path_b, line_range_b[0], line_range_b[1], FILE_VAR_EXPR_LOG_B)
         var_expr_map_b = Mapper.collect_symbolic_expressions(FILE_VAR_EXPR_LOG_B)
-        Mapper.generate_symbolic_expressions(source_path_a, line_range_a[0], line_range_a[1], FILE_VAR_EXPR_LOG_A)
+        # Mapper.generate_symbolic_expressions(source_path_a, line_range_a[0], line_range_a[1], FILE_VAR_EXPR_LOG_A)
         var_expr_map_a = Mapper.collect_symbolic_expressions(FILE_VAR_EXPR_LOG_A)
-        print(filtered_ast_script)
         insertion_loc_list = identify_insertion_points(estimate_loc, var_expr_map_a)
         print(insertion_loc_list)
         ast_script_c = list()
@@ -520,25 +631,32 @@ def transplant_code(diff_info, diff_loc):
             # print(insertion_loc)
             function_node = get_fun_node(ast_map_c, int(line_number_c), source_path_c)
             position_c = get_ast_node_position(function_node, int(line_number_c))
+            # Mapper.generate_symbolic_expressions(source_path_d, line_number_c, line_number_c, FILE_VAR_EXPR_LOG_C, False)
+            var_expr_map_c = Mapper.collect_symbolic_expressions(FILE_VAR_EXPR_LOG_C)
+            var_map_ac = Mapper.generate_mapping(var_expr_map_a, var_expr_map_c)
+            var_map_bc = Mapper.generate_mapping(var_expr_map_b, var_expr_map_c)
             for script_line in filtered_ast_script:
+                print(script_line)
                 translated_command = script_line
                 if "Insert" in script_line:
                     inserting_node = script_line.split(" into ")[0]
                     translated_command = inserting_node + " into " + position_c
                     ast_script_c.append(translated_command)
-                elif "Delete" in script_line:
-                    deleting_node = script_line.split(" into ")[0]
-                    translated_command = inserting_node + " into " + position_c
-                    ast_script_c.append(translated_command)
-                Mapper.generate_symbolic_expressions(source_path_d, line_number_c, line_number_c, FILE_VAR_EXPR_LOG_C, False)
-                var_expr_map_c = Mapper.collect_symbolic_expressions(FILE_VAR_EXPR_LOG_C)
-                var_map = Mapper.generate_mapping(var_expr_map_b, var_expr_map_c)
-                print(var_map)
-                print(ast_script_c)
-                exit()
-                output_var_map(var_map)
-                output_ast_script(ast_script_c)
-                execute_ast_transformation(source_path_b, source_path_d)
+                elif "Replace" in script_line:
+                    replacing_node_str = (script_line.split(" with ")[0]).replace("Replace ", "")
+                    replacing_node_id = (replacing_node_str.split("(")[1]).split(")")[0]
+                    replacing_node = get_ast_node_by_id(ast_map_a, int(replacing_node_id))
+                    target_node_str = get_matching_node(function_node, replacing_node, var_map_ac)
+                    if target_node_str is not None:
+                        translated_command = script_line.replace(replacing_node_str, target_node_str)
+                        ast_script_c.append(translated_command)
+
+
+            print(ast_script_c)
+            exit()
+            output_var_map(var_map)
+            output_ast_script(ast_script_c)
+            execute_ast_transformation(source_path_b, source_path_d)
 
 
 def transplant_patch():
