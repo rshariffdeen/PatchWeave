@@ -242,7 +242,8 @@ def insert_patch(patch_code, source_path, line_number):
     if os.path.exists(source_path):
         with open(source_path, 'r') as source_file:
             content = source_file.readlines()
-            content[line_number] = patch_code
+            existing_statement = content[line_number]
+            content[line_number] = patch_code + existing_statement
 
     with open(source_path, 'w') as source_file:
         source_file.writelines(content)
@@ -579,6 +580,61 @@ def extract_function_calls(ast_node):
     return call_expr_list
 
 
+def extract_reference_node_list(ast_node):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    ref_node_list = list()
+    node_type = str(ast_node["type"])
+    if node_type in ["Macro", "DeclRefExpr"]:
+        ref_node_list.append(ast_node)
+    else:
+        if len(ast_node['children']) > 0:
+            for child_node in ast_node['children']:
+                child_ref_list = extract_reference_node_list(child_node)
+                ref_node_list = ref_node_list + child_ref_list
+    return ref_node_list
+
+
+def extract_decl_list(ast_node):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    dec_list = ['true', 'false']
+    node_type = str(ast_node["type"])
+    if node_type in ["FunctionDecl", "VarDecl", "ParmVarDecl"]:
+        identifier = str(ast_node['identifier'])
+        dec_list.append(identifier)
+
+    if len(ast_node['children']) > 0:
+        for child_node in ast_node['children']:
+            child_dec_list = extract_decl_list(child_node)
+            dec_list = dec_list + child_dec_list
+    return list(set(dec_list))
+
+
+def get_function_node_id(ast_node, function_name):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    for child_node in ast_node['children']:
+        child_node_type = child_node['type']
+        if child_node_type == "FunctionDecl":
+            child_node_identifier = child_node['identifier']
+            if child_node_identifier == function_name:
+                return int(child_node['id'])
+    return -1
+
+
+# def is_definition_exist(ast_node, definition):
+#     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+#     print("def=" + definition)
+#     if definition in ["true", "false"]:
+#         return True
+#     for child_node in ast_node['children']:
+#         child_node_type = child_node['type']
+#         if child_node_type in ["VarDecl", "ParmVarDecl"]:
+#             child_node_identifier = child_node['identifier']
+#             print(child_node_identifier)
+#             if child_node_identifier == definition:
+#                 return True
+#     return False
+
+
 def get_function_node_id(ast_node, function_name):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     for child_node in ast_node['children']:
@@ -592,6 +648,7 @@ def get_function_node_id(ast_node, function_name):
 
 def identify_missing_functions(ast_node, source_path_b, source_path_d):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    Output.normal("\t\tidentifying missing function calls")
     global missing_function_list
     call_list = extract_function_calls(ast_node)
     for call_expr in call_list:
@@ -609,6 +666,61 @@ def identify_missing_functions(ast_node, source_path_b, source_path_d):
                 print("MULTIPLE FUNCTION REFERENCES FOUND!!!")
                 print(missing_function_list[function_name])
                 exit()
+
+
+def identify_missing_definitions(function_node):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    global missing_function_list
+    Output.normal("\tidentifying missing definitions")
+    missing_definition_list = list()
+    ref_list = extract_reference_node_list(function_node)
+    dec_list = extract_decl_list(function_node)
+    function_identifier = function_node['identifier']
+    for ref_node in ref_list:
+        node_type = str(ref_node['type'])
+        if node_type == "DeclRefExpr":
+            ref_type = str(ref_node['ref_type'])
+            identifier = str(ref_node['value'])
+            if ref_type == "VarDecl":
+                if identifier not in dec_list:
+                    missing_definition_list.append(identifier)
+            elif ref_type == "FunctionDecl":
+                if identifier not in missing_function_list:
+                    print("FOUND NEW DEPENDENT FUNCTION")
+                    exit()
+    return list(set(missing_definition_list))
+
+
+def identify_missing_macros(function_node):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    global missing_function_list
+    Output.normal("\tidentifying missing definitions")
+    missing_definition_list = list()
+    ref_list = extract_reference_node_list(function_node)
+    dec_list = extract_decl_list(function_node)
+    function_identifier = function_node['identifier']
+    for ref_node in ref_list:
+        node_type = str(ref_node['type'])
+        if node_type == "Macro":
+            identifier = str(ref_node['value'])
+            node_child_count = len(ref_node['children'])
+            if function_identifier in identifier:
+                continue
+            if node_child_count:
+                for child_node in ref_node['children']:
+                    identifier = str(ref_node['value'])
+                    if identifier not in dec_list:
+                        missing_definition_list.append(identifier)
+            else:
+                if identifier not in dec_list:
+                    token_list = identifier.split(" ")
+                    for token in token_list:
+                        if token in ["/", "+", "-"]:
+                            continue
+                        if token not in dec_list:
+                            missing_definition_list.append(token)
+
+    return list(set(missing_definition_list))
 
 
 def get_function_insertion_point(source_path):
@@ -634,6 +746,12 @@ def transplant_missing_functions():
         source_path_d = info['source_d']
         Output.normal(function_name)
         function_node = get_ast_node_by_id(ast_map_a, int(node_id))
+        missing_def_list = identify_missing_definitions(function_node)
+        missing_macro_list = identify_missing_macros(function_node)
+
+        print(missing_def_list)
+        print(missing_macro_list)
+
         source_path_b = "/".join(source_path_b.split("/")[:-1])
         function_source_file = source_path_b + "/" + function_node['file']
         start_line = function_node["start line"]
@@ -644,7 +762,7 @@ def transplant_missing_functions():
         # translated_patch = translate_patch(original_patch, var_map_ac)
         line_number = get_function_insertion_point(source_path_d)
         backup_file(source_path_d, FILE_TEMP_FIX)
-        insert_patch(original_function, source_path_d, line_number)
+        insert_patch(original_function, FILE_TEMP_FIX, line_number)
         show_partial_diff(source_path_d, FILE_TEMP_FIX)
 
 
