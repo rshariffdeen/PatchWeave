@@ -19,6 +19,14 @@ import Tracer
 import Mapper
 
 
+def verify_compilation():
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+
+
+def verify_exploit():
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+
+
 def safe_exec(function_def, title, *args):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     start_time = time.time()
@@ -42,5 +50,5 @@ def safe_exec(function_def, title, *args):
 def verify():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.title("Patch Verification")
-    # safe_exec(generate_trace_donor, "generating symbolic trace information from donor program")
-    # safe_exec(generate_trace_target, "generating symbolic trace information from target program")
+    safe_exec(verify_compilation, "verifying project build")
+    safe_exec(verify_exploit, "verifying exploit")

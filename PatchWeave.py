@@ -34,7 +34,7 @@ def run_patchweave():
     if not Common.NO_BUILD:
         Builder.build_llvm()
     else:
-        Builder.restore_all()
+        Builder.soft_restore_all()
     time_info[Common.KEY_DURATION_BUILD] = str(time.time() - time_check)
 
     time_check = time.time()
@@ -52,7 +52,6 @@ def run_patchweave():
     time_check = time.time()
     Weaver.weave()
     time_info[Common.KEY_DURATION_TRANSPLANTATION] = str(time.time() - time_check)
-
 
     # Final running time and exit message
     time_info[Common.KEY_DURATION_TOTAL] = str(time.time() - start_time)

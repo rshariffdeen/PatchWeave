@@ -14,6 +14,7 @@ import Generator
 import Differ
 import Tracer
 import Mapper
+import Fixer
 
 function_list_a = list()
 function_list_b = list()
@@ -44,7 +45,6 @@ FILE_AST_SCRIPT = Common.DIRECTORY_OUTPUT + "/gen-ast-script"
 FILE_TEMP_FIX = Common.DIRECTORY_OUTPUT + "/temp-fix"
 FILE_PARTIAL_DIFF = Common.DIRECTORY_OUTPUT + "/gen-patch"
 FILE_MACRO_DEF = Common.DIRECTORY_OUTPUT + "/macro-def"
-FILE_SYNTAX_ERRORS = Common.DIRECTORY_OUTPUT + "/syntax-errors"
 FILENAME_BACKUP = "temp-source"
 
 
@@ -948,25 +948,6 @@ def transplant_code(diff_info, diff_loc):
                 break
 
 
-def fix_syntax_errors(source_file):
-    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.sub_title("\tfixing syntax errors")
-
-
-def check_syntax_errors():
-    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    global modified_source_list
-    Output.sub_title("checking syntax errors")
-    for source_file in modified_source_list:
-        Output.normal(source_file)
-        check_command = "clang-check -analyze " + source_file + " &> " + FILE_SYNTAX_ERRORS
-        ret_code = execute_command(check_command)
-        if ret_code != 0:
-            fix_syntax_errors(source_file)
-        else:
-            Output.normal("\tno syntax errors")
-
-
 def transplant_patch():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     for diff_loc in Differ.diff_info.keys():
@@ -976,7 +957,7 @@ def transplant_patch():
     transplant_missing_functions()
     transplant_missing_macros()
     transplant_missing_header()
-    check_syntax_errors()
+    Fixer.check()
 
 
 def get_diff_variable_list(ast_script, ast_node):
