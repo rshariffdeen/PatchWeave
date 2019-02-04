@@ -957,8 +957,6 @@ def transplant_patch():
     transplant_missing_functions()
     transplant_missing_macros()
     transplant_missing_header()
-    #Verify Patch
-    #Test for More Bugs
 
 
 def get_diff_variable_list(ast_script, ast_node):
