@@ -22,7 +22,7 @@ target_candidate_function_list = list()
 mapping_ba = dict()
 missing_function_list = dict()
 missing_macro_list = dict()
-
+missing_header_list = dict()
 var_expr_map_a = dict()
 var_expr_map_b = dict()
 var_expr_map_c = dict()
@@ -600,7 +600,7 @@ def extract_reference_node_list(ast_node):
 
 def extract_decl_list(ast_node):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    dec_list = ['true', 'false']
+    dec_list = list()
     node_type = str(ast_node["type"])
     if node_type in ["FunctionDecl", "VarDecl", "ParmVarDecl"]:
         identifier = str(ast_node['identifier'])
@@ -760,6 +760,21 @@ def extract_macro_definitions(source_path):
         return macro_def_list
 
 
+def transplant_missing_header():
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    Output.sub_title("transplanting missing header")
+    global missing_header_list
+    for header_name in missing_header_list:
+        Output.normal(header_name)
+        target_file = missing_header_list[header_name]
+        transplant_code = "\n#include<" + header_name + ">\n"
+        def_insert_line = get_definition_insertion_point(target_file)
+        backup_file(target_file, FILENAME_BACKUP)
+        insert_patch(transplant_code, target_file, def_insert_line)
+        backup_file_path = Common.DIRECTORY_BACKUP + "/" + FILENAME_BACKUP
+        show_partial_diff(backup_file_path, target_file)
+
+
 def transplant_missing_macros():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.sub_title("transplanting missing macros")
@@ -784,7 +799,7 @@ def transplant_missing_macros():
 
 def transplant_missing_functions():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    global def_insert_point
+    global def_insert_point, missing_header_list
     Output.sub_title("transplanting missing functions")
     for function_name in missing_function_list:
         info = missing_function_list[function_name]
@@ -800,6 +815,15 @@ def transplant_missing_functions():
         identify_missing_macros(function_node, function_source_file, source_path_d)
         start_line = function_node["start line"]
         end_line = function_node["end line"]
+        function_definition = function_node['value']
+        function_name = function_node['identifier']
+        return_type = (function_definition.replace(function_name, "")).split("(")[1]
+        if return_type.strip() == "_Bool":
+            if "stdbool.h" not in missing_header_list.keys():
+                missing_header_list["stdbool.h"] = source_path_d
+            else:
+                error_exit("UNKNOWN RETURN TYPE")
+
         original_function = ""
         for i in range(int(start_line), int(end_line + 1)):
             original_function += get_code(function_source_file, int(i)) + "\n"
@@ -932,6 +956,7 @@ def transplant_patch():
         transplant_code(diff_info, diff_loc)
     transplant_missing_functions()
     transplant_missing_macros()
+    transplant_missing_header()
     #Verify Patch
     #Test for More Bugs
 
