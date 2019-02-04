@@ -239,6 +239,8 @@ def translate_patch(patch_code, var_map):
 
 
 def insert_patch(patch_code, source_path, line_number):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    content = ""
     if os.path.exists(source_path):
         with open(source_path, 'r') as source_file:
             content = source_file.readlines()
@@ -691,10 +693,37 @@ def identify_missing_definitions(function_node):
     return list(set(missing_definition_list))
 
 
+def extract_macro_definitions(macro_list, source_path, insertion_point):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    Output.normal("\textracting missing macro values")
+    macro_value_list = dict()
+    instrument_code = "\n#define VALUE_TO_STRING(x) #x\n"
+    instrument_code += "#define VALUE(x) VALUE_TO_STRING(x)\n"
+    instrument_code += "#define VAR_NAME_VALUE(var) #var \"=\" VALUE(var)\n"
+
+    for macro in macro_list:
+        instrument_code += "\n #pragma message(VAR_NAME_VALUE(" + macro + "))\n"
+    content=""
+    if os.path.exists(source_path):
+        with open(source_path, 'r') as source_file:
+            content = source_file.readlines()
+            existing_statement = content[insertion_point]
+            content[insertion_point] = instrument_code + existing_statement
+    backup_file(source_path, "temp")
+    with open(source_path, 'w') as source_file:
+        source_file.writelines(content)
+    backup_file(source_path, "temp2 ")
+    command = "clang-check " + source_path + " &> test"
+    
+    print(command)
+    execute_command(command)
+    restore_file("temp", source_path)
+
+
 def identify_missing_macros(function_node):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     global missing_function_list
-    Output.normal("\tidentifying missing definitions")
+    Output.normal("\tidentifying missing macros")
     missing_definition_list = list()
     ref_list = extract_reference_node_list(function_node)
     dec_list = extract_decl_list(function_node)
@@ -708,7 +737,7 @@ def identify_missing_macros(function_node):
                 continue
             if node_child_count:
                 for child_node in ref_node['children']:
-                    identifier = str(ref_node['value'])
+                    identifier = str(child_node['value'])
                     if identifier not in dec_list:
                         missing_definition_list.append(identifier)
             else:
@@ -748,7 +777,8 @@ def transplant_missing_functions():
         function_node = get_ast_node_by_id(ast_map_a, int(node_id))
         missing_def_list = identify_missing_definitions(function_node)
         missing_macro_list = identify_missing_macros(function_node)
-
+        line_number = get_function_insertion_point(source_path_d)
+        extract_macro_definitions(missing_macro_list, source_path_b, line_number)
         print(missing_def_list)
         print(missing_macro_list)
 
@@ -760,7 +790,7 @@ def transplant_missing_functions():
         for i in range(int(start_line), int(end_line + 1)):
             original_function += get_code(function_source_file, int(i)) + "\n"
         # translated_patch = translate_patch(original_patch, var_map_ac)
-        line_number = get_function_insertion_point(source_path_d)
+
         backup_file(source_path_d, FILE_TEMP_FIX)
         insert_patch(original_function, FILE_TEMP_FIX, line_number)
         show_partial_diff(source_path_d, FILE_TEMP_FIX)
