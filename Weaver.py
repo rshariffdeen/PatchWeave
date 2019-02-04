@@ -23,6 +23,9 @@ mapping_ba = dict()
 missing_function_list = dict()
 missing_macro_list = dict()
 missing_header_list = dict()
+
+modified_source_list = list()
+
 var_expr_map_a = dict()
 var_expr_map_b = dict()
 var_expr_map_c = dict()
@@ -41,7 +44,9 @@ FILE_AST_SCRIPT = Common.DIRECTORY_OUTPUT + "/gen-ast-script"
 FILE_TEMP_FIX = Common.DIRECTORY_OUTPUT + "/temp-fix"
 FILE_PARTIAL_DIFF = Common.DIRECTORY_OUTPUT + "/gen-patch"
 FILE_MACRO_DEF = Common.DIRECTORY_OUTPUT + "/macro-def"
+FILE_SYNTAX_ERRORS = Common.DIRECTORY_OUTPUT + "/syntax-errors"
 FILENAME_BACKUP = "temp-source"
+
 
 def extract_source_list(trace_list):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
@@ -242,7 +247,10 @@ def translate_patch(patch_code, var_map):
 
 def insert_patch(patch_code, source_path, line_number):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    global modified_source_list
     content = ""
+    if source_path not in modified_source_list:
+        modified_source_list.append(source_path)
     if os.path.exists(source_path):
         with open(source_path, 'r') as source_file:
             content = source_file.readlines()
@@ -542,11 +550,14 @@ def output_ast_script(ast_script):
 
 def execute_ast_transformation(source_path_b, source_path_d):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    global modified_source_list
     Output.normal("\t\texecuting AST transformation")
     parameters = " -map=" + FILE_VAR_MAP + " -script=" + FILE_AST_SCRIPT
     parameters += " -source=" + source_path_b + " -target=" + source_path_d
     transform_command = TOOL_AST_PATCH + parameters + " > " + FILE_TEMP_FIX
     ret_code = int(execute_command(transform_command))
+    if source_path_d not in modified_source_list:
+        modified_source_list.append(source_path_d)
     if ret_code == 0:
         move_command = "cp " + FILE_TEMP_FIX + " " + source_path_d
         show_partial_diff(source_path_d, FILE_TEMP_FIX)
@@ -611,17 +622,6 @@ def extract_decl_list(ast_node):
             child_dec_list = extract_decl_list(child_node)
             dec_list = dec_list + child_dec_list
     return list(set(dec_list))
-
-
-def get_function_node_id(ast_node, function_name):
-    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    for child_node in ast_node['children']:
-        child_node_type = child_node['type']
-        if child_node_type == "FunctionDecl":
-            child_node_identifier = child_node['identifier']
-            if child_node_identifier == function_name:
-                return int(child_node['id'])
-    return -1
 
 
 # def is_definition_exist(ast_node, definition):
@@ -948,6 +948,25 @@ def transplant_code(diff_info, diff_loc):
                 break
 
 
+def fix_syntax_errors(source_file):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    Output.sub_title("\tfixing syntax errors")
+
+
+def check_syntax_errors():
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    global modified_source_list
+    Output.sub_title("checking syntax errors")
+    for source_file in modified_source_list:
+        Output.normal(source_file)
+        check_command = "clang-check -analyze " + source_file + " &> " + FILE_SYNTAX_ERRORS
+        ret_code = execute_command(check_command)
+        if ret_code != 0:
+            fix_syntax_errors(source_file)
+        else:
+            Output.normal("\tno syntax errors")
+
+
 def transplant_patch():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     for diff_loc in Differ.diff_info.keys():
@@ -957,6 +976,7 @@ def transplant_patch():
     transplant_missing_functions()
     transplant_missing_macros()
     transplant_missing_header()
+    check_syntax_errors()
 
 
 def get_diff_variable_list(ast_script, ast_node):

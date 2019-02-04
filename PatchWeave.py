@@ -33,6 +33,8 @@ def run_patchweave():
     time_check = time.time()
     if not Common.NO_BUILD:
         Builder.build_llvm()
+    else:
+        Builder.restore_all()
     time_info[Common.KEY_DURATION_BUILD] = str(time.time() - time_check)
 
     time_check = time.time()

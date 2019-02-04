@@ -162,6 +162,16 @@ def restore_project(project_path):
     execute_command(restore_command)
 
 
+def soft_restore_project(project_path):
+    restore_command = "cd " + project_path + ";"
+    if os.path.exists(project_path + "/.git"):
+        restore_command += "git reset --hard HEAD"
+    elif os.path.exists(project_path + "/.svn"):
+        restore_command += "svn revert -R .; "
+    # print(restore_command)
+    execute_command(restore_command)
+
+
 def restore_all():
     Output.normal("restoring projects")
     Output.normal("\t" + Common.Project_A.path)
@@ -172,6 +182,20 @@ def restore_all():
     restore_project(Common.Project_C.path)
     Output.normal("\t" + Common.Project_D.path)
     restore_project(Common.Project_D.path)
+
+
+def soft_restore_all():
+    Output.normal("restoring(soft) projects")
+    Output.normal("\t" + Common.Project_A.path)
+    soft_restore_project(Common.Project_A.path)
+    Output.normal("\t" + Common.Project_B.path)
+    soft_restore_project(Common.Project_B.path)
+    Output.normal("\t" + Common.Project_C.path)
+    soft_restore_project(Common.Project_C.path)
+    Output.normal("\t" + Common.Project_D.path)
+    soft_restore_project(Common.Project_D.path)
+
+
 
 
 def clean_project(project_path):
