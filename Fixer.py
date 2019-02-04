@@ -106,7 +106,7 @@ def check_syntax_errors():
         Output.normal(source_file)
         check_command = "clang-check -analyze " + source_file + " > " + FILE_SYNTAX_ERRORS
         check_command += " 2>&1"
-        ret_code = execute_command(check_command)
+        ret_code = int(execute_command(check_command))
         if ret_code != 0:
             fix_syntax_errors(source_file)
         else:

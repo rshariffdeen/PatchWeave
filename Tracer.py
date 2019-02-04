@@ -41,21 +41,24 @@ stack_c = dict()
 crash_location_a = ""
 divergent_location_list = list()
 crash_location_c = ""
+donor_exit_code = ""
+target_exit_code = ""
 
 
 def test_exploits():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    global donor_exit_code, target_exit_code
     Output.normal(Common.Project_A.path)
-    exit_code = run_exploit(Common.VALUE_EXPLOIT_A, Common.Project_A.path, Common.VALUE_PATH_POC, FILE_EXPLOIT_OUTPUT_A)
-    if exit_code != 0:
-        Output.normal("\tprogram crashed with exit code " + str(exit_code))
+    donor_exit_code = run_exploit(Common.VALUE_EXPLOIT_A, Common.Project_A.path, Common.VALUE_PATH_POC, FILE_EXPLOIT_OUTPUT_A)
+    if donor_exit_code != 0:
+        Output.normal("\tprogram crashed with exit code " + str(donor_exit_code))
     else:
         error_exit("program did not crash!!")
 
     Output.normal(Common.Project_C.path)
-    exit_code = run_exploit(Common.VALUE_EXPLOIT_C, Common.Project_C.path, Common.VALUE_PATH_POC, FILE_EXPLOIT_OUTPUT_C)
-    if exit_code != 0:
-        Output.normal("\tprogram crashed with exit code " + str(exit_code))
+    target_exit_code = run_exploit(Common.VALUE_EXPLOIT_C, Common.Project_C.path, Common.VALUE_PATH_POC, FILE_EXPLOIT_OUTPUT_C)
+    if target_exit_code != 0:
+        Output.normal("\tprogram crashed with exit code " + str(target_exit_code))
     else:
         error_exit("program did not crash!!")
 

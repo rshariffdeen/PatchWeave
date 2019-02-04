@@ -26,13 +26,17 @@ def verify_compilation():
 
 def verify_exploit():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Tracer.test_exploits()
+    Output.normal(Common.Project_D.path)
+    exit_code = Tracer.run_exploit(Common.VALUE_EXPLOIT_C, Common.Project_D.path, Common.VALUE_PATH_POC, Tracer.FILE_EXPLOIT_OUTPUT_C)
+    if int(exit_code) == Tracer.target_exit_code:
+        error_exit("\tprogram crashed with exit code " + str(exit_code))
+    else:
+        Output.normal("program did not crash!!")
 
 
 def safe_exec(function_def, title, *args):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     start_time = time.time()
-    Output.sub_title("starting " + title + "...")
     description = title[0].lower() + title[1:]
     try:
         Logger.information("running " + str(function_def))
