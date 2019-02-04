@@ -21,10 +21,12 @@ import Mapper
 
 def verify_compilation():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    Builder.build_verify()
 
 
 def verify_exploit():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    Tracer.test_exploits()
 
 
 def safe_exec(function_def, title, *args):

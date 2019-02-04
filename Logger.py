@@ -65,5 +65,6 @@ def end(time_duration):
     output("Trace Analysis: " + time_duration[Common.KEY_DURATION_TRACE_ANALYSIS] + " seconds")
     output("Symbolic Trace Analysis: " + time_duration[Common.KEY_DURATION_SYMBOLIC_TRACE_ANALYSIS] + " seconds")
     output("Transplantation: " + time_duration[Common.KEY_DURATION_TRANSPLANTATION] + " seconds")
+    output("Transplantation: " + time_duration[Common.KEY_DURATION_VERIFICATION] + " seconds")
     output("\nPatchWeave finished successfully after " + time_duration[Common.KEY_DURATION_TOTAL] + " seconds\n")
 

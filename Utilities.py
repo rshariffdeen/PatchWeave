@@ -8,6 +8,8 @@ import Output
 import Common
 
 WLLVM_EXTRACTOR = "extract-bc"
+FILE_PARTIAL_DIFF = Common.DIRECTORY_OUTPUT + "/gen-patch"
+
 
 def execute_command(command, show_output=True):
     # Print executed command and execute it in console
@@ -110,3 +112,15 @@ def extract_bitcode(binary_path):
     # print(extract_command)
     execute_command(extract_command)
     return binary_directory, binary_name
+
+
+def show_partial_diff(source_path_a, source_path_b):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    Output.normal("\t\tTransplanted Code:")
+    diff_command = "diff -ENZBbwr " + source_path_a + " " + source_path_b + " > " + FILE_PARTIAL_DIFF
+    execute_command(diff_command)
+    with open(FILE_PARTIAL_DIFF, 'r') as diff_file:
+        diff_line = diff_file.readline().strip()
+        while diff_line:
+            Output.normal("\t\t\t" + diff_line)
+            diff_line = diff_file.readline().strip()

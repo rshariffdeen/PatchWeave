@@ -123,6 +123,18 @@ def build_normal():
     build_all()
 
 
+def build_verify():
+    global CC, CXX, CXX_FLAGS, C_FLAGS, LD_FLAGS
+    Output.sub_title("building projects")
+    CXX_FLAGS = "'-g -O0 -static -DNDEBUG -ftrapv'"
+    C_FLAGS = "'-g -O0 -static -DNDEBUG -ftrapv'"
+    Output.normal("\t" + Common.Project_D.path)
+    if not Common.VALUE_BUILD_COMMAND_C:
+        build_project(Common.Project_D.path)
+    else:
+        build_project(Common.Project_D.path, Common.VALUE_BUILD_COMMAND_C)
+
+
 def build_asan():
     global CC, CXX, CXX_FLAGS, C_FLAGS, LD_FLAGS
     Output.sub_title("building projects with asan")
@@ -194,8 +206,6 @@ def soft_restore_all():
     soft_restore_project(Common.Project_C.path)
     Output.normal("\t" + Common.Project_D.path)
     soft_restore_project(Common.Project_D.path)
-
-
 
 
 def clean_project(project_path):

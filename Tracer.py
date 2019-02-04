@@ -47,7 +47,7 @@ def test_exploits():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.normal(Common.Project_A.path)
     exit_code = run_exploit(Common.VALUE_EXPLOIT_A, Common.Project_A.path, Common.VALUE_PATH_POC, FILE_EXPLOIT_OUTPUT_A)
-    if exit_code != 1:
+    if exit_code != 0:
         Output.normal("\tprogram crashed with exit code " + str(exit_code))
     else:
         error_exit("program did not crash!!")

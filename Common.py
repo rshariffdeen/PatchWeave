@@ -80,7 +80,7 @@ KEY_DURATION_FUNCTION_MATCH = "match-functions"
 KEY_DURATION_VARIABLE_MATCH = "match-variables"
 KEY_DURATION_TRANSLATION = 'translation'
 KEY_DURATION_TRANSPLANTATION = "transplantation"
-KEY_DURATION_CLONE_DETECTION = 'clone-detection'
+KEY_DURATION_VERIFICATION = 'verification'
 KEY_DURATION_BUILD = 'build-project'
 
 
