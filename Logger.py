@@ -16,11 +16,16 @@ def create():
         os.remove(Common.FILE_LAST_LOG)
     if os.path.exists(Common.FILE_ERROR_LOG):
         os.remove(Common.FILE_ERROR_LOG)
+    if os.path.exists(Common.FILE_COMMAND_LOG):
+        os.remove(Common.FILE_COMMAND_LOG)
     with open(Common.FILE_LAST_LOG, 'w+') as last_log:
         last_log.write("[Start] PatchWeave started at " + str(datetime.datetime.now()) + "\n")
 
 
 def log(log_message):
+    if "COMMAND" in log_message:
+        with open(Common.FILE_COMMAND_LOG, 'a') as log_file:
+            log_file.write(log_message)
     with open(Common.FILE_MAIN_LOG, 'a') as log_file:
         log_file.write(log_message)
     with open(Common.FILE_LAST_LOG, 'a') as log_file:

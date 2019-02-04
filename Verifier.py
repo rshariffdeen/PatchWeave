@@ -31,7 +31,7 @@ def verify_exploit():
     if int(exit_code) == Tracer.target_exit_code:
         error_exit("\tprogram crashed with exit code " + str(exit_code))
     else:
-        Output.normal("program did not crash!!")
+        Output.normal("\tprogram did not crash!!")
 
 
 def safe_exec(function_def, title, *args):
