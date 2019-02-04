@@ -123,6 +123,18 @@ def build_normal():
     build_all()
 
 
+def build_verify():
+    global CC, CXX, CXX_FLAGS, C_FLAGS, LD_FLAGS
+    Output.sub_title("building projects")
+    CXX_FLAGS = "'-g -O0 -static -DNDEBUG -ftrapv'"
+    C_FLAGS = "'-g -O0 -static -DNDEBUG -ftrapv'"
+    Output.normal("\t" + Common.Project_D.path)
+    if not Common.VALUE_BUILD_COMMAND_C:
+        build_project(Common.Project_D.path)
+    else:
+        build_project(Common.Project_D.path, Common.VALUE_BUILD_COMMAND_C)
+
+
 def build_asan():
     global CC, CXX, CXX_FLAGS, C_FLAGS, LD_FLAGS
     Output.sub_title("building projects with asan")
@@ -162,6 +174,16 @@ def restore_project(project_path):
     execute_command(restore_command)
 
 
+def soft_restore_project(project_path):
+    restore_command = "cd " + project_path + ";"
+    if os.path.exists(project_path + "/.git"):
+        restore_command += "git reset --hard HEAD"
+    elif os.path.exists(project_path + "/.svn"):
+        restore_command += "svn revert -R .; "
+    # print(restore_command)
+    execute_command(restore_command)
+
+
 def restore_all():
     Output.normal("restoring projects")
     Output.normal("\t" + Common.Project_A.path)
@@ -172,6 +194,18 @@ def restore_all():
     restore_project(Common.Project_C.path)
     Output.normal("\t" + Common.Project_D.path)
     restore_project(Common.Project_D.path)
+
+
+def soft_restore_all():
+    Output.normal("restoring(soft) projects")
+    Output.normal("\t" + Common.Project_A.path)
+    soft_restore_project(Common.Project_A.path)
+    Output.normal("\t" + Common.Project_B.path)
+    soft_restore_project(Common.Project_B.path)
+    Output.normal("\t" + Common.Project_C.path)
+    soft_restore_project(Common.Project_C.path)
+    Output.normal("\t" + Common.Project_D.path)
+    soft_restore_project(Common.Project_D.path)
 
 
 def clean_project(project_path):

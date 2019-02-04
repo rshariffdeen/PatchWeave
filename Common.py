@@ -38,6 +38,7 @@ FILE_MAIN_LOG = ""
 FILE_ERROR_LOG = DIRECTORY_LOG + "/log-error"
 FILE_LAST_LOG = DIRECTORY_LOG + "/log-latest"
 FILE_MAKE_LOG = DIRECTORY_LOG + "/log-make"
+FILE_COMMAND_LOG = DIRECTORY_LOG + "/log-command"
 FILE_CONFIGURATION = ""
 
 
@@ -80,7 +81,7 @@ KEY_DURATION_FUNCTION_MATCH = "match-functions"
 KEY_DURATION_VARIABLE_MATCH = "match-variables"
 KEY_DURATION_TRANSLATION = 'translation'
 KEY_DURATION_TRANSPLANTATION = "transplantation"
-KEY_DURATION_CLONE_DETECTION = 'clone-detection'
+KEY_DURATION_VERIFICATION = 'verification'
 KEY_DURATION_BUILD = 'build-project'
 
 
