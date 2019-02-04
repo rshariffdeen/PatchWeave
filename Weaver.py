@@ -21,6 +21,7 @@ function_list_c = list()
 target_candidate_function_list = list()
 mapping_ba = dict()
 missing_function_list = dict()
+missing_macro_list = dict()
 
 var_expr_map_a = dict()
 var_expr_map_b = dict()
@@ -39,7 +40,8 @@ FILE_VAR_MAP = Common.DIRECTORY_OUTPUT + "/var-map"
 FILE_AST_SCRIPT = Common.DIRECTORY_OUTPUT + "/gen-ast-script"
 FILE_TEMP_FIX = Common.DIRECTORY_OUTPUT + "/temp-fix"
 FILE_PARTIAL_DIFF = Common.DIRECTORY_OUTPUT + "/gen-patch"
-
+FILE_MACRO_DEF = Common.DIRECTORY_OUTPUT + "/macro-def"
+FILENAME_BACKUP = "temp-source"
 
 def extract_source_list(trace_list):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
@@ -693,38 +695,10 @@ def identify_missing_definitions(function_node):
     return list(set(missing_definition_list))
 
 
-def extract_macro_definitions(macro_list, source_path, insertion_point):
+def identify_missing_macros(function_node, source_file, target_file):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal("\textracting missing macro values")
-    macro_value_list = dict()
-    instrument_code = "\n#define VALUE_TO_STRING(x) #x\n"
-    instrument_code += "#define VALUE(x) VALUE_TO_STRING(x)\n"
-    instrument_code += "#define VAR_NAME_VALUE(var) #var \"=\" VALUE(var)\n"
-
-    for macro in macro_list:
-        instrument_code += "\n #pragma message(VAR_NAME_VALUE(" + macro + "))\n"
-    content=""
-    if os.path.exists(source_path):
-        with open(source_path, 'r') as source_file:
-            content = source_file.readlines()
-            existing_statement = content[insertion_point]
-            content[insertion_point] = instrument_code + existing_statement
-    backup_file(source_path, "temp")
-    with open(source_path, 'w') as source_file:
-        source_file.writelines(content)
-    backup_file(source_path, "temp2 ")
-    command = "clang-check " + source_path + " &> test"
-    
-    print(command)
-    execute_command(command)
-    restore_file("temp", source_path)
-
-
-def identify_missing_macros(function_node):
-    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    global missing_function_list
+    global missing_function_list, missing_macro_list
     Output.normal("\tidentifying missing macros")
-    missing_definition_list = list()
     ref_list = extract_reference_node_list(function_node)
     dec_list = extract_decl_list(function_node)
     function_identifier = function_node['identifier']
@@ -739,7 +713,14 @@ def identify_missing_macros(function_node):
                 for child_node in ref_node['children']:
                     identifier = str(child_node['value'])
                     if identifier not in dec_list:
-                        missing_definition_list.append(identifier)
+                        if identifier not in missing_macro_list.keys():
+                            info = dict()
+                            info['source'] = source_file
+                            info['target'] = target_file
+                            missing_macro_list[identifier] = info
+                        else:
+                            error_exit("MACRO REQUIRED MULTIPLE TIMES!!")
+
             else:
                 if identifier not in dec_list:
                     token_list = identifier.split(" ")
@@ -747,12 +728,16 @@ def identify_missing_macros(function_node):
                         if token in ["/", "+", "-"]:
                             continue
                         if token not in dec_list:
-                            missing_definition_list.append(token)
+                            if identifier not in missing_macro_list.keys():
+                                info = dict()
+                                info['source'] = source_file
+                                info['target'] = target_file
+                                missing_macro_list[token] = info
+                            else:
+                                error_exit("MACRO REQUIRED MULTIPLE TIMES!!")
 
-    return list(set(missing_definition_list))
 
-
-def get_function_insertion_point(source_path):
+def get_definition_insertion_point(source_path):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     file_name = source_path.split("/")[-1]
     ast_node = Generator.get_ast_json(source_path)
@@ -765,8 +750,41 @@ def get_function_insertion_point(source_path):
     return -1
 
 
+def extract_macro_definitions(source_path):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    Output.normal("\textracting macro definitions from\n\t\t" + str(source_path))
+    extract_command = "clang -E -dM " + source_path + " > " + FILE_MACRO_DEF
+    execute_command(extract_command)
+    with open(FILE_MACRO_DEF, "r") as macro_file:
+        macro_def_list = macro_file.readlines()
+        return macro_def_list
+
+
+def transplant_missing_macros():
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    Output.sub_title("transplanting missing macros")
+    for macro_name in missing_macro_list:
+        Output.normal(macro_name)
+        macro_info = missing_macro_list[macro_name]
+        source_file = macro_info['source']
+        target_file = macro_info['target']
+        macro_def_list = extract_macro_definitions(source_file)
+        def_insert_line = get_definition_insertion_point(target_file)
+        transplant_code = ""
+        for macro_def in macro_def_list:
+            if macro_name in macro_def:
+                if "#define" in macro_def:
+                    if macro_name in macro_def.split(" "):
+                        transplant_code += "\n" + macro_def + "\n"
+        backup_file(target_file, FILENAME_BACKUP)
+        insert_patch(transplant_code, target_file, def_insert_line)
+        backup_file_path = Common.DIRECTORY_BACKUP + "/" + FILENAME_BACKUP
+        show_partial_diff(backup_file_path, target_file)
+
+
 def transplant_missing_functions():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    global def_insert_point
     Output.sub_title("transplanting missing functions")
     for function_name in missing_function_list:
         info = missing_function_list[function_name]
@@ -776,14 +794,10 @@ def transplant_missing_functions():
         Output.normal(function_name)
         function_node = get_ast_node_by_id(ast_map_a, int(node_id))
         missing_def_list = identify_missing_definitions(function_node)
-        missing_macro_list = identify_missing_macros(function_node)
-        line_number = get_function_insertion_point(source_path_d)
-        extract_macro_definitions(missing_macro_list, source_path_b, line_number)
-        print(missing_def_list)
-        print(missing_macro_list)
-
+        def_insert_point = get_definition_insertion_point(source_path_d)
         source_path_b = "/".join(source_path_b.split("/")[:-1])
         function_source_file = source_path_b + "/" + function_node['file']
+        identify_missing_macros(function_node, function_source_file, source_path_d)
         start_line = function_node["start line"]
         end_line = function_node["end line"]
         original_function = ""
@@ -791,9 +805,10 @@ def transplant_missing_functions():
             original_function += get_code(function_source_file, int(i)) + "\n"
         # translated_patch = translate_patch(original_patch, var_map_ac)
 
-        backup_file(source_path_d, FILE_TEMP_FIX)
-        insert_patch(original_function, FILE_TEMP_FIX, line_number)
-        show_partial_diff(source_path_d, FILE_TEMP_FIX)
+        backup_file(source_path_d, FILENAME_BACKUP)
+        insert_patch(original_function, source_path_d, def_insert_point)
+        backup_file_path = Common.DIRECTORY_BACKUP + "/" + FILENAME_BACKUP
+        show_partial_diff(backup_file_path, source_path_d)
 
 
 def transplant_code(diff_info, diff_loc):
@@ -832,6 +847,7 @@ def transplant_code(diff_info, diff_loc):
                 inserting_node = get_ast_node_by_id(ast_map_b, inserting_node_id)
                 translated_command = inserting_node_str + " into " + position_c
                 identify_missing_functions(inserting_node, source_path_b, source_path_d)
+                # identify_missing_macros(inserting_node, source_path_b, source_path_d)
                 ast_script_c.append(translated_command)
             Mapper.generate_symbolic_expressions(source_path_c, line_number_c, line_number_c, FILE_VAR_EXPR_LOG_C, False)
             var_expr_map_c = Mapper.collect_symbolic_expressions(FILE_VAR_EXPR_LOG_C)
@@ -874,6 +890,7 @@ def transplant_code(diff_info, diff_loc):
                     inserting_node = get_ast_node_by_id(ast_map_b, inserting_node_id)
                     translated_command = inserting_node_str + " into " + position_c
                     identify_missing_functions(inserting_node, source_path_b, source_path_d)
+                    # identify_missing_macros(inserting_node, source_path_b, source_path_d)
                     ast_script_c.append(translated_command)
                 elif "Replace" in script_line:
                     replacing_node_str = (script_line.split(" with ")[0]).replace("Replace ", "")
@@ -914,6 +931,7 @@ def transplant_patch():
         diff_info = Differ.diff_info[diff_loc]
         transplant_code(diff_info, diff_loc)
     transplant_missing_functions()
+    transplant_missing_macros()
     #Verify Patch
     #Test for More Bugs
 
