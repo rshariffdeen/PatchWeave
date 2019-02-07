@@ -78,7 +78,7 @@ def instrument_code_for_klee(source_path, start_line, end_line, only_in_range):
     for variable in variable_list:
         insert_code += "klee_print_expr(\"[var-expr] " + variable + "\", " + variable + ");\n"
     insert_code += "exit(-1);"
-    print(insert_code)
+    # print(insert_code)
     insert_line = 0
     if Common.Project_B.path in source_path:
         insert_line = int(start_line) - 1
@@ -186,6 +186,7 @@ def generate_available_variable_list(source_path, start_line, end_line, only_in_
     variable_list = list()
     ast_map = Generator.get_ast_json(source_path)
     func_node = Weaver.get_fun_node(ast_map, int(end_line), source_path)
+    # print(source_path, start_line, end_line)
     if not only_in_range:
         param_node = func_node['children'][0]
         for child_node in param_node['children']:
@@ -198,12 +199,13 @@ def generate_available_variable_list(source_path, start_line, end_line, only_in_
     compound_node = func_node['children'][1]
     for child_node in compound_node['children']:
         child_node_type = child_node['type']
-        child_node_start_line = child_node['start line']
-        child_node_end_line = child_node['end line']
+        child_node_start_line = int(child_node['start line'])
+        child_node_end_line = int(child_node['end line'])
         filter_declarations = False
+        # print(child_node_start_line, child_node_end_line)
         child_var_dec_list = collect_var_dec_list(child_node, start_line, end_line, only_in_range)
         child_var_ref_list = collect_var_ref_list(child_node, start_line, end_line, only_in_range)
-        if child_node_start_line <= end_line <= child_node_end_line:
+        if child_node_start_line <= int(end_line) <= child_node_end_line:
             variable_list = list(set(variable_list + child_var_ref_list + child_var_dec_list))
             break
 
@@ -353,17 +355,16 @@ def generate_mapping(var_map_a, var_map_b):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.normal("\t\tgenerating variable map")
     var_map = dict()
-    print(var_map_a.keys())
-    print(var_map_b.keys())
+
     for var_a in var_map_a:
-        print(var_a)
+        # print(var_a)
         sym_expr = generate_z3_code_for_expr(var_map_a[var_a], var_a)
         # print(sym_expr)
         input_bytes_a = get_input_bytes_used(sym_expr)
         # print(input_bytes_a)
         candidate_list = list()
         for var_b in var_map_b:
-            print(var_b)
+            # print(var_b)
             sym_expr = generate_z3_code_for_expr(var_map_b[var_b], var_b)
             # print(sym_expr)
             input_bytes_b = get_input_bytes_used(sym_expr)

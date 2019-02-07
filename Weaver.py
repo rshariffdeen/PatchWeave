@@ -507,7 +507,6 @@ def filter_ast_script(ast_script, line_range_a, line_range_b, ast_node_a, ast_no
     line_range_start_b, line_range_end_b = line_range_b
     line_numbers_a = set(range(int(line_range_start_a), int(line_range_end_a) + 1))
     line_numbers_b = set(range(int(line_range_start_b), int(line_range_end_b) + 1))
-
     merged_ast_script = merge_ast_script(ast_script, ast_node_a, ast_node_b)
     for script_line in merged_ast_script:
         if "Insert" in script_line:
@@ -562,6 +561,7 @@ def execute_ast_transformation(source_path_b, source_path_d):
     parameters = " -map=" + FILE_VAR_MAP + " -script=" + FILE_AST_SCRIPT
     parameters += " -source=" + source_path_b + " -target=" + source_path_d
     transform_command = TOOL_AST_PATCH + parameters + " > " + FILE_TEMP_FIX
+    print(transform_command)
     ret_code = int(execute_command(transform_command))
     if source_path_d not in modified_source_list:
         modified_source_list.append(source_path_d)
@@ -810,6 +810,7 @@ def transplant_missing_functions():
         Output.normal(function_name)
         function_node = get_ast_node_by_id(ast_map_a, int(node_id))
         missing_def_list = identify_missing_definitions(function_node)
+        print(missing_def_list)
         def_insert_point = get_definition_insertion_point(source_path_d)
         source_path_b = "/".join(source_path_b.split("/")[:-1])
         function_source_file = source_path_b + "/" + function_node['file']
@@ -872,7 +873,7 @@ def transplant_code(diff_info, diff_loc):
                 inserting_node_str = script_line.split(" into ")[0]
                 inserting_node_id = int((inserting_node_str.split("(")[1]).split(")")[0])
                 inserting_node = get_ast_node_by_id(ast_map_b, inserting_node_id)
-                translated_command = inserting_node_str + " into " + position_c
+                translated_command = inserting_node_str + " into " + position_c + "\n"
                 identify_missing_functions(inserting_node, source_path_b, source_path_d)
                 # identify_missing_macros(inserting_node, source_path_b, source_path_d)
                 ast_script_c.append(translated_command)
@@ -881,9 +882,9 @@ def transplant_code(diff_info, diff_loc):
             # print(var_expr_map_b)
             # print(var_expr_map_c)
             var_map = Mapper.generate_mapping(var_expr_map_b, var_expr_map_c)
-            print(var_map)
-            print(ast_script_c)
-            exit(1)
+            # print(var_map)
+            # print(ast_script_c)
+
             output_var_map(var_map)
             output_ast_script(ast_script_c)
             ret_code = execute_ast_transformation(source_path_b, source_path_d)
