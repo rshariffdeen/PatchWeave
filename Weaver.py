@@ -691,8 +691,11 @@ def identify_missing_definitions(function_node):
                 if identifier not in dec_list:
                     missing_definition_list.append(identifier)
             elif ref_type == "FunctionDecl":
-                if identifier not in (missing_function_list + Common.STANDARD_FUNCTION_LIST):
+                if identifier in Common.STANDARD_FUNCTION_LIST:
+                    continue
+                if identifier not in missing_function_list:
                     print(identifier)
+                    print(Common.STANDARD_FUNCTION_LIST)
                     print("FOUND NEW DEPENDENT FUNCTION")
                     exit()
     return list(set(missing_definition_list))
@@ -710,11 +713,13 @@ def identify_missing_macros(function_node, source_file, target_file):
         if node_type == "Macro":
             identifier = str(ref_node['value'])
             node_child_count = len(ref_node['children'])
-            if function_identifier in identifier:
+            if function_identifier in identifier or "(" in identifier:
                 continue
             if node_child_count:
                 for child_node in ref_node['children']:
                     identifier = str(child_node['value'])
+                    if identifier in Common.STANDARD_MACRO_LIST:
+                        continue
                     if identifier not in dec_list:
                         if identifier not in missing_macro_list.keys():
                             info = dict()
@@ -823,7 +828,7 @@ def get_complete_function_node(function_def_node, source_path):
         ast_tree = Generator.get_ast_json(source_file_loc)
         function_node_id = get_function_node_id(ast_tree, function_name)
         function_node = get_ast_node_by_id(ast_tree, function_node_id)
-        return function_node
+        return function_node, source_file_loc
 
 
 def transplant_missing_functions():
@@ -838,17 +843,21 @@ def transplant_missing_functions():
         Output.normal(function_name)
         function_def_node = get_ast_node_by_id(ast_map_a, int(node_id))
         source_path_b = "/".join(source_path_b.split("/")[:-1])
-        function_node = get_complete_function_node(function_def_node, source_path_b)
+        function_node, function_source_file = get_complete_function_node(function_def_node, source_path_b)
         missing_def_list = identify_missing_definitions(function_node)
         # print(missing_def_list)
+        # print(source_path_d)
         def_insert_point = get_definition_insertion_point(source_path_d)
-        function_source_file = source_path_b + "/" + function_node['file']
+        # print(def_insert_point)
+        # print(function_source_file)
         identify_missing_macros(function_node, function_source_file, source_path_d)
         start_line = function_node["start line"]
         end_line = function_node["end line"]
         function_definition = function_node['value']
         function_name = function_node['identifier']
+        # print(function_name)
         return_type = (function_definition.replace(function_name, "")).split("(")[1]
+        # print(return_type)
         if return_type.strip() == "_Bool":
             if "stdbool.h" not in missing_header_list.keys():
                 missing_header_list["stdbool.h"] = source_path_d
@@ -859,7 +868,6 @@ def transplant_missing_functions():
         for i in range(int(start_line), int(end_line + 1)):
             original_function += get_code(function_source_file, int(i)) + "\n"
         # translated_patch = translate_patch(original_patch, var_map_ac)
-
         backup_file(source_path_d, FILENAME_BACKUP)
         insert_patch(original_function, source_path_d, def_insert_point)
         backup_file_path = Common.DIRECTORY_BACKUP + "/" + FILENAME_BACKUP

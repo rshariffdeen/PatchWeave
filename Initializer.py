@@ -15,7 +15,9 @@ from Builder import build_normal
 
 def load_standard_list():
     with open(Common.FILE_STANDARD_FUNCTION_LIST, "r") as list_file:
-        Common.STANDARD_FUNCTION_LIST = list_file.readlines()
+        Common.STANDARD_FUNCTION_LIST = [line[:-1] for line in list_file]
+    with open(Common.FILE_STANDARD_MACRO_LIST, "r") as list_file:
+        Common.STANDARD_MACRO_LIST = [line[:-1] for line in list_file]
 
 
 def set_env_value():

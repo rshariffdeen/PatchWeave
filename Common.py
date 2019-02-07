@@ -12,6 +12,7 @@ NO_BUILD = False
 NO_SYM_TRACE_GEN = False
 
 STANDARD_FUNCTION_LIST = list()
+STANDARD_MACRO_LIST = list()
 
 PROJECT_A_FUNCTION_LIST = ""
 PROJECT_B_FUNCTION_LIST = ""
@@ -44,7 +45,7 @@ FILE_MAKE_LOG = DIRECTORY_LOG + "/log-make"
 FILE_COMMAND_LOG = DIRECTORY_LOG + "/log-command"
 FILE_CONFIGURATION = ""
 FILE_STANDARD_FUNCTION_LIST = DIRECTORY_DATA + "/standard-function-list"
-
+FILE_STANDARD_MACRO_LIST = DIRECTORY_DATA + "/standard-macro-list"
 
 # ------------------- Configuration --------------------
 
