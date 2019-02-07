@@ -10,6 +10,7 @@ import Logger
 import sys
 import Common
 import json
+import os
 
 APP_DIFF = "crochet-diff "
 APP_FORMAT_LLVM = "clang-format -style=LLVM "
@@ -44,6 +45,8 @@ def ast_dump(file_path, output_path, is_header=False):
 def get_ast_json(file_path):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     json_file = file_path + ".AST"
+    if not os.path.exists(json_file):
+        generate_json(file_path)
     ast_dump(file_path, json_file)
     with open(json_file, 'r') as f:
         ast_json = json.load(f)

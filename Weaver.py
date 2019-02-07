@@ -5,7 +5,7 @@
 import sys, os
 sys.path.append('./ast/')
 import time
-from Utilities import execute_command, error_exit, backup_file, show_partial_diff
+from Utilities import execute_command, error_exit, backup_file, show_partial_diff, get_file_list
 import Output
 import Common
 import Logger
@@ -637,13 +637,14 @@ def extract_decl_list(ast_node):
 
 def get_function_node_id(ast_node, function_name):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    function_id = -1
     for child_node in ast_node['children']:
         child_node_type = child_node['type']
         if child_node_type == "FunctionDecl":
             child_node_identifier = child_node['identifier']
             if child_node_identifier == function_name:
-                return int(child_node['id'])
-    return -1
+                function_id = int(child_node['id'])
+    return function_id
 
 
 def identify_missing_functions(ast_node, source_path_b, source_path_d):
@@ -798,6 +799,33 @@ def transplant_missing_macros():
         show_partial_diff(backup_file_path, target_file)
 
 
+def get_complete_function_node(function_def_node, source_path):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    if len(function_def_node['children']) > 1:
+        return function_def_node
+    else:
+        header_file_loc = source_path + "/" + function_def_node['file']
+        print(header_file_loc)
+        function_name = function_def_node['identifier']
+        source_file_loc = header_file_loc.replace(".h", ".c")
+        if not os.path.exists(source_file_loc):
+            source_file_name = source_file_loc.split("/")[-1]
+            header_file_dir = os.path.dirname(header_file_loc)
+            search_dir = os.path.dirname(header_file_dir)
+            while not os.path.exists(source_file_loc):
+                search_dir_file_list = get_file_list(search_dir)
+                for file_name in search_dir_file_list:
+                    if source_file_name in file_name and file_name[-2:] == ".c":
+                        source_file_loc = file_name
+                        break
+                search_dir = os.path.dirname(search_dir)
+        ast_tree = Generator.get_ast_json(source_file_loc)
+        function_node_id = get_function_node_id(ast_tree, function_name)
+        function_node = get_ast_node_by_id(ast_tree, function_node_id)
+        print(function_node)
+        return function_node
+
+
 def transplant_missing_functions():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     global def_insert_point, missing_header_list
@@ -808,11 +836,12 @@ def transplant_missing_functions():
         source_path_b = info['source_b']
         source_path_d = info['source_d']
         Output.normal(function_name)
-        function_node = get_ast_node_by_id(ast_map_a, int(node_id))
-        missing_def_list = identify_missing_definitions(function_node)
-        print(missing_def_list)
-        def_insert_point = get_definition_insertion_point(source_path_d)
+        function_def_node = get_ast_node_by_id(ast_map_a, int(node_id))
         source_path_b = "/".join(source_path_b.split("/")[:-1])
+        function_node = get_complete_function_node(function_def_node, source_path_b)
+        missing_def_list = identify_missing_definitions(function_node)
+        # print(missing_def_list)
+        def_insert_point = get_definition_insertion_point(source_path_d)
         function_source_file = source_path_b + "/" + function_node['file']
         identify_missing_macros(function_node, function_source_file, source_path_d)
         start_line = function_node["start line"]
@@ -879,8 +908,8 @@ def transplant_code(diff_info, diff_loc):
                 ast_script_c.append(translated_command)
             Mapper.generate_symbolic_expressions(source_path_c, line_number_c, line_number_c, FILE_VAR_EXPR_LOG_C, False)
             var_expr_map_c = Mapper.collect_symbolic_expressions(FILE_VAR_EXPR_LOG_C)
-            # print(var_expr_map_b)
-            # print(var_expr_map_c)
+            print(var_expr_map_b)
+            print(var_expr_map_c)
             var_map = Mapper.generate_mapping(var_expr_map_b, var_expr_map_c)
             # print(var_map)
             # print(ast_script_c)
