@@ -28,10 +28,12 @@ def verify_exploit():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.normal(Common.Project_D.path)
     exit_code = Tracer.run_exploit(Common.VALUE_EXPLOIT_C, Common.Project_D.path, Common.VALUE_PATH_POC, Tracer.FILE_EXPLOIT_OUTPUT_C)
-    if int(exit_code) == Tracer.target_exit_code:
+    if int(exit_code) == int(Tracer.target_exit_code):
         error_exit("\tprogram crashed with exit code " + str(exit_code))
     else:
         Output.normal("\tprogram did not crash!!")
+        Output.normal("\t\tbefore transplantation exit code " + str(Tracer.target_exit_code))
+        Output.normal("\t\tafter transplantation exit code " + str(Tracer.target_exit_code))
 
 
 def safe_exec(function_def, title, *args):

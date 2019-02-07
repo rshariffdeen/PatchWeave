@@ -168,7 +168,6 @@ def estimate_divergent_point(byte_list):
     count_common = len(byte_list)
     candidate_list = list()
     estimated_loc = ""
-
     for n in range(length, 0, -1):
         key = Concolic.sym_path_c.keys()[n]
         sym_path = Concolic.sym_path_c[key]
@@ -178,12 +177,21 @@ def estimate_divergent_point(byte_list):
         if count == count_common:
             candidate_list.append(key)
     length = len(Concolic.list_trace_c) - 1
-
+    grab_nearest = False
     for n in range(length, 0, -1):
         path = Concolic.list_trace_c[n]
-        if path in candidate_list:
-            estimated_loc = path
-            break
+        if grab_nearest:
+            if ".c" in path:
+                estimated_loc = path
+                break
+        else:
+            if path in candidate_list:
+                if ".h" in path:
+                    grab_nearest = True
+                else:
+                    estimated_loc = path
+                    break
+
     # print("\t\testimated loc:\n\t\t" + str(estimated_loc))
     # filtered_list = list()
     # for i in range(n, length):
@@ -655,9 +663,14 @@ def identify_missing_functions(ast_node, source_path_b, source_path_d):
                 info['source_d'] = source_path_d
                 missing_function_list[function_name] = info
             else:
-                print("MULTIPLE FUNCTION REFERENCES FOUND!!!")
-                print(missing_function_list[function_name])
-                exit()
+                info = dict()
+                info['node_id'] = function_node_id
+                info['source_b'] = source_path_b
+                info['source_d'] = source_path_d
+
+                if info != missing_function_list[function_name]:
+                    print(missing_function_list[function_name])
+                    error_exit("MULTIPLE FUNCTION REFERENCES ON DIFFERENT TARGETS FOUND!!!")
 
 
 def identify_missing_definitions(function_node):
@@ -844,7 +857,9 @@ def transplant_code(diff_info, diff_loc):
         filtered_ast_script = filter_ast_script(ast_script, line_range_a, line_range_b, ast_map_a, ast_map_b)
         Mapper.generate_symbolic_expressions(source_path_b, start_line_b,  end_line_b, FILE_VAR_EXPR_LOG_B)
         var_expr_map_b = Mapper.collect_symbolic_expressions(FILE_VAR_EXPR_LOG_B)
+        # print(var_expr_map_b)
         insertion_loc_list = identify_insertion_points(estimate_loc, var_expr_map_b)
+        # print(insertion_loc_list)
         ast_script_c = list()
         for insertion_loc in insertion_loc_list:
             Output.normal("\t\t" + insertion_loc)
@@ -863,9 +878,12 @@ def transplant_code(diff_info, diff_loc):
                 ast_script_c.append(translated_command)
             Mapper.generate_symbolic_expressions(source_path_c, line_number_c, line_number_c, FILE_VAR_EXPR_LOG_C, False)
             var_expr_map_c = Mapper.collect_symbolic_expressions(FILE_VAR_EXPR_LOG_C)
+            # print(var_expr_map_b)
+            # print(var_expr_map_c)
             var_map = Mapper.generate_mapping(var_expr_map_b, var_expr_map_c)
-            # print(var_map)
-            # print(ast_script_c)
+            print(var_map)
+            print(ast_script_c)
+            exit(1)
             output_var_map(var_map)
             output_ast_script(ast_script_c)
             ret_code = execute_ast_transformation(source_path_b, source_path_d)

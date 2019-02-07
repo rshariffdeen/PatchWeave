@@ -124,3 +124,7 @@ def show_partial_diff(source_path_a, source_path_b):
         while diff_line:
             Output.normal("\t\t\t" + diff_line)
             diff_line = diff_file.readline().strip()
+
+
+def is_intersect(start_a, end_a, start_b, end_b):
+    return not (end_b < start_a or start_b > end_a)
