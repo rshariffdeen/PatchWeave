@@ -210,6 +210,8 @@ def generate_available_variable_list(source_path, start_line, end_line, only_in_
             break
 
         if child_node_type in ["IfStmt", "ForStmt"]:
+            if not is_intersect(start_line, end_line, child_node_start_line, child_node_end_line):
+                continue
             filter_var_ref_list = list()
             for var_ref in child_var_ref_list:
                 if var_ref in child_var_dec_list:

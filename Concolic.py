@@ -100,7 +100,9 @@ def generate_var_expressions(binary_arguments, binary_path, binary_name, log_pat
                      + binary_arguments.replace("$POC", "A") + " --sym-files 1 " + str(VALUE_BIT_SIZE) + "  > " + log_path + \
                     " 2>&1"
     # print(trace_command)
-    execute_command(trace_command)
+    ret_code = execute_command(trace_command)
+    if int(ret_code) != 0:
+        error_exit("CONCOLIC EXECUTION FAILED with code " + ret_code)
 
 
 def generate_trace_donor():
