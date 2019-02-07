@@ -561,7 +561,7 @@ def execute_ast_transformation(source_path_b, source_path_d):
     parameters = " -map=" + FILE_VAR_MAP + " -script=" + FILE_AST_SCRIPT
     parameters += " -source=" + source_path_b + " -target=" + source_path_d
     transform_command = TOOL_AST_PATCH + parameters + " > " + FILE_TEMP_FIX
-    print(transform_command)
+    # print(transform_command)
     ret_code = int(execute_command(transform_command))
     if source_path_d not in modified_source_list:
         modified_source_list.append(source_path_d)
@@ -810,7 +810,8 @@ def transplant_missing_macros():
 def get_complete_function_node(function_def_node, source_path):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     if len(function_def_node['children']) > 1:
-        return function_def_node, source_path
+        source_file_loc = source_path + "/" + function_def_node['file']
+        return function_def_node, source_file_loc
     else:
         header_file_loc = source_path + "/" + function_def_node['file']
         # print(header_file_loc)
