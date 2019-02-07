@@ -33,7 +33,7 @@ def verify_exploit():
     else:
         Output.normal("\tprogram did not crash!!")
         Output.normal("\t\tbefore transplantation exit code " + str(Tracer.target_exit_code))
-        Output.normal("\t\tafter transplantation exit code " + str(Tracer.exit_code))
+        Output.normal("\t\tafter transplantation exit code " + str(exit_code))
 
 
 def safe_exec(function_def, title, *args):
