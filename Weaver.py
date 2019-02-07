@@ -715,6 +715,8 @@ def identify_missing_macros(function_node, source_file, target_file):
             node_child_count = len(ref_node['children'])
             if function_identifier in identifier or "(" in identifier:
                 continue
+            if identifier in Common.STANDARD_MACRO_LIST:
+                continue
             if node_child_count:
                 for child_node in ref_node['children']:
                     identifier = str(child_node['value'])
@@ -808,7 +810,7 @@ def transplant_missing_macros():
 def get_complete_function_node(function_def_node, source_path):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     if len(function_def_node['children']) > 1:
-        return function_def_node
+        return function_def_node, source_path
     else:
         header_file_loc = source_path + "/" + function_def_node['file']
         # print(header_file_loc)
