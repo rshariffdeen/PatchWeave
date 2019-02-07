@@ -13,6 +13,11 @@ import Logger
 from Builder import build_normal
 
 
+def load_standard_list():
+    with open(Common.FILE_STANDARD_FUNCTION_LIST, "r") as list_file:
+        Common.STANDARD_FUNCTION_LIST = list_file.readlines()
+
+
 def set_env_value():
     Output.normal("setting environment values")
     os.environ["PYTHONPATH"] = "/home/rshariffdeen/workspace/z3/build/python"
@@ -24,6 +29,7 @@ def load_values():
     Common.Project_B = Project.Project(Common.VALUE_PATH_B, "Pb")
     Common.Project_C = Project.Project(Common.VALUE_PATH_C, "Pc", Common.VALUE_EXPLOIT_C)
     Common.Project_D = Project.Project(Common.VALUE_PATH_C + "-patch", "Pd")
+    load_standard_list()
 
 
 def create_patch_dir():

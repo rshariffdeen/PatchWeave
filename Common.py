@@ -11,6 +11,8 @@ DEBUG = False
 NO_BUILD = False
 NO_SYM_TRACE_GEN = False
 
+STANDARD_FUNCTION_LIST = list()
+
 PROJECT_A_FUNCTION_LIST = ""
 PROJECT_B_FUNCTION_LIST = ""
 PROJECT_C_FUNCTION_LIST = ""
@@ -31,6 +33,7 @@ DIRECTORY_VECTORS_A = DIRECTORY_OUTPUT + "/vectors-a"
 DIRECTORY_VECTORS_B = DIRECTORY_OUTPUT + "/vectors-b"
 DIRECTORY_VECTORS_C = DIRECTORY_OUTPUT + "/vectors-c"
 DIRECTORY_TOOLS = DIRECTORY_MAIN + "/tools"
+DIRECTORY_DATA = DIRECTORY_MAIN + "/data"
 
 # ------------------- Files --------------------
 
@@ -40,7 +43,7 @@ FILE_LAST_LOG = DIRECTORY_LOG + "/log-latest"
 FILE_MAKE_LOG = DIRECTORY_LOG + "/log-make"
 FILE_COMMAND_LOG = DIRECTORY_LOG + "/log-command"
 FILE_CONFIGURATION = ""
-
+FILE_STANDARD_FUNCTION_LIST = DIRECTORY_DATA + "/standard-function-list"
 
 
 # ------------------- Configuration --------------------

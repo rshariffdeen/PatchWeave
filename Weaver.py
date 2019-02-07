@@ -691,7 +691,8 @@ def identify_missing_definitions(function_node):
                 if identifier not in dec_list:
                     missing_definition_list.append(identifier)
             elif ref_type == "FunctionDecl":
-                if identifier not in missing_function_list:
+                if identifier not in (missing_function_list + Common.STANDARD_FUNCTION_LIST):
+                    print(identifier)
                     print("FOUND NEW DEPENDENT FUNCTION")
                     exit()
     return list(set(missing_definition_list))
@@ -805,7 +806,7 @@ def get_complete_function_node(function_def_node, source_path):
         return function_def_node
     else:
         header_file_loc = source_path + "/" + function_def_node['file']
-        print(header_file_loc)
+        # print(header_file_loc)
         function_name = function_def_node['identifier']
         source_file_loc = header_file_loc.replace(".h", ".c")
         if not os.path.exists(source_file_loc):
@@ -822,7 +823,6 @@ def get_complete_function_node(function_def_node, source_path):
         ast_tree = Generator.get_ast_json(source_file_loc)
         function_node_id = get_function_node_id(ast_tree, function_name)
         function_node = get_ast_node_by_id(ast_tree, function_node_id)
-        print(function_node)
         return function_node
 
 
@@ -908,8 +908,8 @@ def transplant_code(diff_info, diff_loc):
                 ast_script_c.append(translated_command)
             Mapper.generate_symbolic_expressions(source_path_c, line_number_c, line_number_c, FILE_VAR_EXPR_LOG_C, False)
             var_expr_map_c = Mapper.collect_symbolic_expressions(FILE_VAR_EXPR_LOG_C)
-            print(var_expr_map_b)
-            print(var_expr_map_c)
+            # print(var_expr_map_b)
+            # print(var_expr_map_c)
             var_map = Mapper.generate_mapping(var_expr_map_b, var_expr_map_c)
             # print(var_map)
             # print(ast_script_c)
