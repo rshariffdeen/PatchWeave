@@ -61,6 +61,7 @@ def collect_symbolic_path(file_path, project_path):
                     if project_path in line:
                         source_path = str(line.replace("[path:condition]", '')).split(" : ")[0]
                         source_path = source_path.strip()
+                        source_path = os.path.abspath(source_path)
                         path_condition = str(line.replace("[path:condition]", '')).split(" : ")[1]
                         continue
                 if source_path:

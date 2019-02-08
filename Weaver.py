@@ -5,7 +5,7 @@
 import sys, os
 sys.path.append('./ast/')
 import time
-from Utilities import execute_command, error_exit, backup_file, show_partial_diff, get_file_list
+from Utilities import execute_command, error_exit, backup_file, show_partial_diff, get_file_list, get_code
 import Output
 import Common
 import Logger
@@ -238,14 +238,6 @@ def compute_common_bytes(div_source_loc):
         bytes_c = Mapper.extract_values_from_model(model_c)
         common_byte_list = list(set(bytes_a.keys()).intersection(bytes_c.keys()))
     return common_byte_list
-
-
-def get_code(source_path, line_number):
-    if os.path.exists(source_path):
-        with open(source_path, 'r') as source_file:
-            content = source_file.readlines()
-            return content[line_number-1]
-    return None
 
 
 def translate_patch(patch_code, var_map):
@@ -813,6 +805,7 @@ def transplant_missing_macros():
 def get_complete_function_node(function_def_node, source_path):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     if len(function_def_node['children']) > 1:
+        source_path = "/".join(source_path.split("/")[:-1])
         source_file_loc = source_path + "/" + function_def_node['file']
         return function_def_node, source_file_loc
     else:
@@ -822,7 +815,7 @@ def get_complete_function_node(function_def_node, source_path):
         source_file_loc = header_file_loc.replace(".h", ".c")
         if not os.path.exists(source_file_loc):
             source_file_name = source_file_loc.split("/")[-1]
-            header_file_dir = os.path.dirname(header_file_loc)
+            header_file_dir = "/".join(source_file_loc.split("/")[:-1])
             search_dir = os.path.dirname(header_file_dir)
             while not os.path.exists(source_file_loc):
                 search_dir_file_list = get_file_list(search_dir)
@@ -1008,10 +1001,6 @@ def transplant_patch():
     transplant_missing_macros()
     transplant_missing_header()
     Fixer.check()
-
-
-def get_diff_variable_list(ast_script, ast_node):
-    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
 
 
 def get_best_insertion_point(insertion_point_list):

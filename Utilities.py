@@ -140,3 +140,11 @@ def get_file_list(dir_name):
         else:
             full_list.append(full_path)
     return full_list
+
+
+def get_code(source_path, line_number):
+    if os.path.exists(source_path):
+        with open(source_path, 'r') as source_file:
+            content = source_file.readlines()
+            return content[line_number-1]
+    return None
