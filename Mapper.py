@@ -5,7 +5,7 @@
 import sys, os
 sys.path.append('./ast/')
 import time
-from Utilities import execute_command, error_exit, backup_file, restore_file, extract_bitcode, reset_git
+from Utilities import execute_command, error_exit, backup_file, restore_file, extract_bitcode, reset_git, is_intersect
 from six.moves import cStringIO
 from pysmt.smtlib.parser import SmtLibParser
 from pysmt.shortcuts import get_model
@@ -34,7 +34,7 @@ def collect_symbolic_expressions(trace_file_path):
                 if '[var-expr]' in line:
                     line = line.replace("[var-expr] ", "")
                     var_name, var_expr = line.split(":")
-                    var_expr_map[var_name] = var_expr
+                    var_expr_map[var_name] = var_expr.replace("\n", "")
     return var_expr_map
 
 
@@ -48,6 +48,14 @@ def build_instrumented_code(source_directory):
     build_command += "CXXFLAGS=" + CXX_FLAGS + " > " + Common.FILE_MAKE_LOG
     # print(build_command)
     ret_code = execute_command(build_command)
+    if int(ret_code) != 0:
+        # TODO: check only upto common directory
+        while source_directory != "" and ret_code != "0":
+            build_command = build_command.replace(source_directory, "???")
+            source_directory = "/".join(source_directory.split("/")[:-1])
+            build_command = build_command.replace("???", source_directory)
+            ret_code = execute_command(build_command)
+
     if int(ret_code) != 0:
         Output.error(build_command)
         error_exit("BUILD FAILED!!\nExit Code: " + str(ret_code))
@@ -78,11 +86,17 @@ def instrument_code_for_klee(source_path, start_line, end_line, only_in_range):
     for variable in variable_list:
         insert_code += "klee_print_expr(\"[var-expr] " + variable + "\", " + variable + ");\n"
     insert_code += "exit(-1);"
+    # print(insert_code)
+    insert_line = 0
+    if Common.Project_B.path in source_path:
+        insert_line = int(start_line) - 1
+    else:
+        insert_line = int(end_line) - 1
     if os.path.exists(source_path):
         with open(source_path, 'r') as source_file:
             content = source_file.readlines()
-            existing_line = content[int(end_line)-1]
-            content[int(end_line)-1] = existing_line + insert_code
+            existing_line = content[insert_line]
+            content[insert_line] = existing_line + insert_code
     with open(source_path, 'w') as source_file:
         source_file.writelines(content)
 
@@ -98,10 +112,7 @@ def collect_var_dec_list(ast_node, start_line, end_line, only_in_range):
     node_type = ast_node['type']
 
     if only_in_range:
-        if node_start_line > int(end_line) or node_start_line < int(start_line):
-            return var_list
-    else:
-        if node_start_line > int(end_line):
+        if not is_intersect(node_start_line, node_end_line, start_line, end_line):
             return var_list
 
     if node_type in ["ParmVarDecl", "VarDecl"]:
@@ -126,14 +137,12 @@ def collect_var_ref_list(ast_node, start_line, end_line, only_in_range):
     node_type = ast_node['type']
 
     if only_in_range:
-        if node_start_line > int(end_line) or node_start_line < int(start_line):
-            return var_list
-    else:
-        if node_start_line > int(end_line):
+        if not is_intersect(node_start_line, node_end_line, start_line, end_line):
             return var_list
 
     if node_type in ["MemberExpr"]:
         node_value = ast_node['value']
+
         var_name = ""
         if node_value == "":
             return var_list
@@ -146,9 +155,18 @@ def collect_var_ref_list(ast_node, start_line, end_line, only_in_range):
         while child_node:
             child_node_type = child_node['type']
             if child_node_type == "DeclRefExpr":
-                var_name = str(child_node['value'])  + var_name
+                var_name = str(child_node['value']) + var_name
             elif child_node_type == "ArraySubscriptExpr":
-                return var_list
+                iterating_var_node = child_node['children'][1]
+                iterating_var_name = iterating_var_node['value']
+                iterating_var_type = iterating_var_node['type']
+                if iterating_var_type == "DeclRefExpr":
+                    iterating_var_ref_type = iterating_var_node['ref_type']
+                    if iterating_var_ref_type in ["VarDecl", "ParmVarDecl"]:
+                        var_list.append(iterating_var_name)
+                        if var_name[:2] == "->":
+                            var_name = "." + var_name[2:]
+                        var_name = "[" + iterating_var_name + "]" + var_name
             elif child_node_type == "MemberExpr":
                 child_node_value = child_node['value']
                 if "union" in child_node_value:
@@ -176,6 +194,7 @@ def generate_available_variable_list(source_path, start_line, end_line, only_in_
     variable_list = list()
     ast_map = Generator.get_ast_json(source_path)
     func_node = Weaver.get_fun_node(ast_map, int(end_line), source_path)
+    # print(source_path, start_line, end_line)
     if not only_in_range:
         param_node = func_node['children'][0]
         for child_node in param_node['children']:
@@ -188,18 +207,19 @@ def generate_available_variable_list(source_path, start_line, end_line, only_in_
     compound_node = func_node['children'][1]
     for child_node in compound_node['children']:
         child_node_type = child_node['type']
-        child_node_start_line = child_node['start line']
-        child_node_end_line = child_node['end line']
+        child_node_start_line = int(child_node['start line'])
+        child_node_end_line = int(child_node['end line'])
         filter_declarations = False
+        # print(child_node_start_line, child_node_end_line)
         child_var_dec_list = collect_var_dec_list(child_node, start_line, end_line, only_in_range)
         child_var_ref_list = collect_var_ref_list(child_node, start_line, end_line, only_in_range)
-
-        if child_node_start_line <= end_line <= child_node_end_line:
+        if child_node_start_line <= int(end_line) <= child_node_end_line:
             variable_list = list(set(variable_list + child_var_ref_list + child_var_dec_list))
             break
 
         if child_node_type in ["IfStmt", "ForStmt"]:
-            continue
+            if not is_intersect(start_line, end_line, child_node_start_line, child_node_end_line):
+                continue
             filter_var_ref_list = list()
             for var_ref in child_var_ref_list:
                 if var_ref in child_var_dec_list:
@@ -260,12 +280,20 @@ def get_model_from_solver(str_formula):
 def extract_values_from_model(model):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     byte_array = dict()
+    # print(model)
     for dec in model.decls():
+        # print(dec)
+        # print(model[dec])
         if dec.name() == "A-data":
-            var_list = model[dec].as_list()
-            for pair in var_list:
-                if type(pair) == list:
-                    byte_array[pair[0]] = pair[1]
+            if hasattr(model[dec], "num_entries"):
+                var_list = model[dec].as_list()
+                # print(var_list)
+                for pair in var_list:
+                    if type(pair) == list:
+                        byte_array[pair[0]] = pair[1]
+            else:
+                return None
+
     return byte_array
 
 
@@ -290,7 +318,8 @@ def create_z3_code(var_expr, var_name, bit_size):
 def generate_z3_code_for_expr(var_expr, var_name):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     var_name = str(var_name).replace("->", "")
-
+    var_name = str(var_name).replace("[", "-")
+    var_name = str(var_name).replace("]", "-")
     count_64 = int(var_expr.count("64)"))
     count_bracket = int(var_expr.count(")"))
 
@@ -314,10 +343,21 @@ def generate_z3_code_for_expr(var_expr, var_name):
 def get_input_bytes_used(sym_expr):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     model_a = get_model_from_solver(sym_expr)
+    # print(model_a)
     input_byte_list = list()
     if model_a is not None:
         input_bytes_map = extract_values_from_model(model_a)
-        input_byte_list = list(set(input_bytes_map.keys()))
+        if input_bytes_map is None:
+            script_lines = str(sym_expr).split("\n")
+            value_line = script_lines[3]
+            tokens = value_line.split("A-data")
+            if len(tokens) > 2:
+                error_exit("MORE than expected!!")
+            else:
+                byte_index = ((tokens[1].split(")")[0]).split("bv")[1]).split(" ")[0]
+                input_byte_list.append(int(byte_index))
+        else:
+            input_byte_list = list(set(input_bytes_map.keys()))
     return input_byte_list
 
 
@@ -325,13 +365,20 @@ def generate_mapping(var_map_a, var_map_b):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.normal("\t\tgenerating variable map")
     var_map = dict()
+
     for var_a in var_map_a:
+        # print(var_a)
         sym_expr = generate_z3_code_for_expr(var_map_a[var_a], var_a)
+        # print(sym_expr)
         input_bytes_a = get_input_bytes_used(sym_expr)
+        # print(input_bytes_a)
         candidate_list = list()
         for var_b in var_map_b:
+            # print(var_b)
             sym_expr = generate_z3_code_for_expr(var_map_b[var_b], var_b)
+            # print(sym_expr)
             input_bytes_b = get_input_bytes_used(sym_expr)
+            # print(input_bytes_b)
             if input_bytes_a and input_bytes_a == input_bytes_b:
                 candidate_list.append(var_b)
         if len(candidate_list) == 1:

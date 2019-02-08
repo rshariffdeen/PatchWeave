@@ -11,8 +11,7 @@ import Common
 import Logger
 import Builder
 
-SYMBOLIC_ENGINE = "klee --print-trace --print-stack "
-
+SYMBOLIC_ENGINE = "klee --posix-runtime --libc=uclibc --print-trace --print-stack "
 
 
 FILE_VALGRIND_OUTPUT = Common.DIRECTORY_OUTPUT + "/output-valgrind"
@@ -80,12 +79,13 @@ def extract_stack_info(trace_file_path):
             is_stack = False
             for read_line in trace_file:
                 if is_stack and '#' in read_line:
-                    read_line, source_path = str(read_line).split(" at ")
-                    source_path, line_number = source_path.split(":")
-                    function_name = str(read_line.split(" in ")[1]).split(" (")[0]
-                    if source_path not in stack_map.keys():
-                        stack_map[source_path] = dict()
-                    stack_map[source_path][function_name] = line_number
+                    if " at " in read_line:
+                        read_line, source_path = str(read_line).split(" at ")
+                        source_path, line_number = source_path.split(":")
+                        function_name = str(read_line.split(" in ")[1]).split(" (")[0]
+                        if source_path not in stack_map.keys():
+                            stack_map[source_path] = dict()
+                        stack_map[source_path][function_name] = line_number
                 if "Stack:" in read_line:
                     is_stack = True
                     continue

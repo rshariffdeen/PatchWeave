@@ -124,3 +124,19 @@ def show_partial_diff(source_path_a, source_path_b):
         while diff_line:
             Output.normal("\t\t\t" + diff_line)
             diff_line = diff_file.readline().strip()
+
+
+def is_intersect(start_a, end_a, start_b, end_b):
+    return not (end_b < start_a or start_b > end_a)
+
+
+def get_file_list(dir_name):
+    current_file_list = os.listdir(dir_name)
+    full_list = list()
+    for entry in current_file_list:
+        full_path = os.path.join(dir_name, entry)
+        if os.path.isdir(full_path):
+            full_list = full_list + get_file_list(full_path)
+        else:
+            full_list.append(full_path)
+    return full_list

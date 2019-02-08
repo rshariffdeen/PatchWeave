@@ -5,7 +5,7 @@
 import sys, os
 sys.path.append('./ast/')
 import time
-from Utilities import execute_command, error_exit, backup_file, show_partial_diff
+from Utilities import execute_command, error_exit, backup_file, show_partial_diff, get_file_list
 import Output
 import Common
 import Logger
@@ -134,7 +134,7 @@ def filter_trace_list(trace_list, estimate_loc):
 def generate_candidate_function_list(estimate_loc, var_expr_map):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.normal("\tgenerating candidate functions")
-    filtered_trace_list = filter_trace_list(Concolic.list_trace_c, estimate_loc)
+    filtered_trace_list = filter_trace_list(Tracer.list_trace_c, estimate_loc)
     source_list_c = extract_source_list(filtered_trace_list)
     source_function_map = get_function_map(source_list_c)
     trace_function_list = extract_trace_function_list(source_function_map, filtered_trace_list)
@@ -168,7 +168,6 @@ def estimate_divergent_point(byte_list):
     count_common = len(byte_list)
     candidate_list = list()
     estimated_loc = ""
-
     for n in range(length, 0, -1):
         key = Concolic.sym_path_c.keys()[n]
         sym_path = Concolic.sym_path_c[key]
@@ -177,13 +176,22 @@ def estimate_divergent_point(byte_list):
         count = len(list(set(byte_list).intersection(bytes_temp.keys())))
         if count == count_common:
             candidate_list.append(key)
-    length = len(Concolic.list_trace_c) - 1
-
+    length = len(Tracer.list_trace_c) - 1
+    grab_nearest = False
     for n in range(length, 0, -1):
-        path = Concolic.list_trace_c[n]
-        if path in candidate_list:
-            estimated_loc = path
-            break
+        path = Tracer.list_trace_c[n]
+        if grab_nearest:
+            if ".c" in path:
+                estimated_loc = path
+                break
+        else:
+            if path in candidate_list:
+                if ".h" in path:
+                    grab_nearest = True
+                else:
+                    estimated_loc = path
+                    break
+
     # print("\t\testimated loc:\n\t\t" + str(estimated_loc))
     # filtered_list = list()
     # for i in range(n, length):
@@ -197,22 +205,22 @@ def estimate_divergent_point(byte_list):
 def get_sym_path(source_location):
     sym_path = ""
     if Common.VALUE_PATH_A in source_location:
-        for path in Concolic.list_trace_a:
+        for path in Tracer.list_trace_a:
             if path in Concolic.sym_path_a.keys():
                 sym_path = Concolic.sym_path_a[path]
-            if path is source_location:
+            if path == source_location:
                 break
     elif Common.VALUE_PATH_B in source_location:
-        for path in Concolic.list_trace_b:
+        for path in Tracer.list_trace_b:
             if path in Concolic.sym_path_b.keys():
                 sym_path = Concolic.sym_path_b[path]
-            if path is source_location:
+            if path == source_location:
                 break
     elif Common.VALUE_PATH_C in source_location:
-        for path in Concolic.list_trace_c:
+        for path in Tracer.list_trace_c:
             if path in Concolic.sym_path_c.keys():
                 sym_path = Concolic.sym_path_c[path]
-            if path is source_location:
+            if path == source_location:
                 break
     return sym_path
 
@@ -221,12 +229,15 @@ def compute_common_bytes(div_source_loc):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.normal("\tanalysing common bytes in symbolic paths")
     div_sympath = get_sym_path(div_source_loc)
-    last_sympath_c = Concolic.sym_path_c[Concolic.sym_path_c.keys()[-1]]
-    model_a = Mapper.get_model_from_solver(div_sympath)
-    bytes_a = Mapper.extract_values_from_model(model_a)
-    model_c = Mapper.get_model_from_solver(last_sympath_c)
-    bytes_c = Mapper.extract_values_from_model(model_c)
-    return list(set(bytes_a.keys()).intersection(bytes_c.keys()))
+    common_byte_list = list()
+    if Concolic.sym_path_c:
+        last_sympath_c = Concolic.sym_path_c[Concolic.sym_path_c.keys()[-1]]
+        model_a = Mapper.get_model_from_solver(div_sympath)
+        bytes_a = Mapper.extract_values_from_model(model_a)
+        model_c = Mapper.get_model_from_solver(last_sympath_c)
+        bytes_c = Mapper.extract_values_from_model(model_c)
+        common_byte_list = list(set(bytes_a.keys()).intersection(bytes_c.keys()))
+    return common_byte_list
 
 
 def get_code(source_path, line_number):
@@ -499,7 +510,6 @@ def filter_ast_script(ast_script, line_range_a, line_range_b, ast_node_a, ast_no
     line_range_start_b, line_range_end_b = line_range_b
     line_numbers_a = set(range(int(line_range_start_a), int(line_range_end_a) + 1))
     line_numbers_b = set(range(int(line_range_start_b), int(line_range_end_b) + 1))
-
     merged_ast_script = merge_ast_script(ast_script, ast_node_a, ast_node_b)
     for script_line in merged_ast_script:
         if "Insert" in script_line:
@@ -554,6 +564,7 @@ def execute_ast_transformation(source_path_b, source_path_d):
     parameters = " -map=" + FILE_VAR_MAP + " -script=" + FILE_AST_SCRIPT
     parameters += " -source=" + source_path_b + " -target=" + source_path_d
     transform_command = TOOL_AST_PATCH + parameters + " > " + FILE_TEMP_FIX
+    # print(transform_command)
     ret_code = int(execute_command(transform_command))
     if source_path_d not in modified_source_list:
         modified_source_list.append(source_path_d)
@@ -629,13 +640,14 @@ def extract_decl_list(ast_node):
 
 def get_function_node_id(ast_node, function_name):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    function_id = -1
     for child_node in ast_node['children']:
         child_node_type = child_node['type']
         if child_node_type == "FunctionDecl":
             child_node_identifier = child_node['identifier']
             if child_node_identifier == function_name:
-                return int(child_node['id'])
-    return -1
+                function_id = int(child_node['id'])
+    return function_id
 
 
 def identify_missing_functions(ast_node, source_path_b, source_path_d):
@@ -655,9 +667,14 @@ def identify_missing_functions(ast_node, source_path_b, source_path_d):
                 info['source_d'] = source_path_d
                 missing_function_list[function_name] = info
             else:
-                print("MULTIPLE FUNCTION REFERENCES FOUND!!!")
-                print(missing_function_list[function_name])
-                exit()
+                info = dict()
+                info['node_id'] = function_node_id
+                info['source_b'] = source_path_b
+                info['source_d'] = source_path_d
+
+                if info != missing_function_list[function_name]:
+                    print(missing_function_list[function_name])
+                    error_exit("MULTIPLE FUNCTION REFERENCES ON DIFFERENT TARGETS FOUND!!!")
 
 
 def identify_missing_definitions(function_node):
@@ -677,7 +694,11 @@ def identify_missing_definitions(function_node):
                 if identifier not in dec_list:
                     missing_definition_list.append(identifier)
             elif ref_type == "FunctionDecl":
+                if identifier in Common.STANDARD_FUNCTION_LIST:
+                    continue
                 if identifier not in missing_function_list:
+                    print(identifier)
+                    print(Common.STANDARD_FUNCTION_LIST)
                     print("FOUND NEW DEPENDENT FUNCTION")
                     exit()
     return list(set(missing_definition_list))
@@ -695,11 +716,15 @@ def identify_missing_macros(function_node, source_file, target_file):
         if node_type == "Macro":
             identifier = str(ref_node['value'])
             node_child_count = len(ref_node['children'])
-            if function_identifier in identifier:
+            if function_identifier in identifier or "(" in identifier:
+                continue
+            if identifier in Common.STANDARD_MACRO_LIST:
                 continue
             if node_child_count:
                 for child_node in ref_node['children']:
                     identifier = str(child_node['value'])
+                    if identifier in Common.STANDARD_MACRO_LIST:
+                        continue
                     if identifier not in dec_list:
                         if identifier not in missing_macro_list.keys():
                             info = dict()
@@ -785,6 +810,33 @@ def transplant_missing_macros():
         show_partial_diff(backup_file_path, target_file)
 
 
+def get_complete_function_node(function_def_node, source_path):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    if len(function_def_node['children']) > 1:
+        source_file_loc = source_path + "/" + function_def_node['file']
+        return function_def_node, source_file_loc
+    else:
+        header_file_loc = source_path + "/" + function_def_node['file']
+        # print(header_file_loc)
+        function_name = function_def_node['identifier']
+        source_file_loc = header_file_loc.replace(".h", ".c")
+        if not os.path.exists(source_file_loc):
+            source_file_name = source_file_loc.split("/")[-1]
+            header_file_dir = os.path.dirname(header_file_loc)
+            search_dir = os.path.dirname(header_file_dir)
+            while not os.path.exists(source_file_loc):
+                search_dir_file_list = get_file_list(search_dir)
+                for file_name in search_dir_file_list:
+                    if source_file_name in file_name and file_name[-2:] == ".c":
+                        source_file_loc = file_name
+                        break
+                search_dir = os.path.dirname(search_dir)
+        ast_tree = Generator.get_ast_json(source_file_loc)
+        function_node_id = get_function_node_id(ast_tree, function_name)
+        function_node = get_ast_node_by_id(ast_tree, function_node_id)
+        return function_node, source_file_loc
+
+
 def transplant_missing_functions():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     global def_insert_point, missing_header_list
@@ -795,17 +847,23 @@ def transplant_missing_functions():
         source_path_b = info['source_b']
         source_path_d = info['source_d']
         Output.normal(function_name)
-        function_node = get_ast_node_by_id(ast_map_a, int(node_id))
-        missing_def_list = identify_missing_definitions(function_node)
-        def_insert_point = get_definition_insertion_point(source_path_d)
+        function_def_node = get_ast_node_by_id(ast_map_a, int(node_id))
         source_path_b = "/".join(source_path_b.split("/")[:-1])
-        function_source_file = source_path_b + "/" + function_node['file']
+        function_node, function_source_file = get_complete_function_node(function_def_node, source_path_b)
+        missing_def_list = identify_missing_definitions(function_node)
+        # print(missing_def_list)
+        # print(source_path_d)
+        def_insert_point = get_definition_insertion_point(source_path_d)
+        # print(def_insert_point)
+        # print(function_source_file)
         identify_missing_macros(function_node, function_source_file, source_path_d)
         start_line = function_node["start line"]
         end_line = function_node["end line"]
         function_definition = function_node['value']
         function_name = function_node['identifier']
+        # print(function_name)
         return_type = (function_definition.replace(function_name, "")).split("(")[1]
+        # print(return_type)
         if return_type.strip() == "_Bool":
             if "stdbool.h" not in missing_header_list.keys():
                 missing_header_list["stdbool.h"] = source_path_d
@@ -816,7 +874,6 @@ def transplant_missing_functions():
         for i in range(int(start_line), int(end_line + 1)):
             original_function += get_code(function_source_file, int(i)) + "\n"
         # translated_patch = translate_patch(original_patch, var_map_ac)
-
         backup_file(source_path_d, FILENAME_BACKUP)
         insert_patch(original_function, source_path_d, def_insert_point)
         backup_file_path = Common.DIRECTORY_BACKUP + "/" + FILENAME_BACKUP
@@ -844,7 +901,9 @@ def transplant_code(diff_info, diff_loc):
         filtered_ast_script = filter_ast_script(ast_script, line_range_a, line_range_b, ast_map_a, ast_map_b)
         Mapper.generate_symbolic_expressions(source_path_b, start_line_b,  end_line_b, FILE_VAR_EXPR_LOG_B)
         var_expr_map_b = Mapper.collect_symbolic_expressions(FILE_VAR_EXPR_LOG_B)
+        # print(var_expr_map_b)
         insertion_loc_list = identify_insertion_points(estimate_loc, var_expr_map_b)
+        # print(insertion_loc_list)
         ast_script_c = list()
         for insertion_loc in insertion_loc_list:
             Output.normal("\t\t" + insertion_loc)
@@ -857,15 +916,18 @@ def transplant_code(diff_info, diff_loc):
                 inserting_node_str = script_line.split(" into ")[0]
                 inserting_node_id = int((inserting_node_str.split("(")[1]).split(")")[0])
                 inserting_node = get_ast_node_by_id(ast_map_b, inserting_node_id)
-                translated_command = inserting_node_str + " into " + position_c
+                translated_command = inserting_node_str + " into " + position_c + "\n"
                 identify_missing_functions(inserting_node, source_path_b, source_path_d)
                 # identify_missing_macros(inserting_node, source_path_b, source_path_d)
                 ast_script_c.append(translated_command)
             Mapper.generate_symbolic_expressions(source_path_c, line_number_c, line_number_c, FILE_VAR_EXPR_LOG_C, False)
             var_expr_map_c = Mapper.collect_symbolic_expressions(FILE_VAR_EXPR_LOG_C)
+            # print(var_expr_map_b)
+            # print(var_expr_map_c)
             var_map = Mapper.generate_mapping(var_expr_map_b, var_expr_map_c)
             # print(var_map)
             # print(ast_script_c)
+
             output_var_map(var_map)
             output_ast_script(ast_script_c)
             ret_code = execute_ast_transformation(source_path_b, source_path_d)
