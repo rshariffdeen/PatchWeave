@@ -106,7 +106,6 @@ def generate_var_expressions(binary_arguments, binary_path, binary_name, log_pat
 
 
 def generate_trace_donor():
-    global list_trace_a, list_trace_b
     global sym_path_a, sym_path_b, sym_path_c
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.normal(Common.VALUE_PATH_A)
@@ -115,7 +114,6 @@ def generate_trace_donor():
         sym_file_path = generate_path_condition(" ".join(Common.VALUE_EXPLOIT_A.split(" ")[1:]), binary_path, binary_name, FILE_KLEE_LOG_A)
         copy_command = "cp " + sym_file_path + " " + FILE_SYM_PATH_A
         execute_command(copy_command)
-    list_trace_a = Tracer.list_trace_a
     sym_path_a = collect_symbolic_path(FILE_KLEE_LOG_A, Common.VALUE_PATH_A)
 
     Output.normal(Common.VALUE_PATH_B)
@@ -124,12 +122,11 @@ def generate_trace_donor():
         sym_file_path = generate_path_condition(" ".join(Common.VALUE_EXPLOIT_A.split(" ")[1:]), binary_path, binary_name, FILE_KLEE_LOG_B)
         copy_command = "cp " + sym_file_path + " " + FILE_SYM_PATH_B
         execute_command(copy_command)
-    list_trace_b = Tracer.list_trace_b
     sym_path_b = collect_symbolic_path(FILE_KLEE_LOG_B, Common.VALUE_PATH_B)
 
 
 def generate_trace_target():
-    global sym_path_c, list_trace_c
+    global sym_path_c
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.normal(Common.VALUE_PATH_C)
     if not Common.NO_SYM_TRACE_GEN:
@@ -137,7 +134,6 @@ def generate_trace_target():
         sym_file_path = generate_path_condition(" ".join(Common.VALUE_EXPLOIT_C.split(" ")[1:]), binary_path, binary_name, FILE_KLEE_LOG_C)
         copy_command = "cp " + sym_file_path + " " + FILE_SYM_PATH_C
         execute_command(copy_command)
-    list_trace_c = Tracer.list_trace_c
     sym_path_c = collect_symbolic_path(FILE_KLEE_LOG_C, Common.VALUE_PATH_C)
 
 

@@ -134,7 +134,7 @@ def filter_trace_list(trace_list, estimate_loc):
 def generate_candidate_function_list(estimate_loc, var_expr_map):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.normal("\tgenerating candidate functions")
-    filtered_trace_list = filter_trace_list(Concolic.list_trace_c, estimate_loc)
+    filtered_trace_list = filter_trace_list(Tracer.list_trace_c, estimate_loc)
     source_list_c = extract_source_list(filtered_trace_list)
     source_function_map = get_function_map(source_list_c)
     trace_function_list = extract_trace_function_list(source_function_map, filtered_trace_list)
@@ -176,10 +176,10 @@ def estimate_divergent_point(byte_list):
         count = len(list(set(byte_list).intersection(bytes_temp.keys())))
         if count == count_common:
             candidate_list.append(key)
-    length = len(Concolic.list_trace_c) - 1
+    length = len(Tracer.list_trace_c) - 1
     grab_nearest = False
     for n in range(length, 0, -1):
-        path = Concolic.list_trace_c[n]
+        path = Tracer.list_trace_c[n]
         if grab_nearest:
             if ".c" in path:
                 estimated_loc = path
@@ -205,19 +205,19 @@ def estimate_divergent_point(byte_list):
 def get_sym_path(source_location):
     sym_path = ""
     if Common.VALUE_PATH_A in source_location:
-        for path in Concolic.list_trace_a:
-            if path in Concolic.sym_path_a.keys():
+        for path in Tracer.list_trace_a:
+            if path in Concolic.sym_path_a:
                 sym_path = Concolic.sym_path_a[path]
             if path is source_location:
                 break
     elif Common.VALUE_PATH_B in source_location:
-        for path in Concolic.list_trace_b:
+        for path in Tracer.list_trace_b:
             if path in Concolic.sym_path_b.keys():
                 sym_path = Concolic.sym_path_b[path]
             if path is source_location:
                 break
     elif Common.VALUE_PATH_C in source_location:
-        for path in Concolic.list_trace_c:
+        for path in Tracer.list_trace_c:
             if path in Concolic.sym_path_c.keys():
                 sym_path = Concolic.sym_path_c[path]
             if path is source_location:
