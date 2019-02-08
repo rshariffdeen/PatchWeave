@@ -70,7 +70,6 @@ def collect_symbolic_path(file_path, project_path):
                         constraints[source_path] = path_condition
                         source_path = ""
                         path_condition = ""
-
     return constraints
 
 
@@ -106,7 +105,7 @@ def generate_var_expressions(binary_arguments, binary_path, binary_name, log_pat
 
 
 def generate_trace_donor():
-    global sym_path_a, sym_path_b, sym_path_c
+    global sym_path_a, sym_path_b
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.normal(Common.VALUE_PATH_A)
     if not Common.NO_SYM_TRACE_GEN:

@@ -208,19 +208,19 @@ def get_sym_path(source_location):
         for path in Tracer.list_trace_a:
             if path in Concolic.sym_path_a.keys():
                 sym_path = Concolic.sym_path_a[path]
-            if path is source_location:
+            if path == source_location:
                 break
     elif Common.VALUE_PATH_B in source_location:
         for path in Tracer.list_trace_b:
             if path in Concolic.sym_path_b.keys():
                 sym_path = Concolic.sym_path_b[path]
-            if path is source_location:
+            if path == source_location:
                 break
     elif Common.VALUE_PATH_C in source_location:
         for path in Tracer.list_trace_c:
             if path in Concolic.sym_path_c.keys():
                 sym_path = Concolic.sym_path_c[path]
-            if path is source_location:
+            if path == source_location:
                 break
     return sym_path
 
@@ -229,13 +229,15 @@ def compute_common_bytes(div_source_loc):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.normal("\tanalysing common bytes in symbolic paths")
     div_sympath = get_sym_path(div_source_loc)
-    print(div_sympath)
-    last_sympath_c = Concolic.sym_path_c[Concolic.sym_path_c.keys()[-1]]
-    model_a = Mapper.get_model_from_solver(div_sympath)
-    bytes_a = Mapper.extract_values_from_model(model_a)
-    model_c = Mapper.get_model_from_solver(last_sympath_c)
-    bytes_c = Mapper.extract_values_from_model(model_c)
-    return list(set(bytes_a.keys()).intersection(bytes_c.keys()))
+    common_byte_list = list()
+    if Concolic.sym_path_c:
+        last_sympath_c = Concolic.sym_path_c[Concolic.sym_path_c.keys()[-1]]
+        model_a = Mapper.get_model_from_solver(div_sympath)
+        bytes_a = Mapper.extract_values_from_model(model_a)
+        model_c = Mapper.get_model_from_solver(last_sympath_c)
+        bytes_c = Mapper.extract_values_from_model(model_c)
+        common_byte_list = list(set(bytes_a.keys()).intersection(bytes_c.keys()))
+    return common_byte_list
 
 
 def get_code(source_path, line_number):

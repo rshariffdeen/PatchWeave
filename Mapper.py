@@ -49,6 +49,14 @@ def build_instrumented_code(source_directory):
     # print(build_command)
     ret_code = execute_command(build_command)
     if int(ret_code) != 0:
+        # TODO: check only upto common directory
+        while source_directory != "" and ret_code != "0":
+            build_command = build_command.replace(source_directory, "???")
+            source_directory = "/".join(source_directory.split("/")[:-1])
+            build_command = build_command.replace("???", source_directory)
+            ret_code = execute_command(build_command)
+
+    if int(ret_code) != 0:
         Output.error(build_command)
         error_exit("BUILD FAILED!!\nExit Code: " + str(ret_code))
 
