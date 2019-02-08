@@ -11,8 +11,7 @@ import Common
 import Logger
 import Builder
 
-SYMBOLIC_ENGINE = "klee --print-trace --print-stack "
-
+SYMBOLIC_ENGINE = "klee --posix-runtime --libc=uclibc --print-trace --print-stack "
 
 
 FILE_VALGRIND_OUTPUT = Common.DIRECTORY_OUTPUT + "/output-valgrind"
