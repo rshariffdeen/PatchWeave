@@ -495,7 +495,7 @@ def merge_ast_script(ast_script, ast_node_a, ast_node_b):
     return merged_ast_script
 
 
-def filter_ast_script(ast_script, line_range_a, line_range_b, ast_node_a, ast_node_b):
+def filter_ast_script(ast_script, line_range_a, line_range_b, ast_node_a, ast_node_b, skip_lines):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     filtered_ast_script = list()
     line_range_start_a, line_range_end_a = line_range_a
@@ -509,6 +509,8 @@ def filter_ast_script(ast_script, line_range_a, line_range_b, ast_node_a, ast_no
             node_b = get_ast_node_by_id(ast_node_b, node_id_b)
             node_line_start = int(node_b['start line'])
             node_line_end = int(node_b['end line']) + 1
+            if node_line_start in skip_lines:
+                continue
             node_line_numbers = set(range(node_line_start, node_line_end))
             intersection = line_numbers_b.intersection(node_line_numbers)
             if intersection:
@@ -889,6 +891,7 @@ def transplant_code(diff_info, diff_loc):
 
     if operation == 'insert':
         start_line_b, end_line_b = diff_info['new-lines']
+        skip_line_list = diff_info['skip-lines']
         line_range_b = (start_line_b, end_line_b)
         line_range_a = (-1, -1)
         filtered_ast_script = filter_ast_script(ast_script, line_range_a, line_range_b, ast_map_a, ast_map_b)
@@ -929,7 +932,8 @@ def transplant_code(diff_info, diff_loc):
     elif operation == 'modify':
         line_range_a = diff_info['old-lines']
         line_range_b = diff_info['new-lines']
-        filtered_ast_script = filter_ast_script(ast_script, line_range_a, line_range_b, ast_map_a, ast_map_b)
+        skip_line_list = diff_info['skip-lines']
+        filtered_ast_script = filter_ast_script(ast_script, line_range_a, line_range_b, ast_map_a, ast_map_b, skip_line_list)
         Mapper.generate_symbolic_expressions(source_path_b, line_range_b[0], line_range_b[1], FILE_VAR_EXPR_LOG_B)
         var_expr_map_b = Mapper.collect_symbolic_expressions(FILE_VAR_EXPR_LOG_B)
         Mapper.generate_symbolic_expressions(source_path_a, line_range_a[0], line_range_a[1], FILE_VAR_EXPR_LOG_A)
