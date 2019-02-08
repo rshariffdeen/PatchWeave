@@ -145,7 +145,9 @@ def generate_candidate_function_list(estimate_loc, var_expr_map):
         begin_line = function_info['begin']
         last_line = function_info['last']
         ast_map_c = Generator.get_ast_json(source_path)
+        # print(int(last_line), source_path)
         function_node = get_fun_node(ast_map_c, int(last_line), source_path)
+        # print(function_node)
         Mapper.generate_symbolic_expressions(source_path, last_line, last_line, FILE_VAR_EXPR_LOG_C, False)
         sym_expr_map = Mapper.collect_symbolic_expressions(FILE_VAR_EXPR_LOG_C)
         var_map = Mapper.generate_mapping(var_expr_map, sym_expr_map)
@@ -157,7 +159,6 @@ def generate_candidate_function_list(estimate_loc, var_expr_map):
         info['exec-lines'] = function_info['lines']
         info['score'] = len(var_map)
         candidate_function_list[function_id] = info
-
     return candidate_function_list
 
 
@@ -277,12 +278,14 @@ def get_fun_node(ast_node, line_number, source_path):
     for child_node in ast_node['children']:
         child_node_type = child_node['type']
         if child_node_type == "FunctionDecl":
-            function_source = child_node['file']
-            if file_name in function_source:
-                child_node_start_line = int(child_node['start line'])
-                child_node_end_line = int(child_node['end line'])
-                if line_number in range(child_node_start_line, child_node_end_line + 1):
-                    return child_node
+            if "file" in child_node.keys():
+                function_source = child_node['file']
+                if file_name not in function_source:
+                    continue
+            child_node_start_line = int(child_node['start line'])
+            child_node_end_line = int(child_node['end line'])
+            if line_number in range(child_node_start_line, child_node_end_line + 1):
+                return child_node
     return None
 
 
@@ -436,17 +439,6 @@ def get_ast_node_position(ast_node, line_number):
         prev_child_node = child_node
         child_index += 1
     return get_ast_node_position(prev_child_node, line_number)
-
-
-def get_ast_node_list(ast_map, line_range):
-    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    line_start, line_end = line_range
-    node_list = list()
-
-    for line_number in range(line_start, line_end + 1):
-        func_node = get_fun_node(ast_map, line_number)
-
-    return node_list
 
 
 def get_child_id_list(ast_node):
