@@ -365,17 +365,13 @@ def get_matching_node(ast_node, search_node, var_map):
     node_type = str(ast_node['type'])
     search_node_type = str(search_node['type'])
     if node_type == search_node_type:
-        print("in 1")
         if is_node_equal(ast_node, search_node, var_map):
-            print("in 2")
             return node_type + "(" + str(node_id) + ")"
 
     for child_node in ast_node['children']:
         if len(child_node['children']) > 0:
-            print("in 3")
             target_node_str = get_matching_node(child_node, search_node, var_map)
             if target_node_str is not None:
-                print("in 4")
                 return target_node_str
 
 
