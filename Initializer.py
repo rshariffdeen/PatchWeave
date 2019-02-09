@@ -43,7 +43,6 @@ def create_patch_dir():
 
 def read_conf():
     Output.normal("reading configuration values")
-    print(sys.argv)
     if len(sys.argv) > 1:
         for arg in sys.argv:
             if Common.ARG_DEBUG in arg:
