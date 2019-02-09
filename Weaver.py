@@ -333,7 +333,7 @@ def get_member_expr_str(ast_node):
                 var_name = "->" + str(child_node_value.split(":")[-1]) + var_name
         else:
             print(ast_node)
-            exit()
+            error_exit("unhandled exception at membership expr -> str")
         if len(child_node['children']) > 0:
             child_node = child_node['children'][0]
         else:
@@ -698,8 +698,7 @@ def identify_missing_definitions(function_node):
                 if identifier not in missing_function_list:
                     print(identifier)
                     print(Common.STANDARD_FUNCTION_LIST)
-                    print("FOUND NEW DEPENDENT FUNCTION")
-                    exit()
+                    error_exit("FOUND NEW DEPENDENT FUNCTION")
     return list(set(missing_definition_list))
 
 
@@ -976,7 +975,6 @@ def transplant_code(diff_info, diff_loc):
                         translated_patch = translate_patch(original_patch, var_map_ac)
                         print(translated_patch)
                         insert_patch(translated_patch, source_path_c, line_number_c)
-                        exit()
                     else:
                         translated_command = script_line.replace(replacing_node_str, target_node_str)
                         ast_script_c.append(translated_command)

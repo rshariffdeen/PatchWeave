@@ -43,8 +43,7 @@ def read_variable_name(source_path, start_pos, end_pos):
     start_line, start_column = start_pos
     end_line, end_column = end_pos
     if start_line != end_line:
-        print("LINE NOT SAME")
-        exit()
+        error_exit("LINE NOT SAME")
     source_line = ""
     if os.path.exists(source_path):
         with open(source_path, 'r') as source_file:
@@ -152,7 +151,7 @@ def collect_var_ref_list(ast_node, start_line, end_line, only_in_range):
                     var_name = "->" + str(child_node_value.split(":")[-1]) + var_name
             else:
                 print(ast_node)
-                exit()
+                error_exit("Unhandled exception at membership expr")
             if len(child_node['children']) > 0:
                 child_node = child_node['children'][0]
             else:
@@ -184,6 +183,7 @@ def generate_available_variable_list(source_path, start_line, end_line, only_in_
     compound_node = func_node['children'][1]
     for child_node in compound_node['children']:
         child_node_type = child_node['type']
+        print(child_node_type)
         child_node_start_line = int(child_node['start line'])
         child_node_end_line = int(child_node['end line'])
         filter_declarations = False
@@ -194,7 +194,8 @@ def generate_available_variable_list(source_path, start_line, end_line, only_in_
             variable_list = list(set(variable_list + child_var_ref_list + child_var_dec_list))
             break
 
-        if child_node_type in ["IfStmt", "ForStmt", "CaseStmt", "SwitchStmt"]:
+        if child_node_type in ["IfStmt", "ForStmt", "CaseStmt", "SwitchStmt", "DoStmt"]:
+            print("Inside")
             if not is_intersect(start_line, end_line, child_node_start_line, child_node_end_line):
                 continue
             filter_var_ref_list = list()
@@ -209,6 +210,7 @@ def generate_available_variable_list(source_path, start_line, end_line, only_in_
             variable_list = list(set(variable_list + child_var_ref_list))
         else:
             variable_list = list(set(variable_list + child_var_ref_list + child_var_dec_list))
+    print(variable_list)
     return variable_list
 
 
@@ -362,6 +364,5 @@ def generate_mapping(var_map_a, var_map_b):
             var_map[var_a] = candidate_list[0]
         elif len(candidate_list) > 1:
             print(candidate_list)
-            print("more than one candidate")
-            exit()
+            error_exit("more than one candidate")
     return var_map
