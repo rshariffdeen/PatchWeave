@@ -16,6 +16,7 @@ import Concolic
 import Generator
 import Builder
 import Weaver
+import collections
 
 
 KLEE_SYMBOLIC_ENGINE = "klee "
@@ -58,21 +59,29 @@ def instrument_code_for_klee(source_path, start_line, end_line, only_in_range):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.normal("\t\tinstrumenting source code")
     variable_list = generate_available_variable_list(source_path, start_line, end_line, only_in_range)
-    insert_code = "\n"
-    for variable in variable_list:
-        insert_code += "klee_print_expr(\"[var-expr] " + variable + "\", " + variable + ");\n"
-    insert_code += "exit(-1);"
-    # print(insert_code)
-    insert_line = 0
-    if Common.Project_B.path in source_path:
-        insert_line = int(start_line) - 1
-    else:
-        insert_line = int(end_line) - 1
+    insert_code = dict()
+    instrument_code = ""
+    for variable, line_number in variable_list:
+        insert_code[line_number] = "klee_print_expr(\"[var-expr] " + variable + "\", " + variable + ");\n"
+
+    sorted_insert_code = collections.OrderedDict(sorted(insert_code.items(), reverse=True))
+    # print(sorted_insert_code)
+    #
+    # insert_line = 0
+    # if Common.Project_B.path in source_path:
+    #     insert_line = int(start_line) - 1
+    # else:
+    #     insert_line = int(end_line) - 1
+
     if os.path.exists(source_path):
         with open(source_path, 'r') as source_file:
             content = source_file.readlines()
-            existing_line = content[insert_line]
-            content[insert_line] = existing_line + insert_code
+            for insert_line in sorted_insert_code:
+                instrument_code = sorted_insert_code[insert_line]
+                if insert_line == sorted_insert_code.keys()[-1]:
+                    instrument_code += "exit(1);\n"
+                existing_line = content[insert_line-1]
+            content[insert_line-1] = existing_line + instrument_code
     with open(source_path, 'w') as source_file:
         source_file.writelines(content)
 
@@ -93,7 +102,8 @@ def collect_var_dec_list(ast_node, start_line, end_line, only_in_range):
 
     if node_type in ["ParmVarDecl", "VarDecl"]:
         var_name = str(ast_node['identifier'])
-        var_list.append(var_name)
+        line_number = int(ast_node['start line'])
+        var_list.append((var_name, line_number))
         return var_list
 
     if child_count:
@@ -102,7 +112,7 @@ def collect_var_dec_list(ast_node, start_line, end_line, only_in_range):
     return list(set(var_list))
 
 
-def get_cast_expr_str(ast_node):
+def get_cast_expr_str(ast_node, only_string=False):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     var_name = ""
     var_list = list()
@@ -116,11 +126,12 @@ def get_cast_expr_str(ast_node):
         var_name = "(" + type_value + ") " + param_node_var_name + " " + var_name
     else:
         error_exit("Unhandled CStyleCAST")
-    print(var_name, var_list)
+    if only_string:
+        return var_name
     return var_name, var_list
 
 
-def get_member_expr_str(ast_node):
+def get_member_expr_str(ast_node, only_string=False):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     var_list = list()
     var_name = ""
@@ -133,7 +144,6 @@ def get_member_expr_str(ast_node):
             var_name = "->" + var_name
 
     child_node = ast_node['children'][0]
-
     while child_node:
         child_node_type = child_node['type']
         if child_node_type == "DeclRefExpr":
@@ -179,7 +189,8 @@ def get_member_expr_str(ast_node):
             child_node = child_node['children'][0]
         else:
             child_node = None
-    print(var_name, var_list)
+    if only_string:
+        return var_name
     return var_name, var_list
 
 
@@ -199,8 +210,10 @@ def collect_var_ref_list(ast_node, start_line, end_line, only_in_range):
 
     if node_type in ["MemberExpr"]:
         var_name, auxilary_list = get_member_expr_str(ast_node)
-        var_list.append(var_name)
-        var_list = var_list + auxilary_list
+        line_number = int(ast_node['start line'])
+        var_list.append((var_name, line_number))
+        for aux_var_name in auxilary_list:
+            var_list.append((aux_var_name, line_number))
         return var_list
     if child_count:
         for child_node in ast_node['children']:
@@ -210,7 +223,7 @@ def collect_var_ref_list(ast_node, start_line, end_line, only_in_range):
 
 def generate_available_variable_list(source_path, start_line, end_line, only_in_range):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    print(source_path)
+    # print(source_path)
     Output.normal("\t\t\tgenerating variable(available) list")
     variable_list = list()
     ast_map = Generator.get_ast_json(source_path)
@@ -221,14 +234,15 @@ def generate_available_variable_list(source_path, start_line, end_line, only_in_
         for child_node in param_node['children']:
             child_node_type = child_node['type']
             if child_node_type == "ParmVarDecl":
+                line_number = int(child_node['start line'])
                 var_name = str(child_node['identifier'])
                 if var_name not in variable_list:
-                    variable_list.append(var_name)
+                    variable_list.append((var_name, line_number))
 
     compound_node = func_node['children'][1]
     for child_node in compound_node['children']:
         child_node_type = child_node['type']
-        print(child_node_type)
+        # print(child_node_type)
         child_node_start_line = int(child_node['start line'])
         child_node_end_line = int(child_node['end line'])
         filter_declarations = False
@@ -240,7 +254,7 @@ def generate_available_variable_list(source_path, start_line, end_line, only_in_
             break
 
         if child_node_type in ["IfStmt", "ForStmt", "CaseStmt", "SwitchStmt", "DoStmt"]:
-            print("Inside")
+            # print("Inside")
             if not is_intersect(start_line, end_line, child_node_start_line, child_node_end_line):
                 continue
             filter_var_ref_list = list()
@@ -255,7 +269,7 @@ def generate_available_variable_list(source_path, start_line, end_line, only_in_
             variable_list = list(set(variable_list + child_var_ref_list))
         else:
             variable_list = list(set(variable_list + child_var_ref_list + child_var_dec_list))
-    print(variable_list)
+    # print(variable_list)
     return variable_list
 
 

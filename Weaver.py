@@ -325,7 +325,6 @@ def is_node_equal(node_a, node_b, var_map):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     node_type_a = str(node_a['type'])
     node_type_b = str(node_b['type'])
-
     if node_type_a != node_type_b:
         return False
 
@@ -338,9 +337,8 @@ def is_node_equal(node_a, node_b, var_map):
         else:
             return False
     elif node_type_a == "MemberExpr":
-        node_value_a = get_member_expr_str(node_a)
-        node_value_b = get_member_expr_str(node_b)
-
+        node_value_a, discard_list = Mapper.get_member_expr_str(node_a)
+        node_value_b, discard_list = Mapper.get_member_expr_str(node_b)
         if node_value_a == node_value_b:
             return True
         else:
@@ -366,15 +364,18 @@ def get_matching_node(ast_node, search_node, var_map):
     node_id = int(ast_node['id'])
     node_type = str(ast_node['type'])
     search_node_type = str(search_node['type'])
-
     if node_type == search_node_type:
+        print("in 1")
         if is_node_equal(ast_node, search_node, var_map):
+            print("in 2")
             return node_type + "(" + str(node_id) + ")"
 
     for child_node in ast_node['children']:
         if len(child_node['children']) > 0:
+            print("in 3")
             target_node_str = get_matching_node(child_node, search_node, var_map)
             if target_node_str is not None:
+                print("in 4")
                 return target_node_str
 
 
@@ -924,7 +925,9 @@ def transplant_code(diff_info, diff_loc):
                     replacing_node_str = (script_line.split(" with ")[0]).replace("Replace ", "")
                     replacing_node_id = (replacing_node_str.split("(")[1]).split(")")[0]
                     replacing_node = get_ast_node_by_id(ast_map_a, int(replacing_node_id))
+                    print(replacing_node)
                     target_node_str = get_matching_node(function_node, replacing_node, var_map_ac)
+                    print(target_node_str)
                     if target_node_str is None:
                         continue
                     elif "Macro" in target_node_str:
