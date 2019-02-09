@@ -307,40 +307,6 @@ def get_ast_node_by_id(ast_node, find_id):
     return get_ast_node_by_id(prev_child_node, int(find_id))
 
 
-def get_member_expr_str(ast_node):
-    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    node_value = ast_node['value']
-    var_name = ""
-    if node_value == "":
-        return ""
-    var_name = str(node_value.split(":")[-1])
-    if "union" in node_value:
-        var_name = "." + var_name
-    else:
-        var_name = "->" + var_name
-    child_node = ast_node['children'][0]
-    while child_node:
-        child_node_type = child_node['type']
-        if child_node_type == "DeclRefExpr":
-            var_name = str(child_node['value']) + var_name
-        elif child_node_type == "ArraySubscriptExpr":
-            return ""
-        elif child_node_type == "MemberExpr":
-            child_node_value = child_node['value']
-            if "union" in child_node_value:
-                var_name = "." + str(child_node_value.split(":")[-1]) + var_name
-            else:
-                var_name = "->" + str(child_node_value.split(":")[-1]) + var_name
-        else:
-            print(ast_node)
-            error_exit("unhandled exception at membership expr -> str")
-        if len(child_node['children']) > 0:
-            child_node = child_node['children'][0]
-        else:
-            child_node = None
-    return var_name
-
-
 def get_node_str(ast_node):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     node_str = ""

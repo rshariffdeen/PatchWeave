@@ -102,6 +102,64 @@ def collect_var_dec_list(ast_node, start_line, end_line, only_in_range):
     return list(set(var_list))
 
 
+def get_member_expr_str(ast_node):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    node_value = ast_node['value']
+    var_list = list()
+    var_name = ""
+    if node_value == "":
+        return var_name, var_list
+    var_name = str(node_value.split(":")[-1])
+    if "union" in node_value:
+        var_name = "." + var_name
+    else:
+        var_name = "->" + var_name
+
+    child_node = ast_node['children'][0]
+
+    while child_node:
+        child_node_type = child_node['type']
+        if child_node_type == "DeclRefExpr":
+            var_name = str(child_node['value']) + var_name
+        elif child_node_type == "ArraySubscriptExpr":
+            iterating_var_node = child_node['children'][1]
+            iterating_var_name = iterating_var_node['value']
+            iterating_var_type = iterating_var_node['type']
+            if iterating_var_type == "DeclRefExpr":
+                iterating_var_ref_type = iterating_var_node['ref_type']
+                if iterating_var_ref_type in ["VarDecl", "ParmVarDecl"]:
+                    var_list.append(iterating_var_name)
+                    if var_name[:2] == "->":
+                        var_name = "." + var_name[2:]
+                    var_name = "[" + iterating_var_name + "]" + var_name
+        elif child_node_type == "ParenExpr":
+            param_node = child_node['children'][0]
+            param_node_var_name, param_node_aux_list = get_member_expr_str(param_node)
+            var_list = var_list + param_node_aux_list
+            var_name = "(" + param_node_var_name + ")" + var_name
+        elif child_node_type == "CStyleCastExpr":
+            type_node = child_node['children'][0]
+            type_value = type_node['value']
+            param_node = child_node['children'][1]
+            param_node_var_name, param_node_aux_list = get_member_expr_str(param_node)
+            var_list = var_list + param_node_aux_list
+            var_name = "(" + type_value + ") " + param_node_var_name + " " + var_name
+        elif child_node_type == "MemberExpr":
+            child_node_value = child_node['value']
+            if "union" in child_node_value:
+                var_name = "." + str(child_node_value.split(":")[-1]) + var_name
+            else:
+                var_name = "->" + str(child_node_value.split(":")[-1]) + var_name
+        else:
+            print(ast_node)
+            error_exit("unhandled exception at membership expr -> str")
+        if len(child_node['children']) > 0:
+            child_node = child_node['children'][0]
+        else:
+            child_node = None
+    return var_name, var_list
+
+
 def collect_var_ref_list(ast_node, start_line, end_line, only_in_range):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     var_list = list()
@@ -117,46 +175,9 @@ def collect_var_ref_list(ast_node, start_line, end_line, only_in_range):
             return var_list
 
     if node_type in ["MemberExpr"]:
-        node_value = ast_node['value']
-
-        var_name = ""
-        if node_value == "":
-            return var_list
-        var_name = str(node_value.split(":")[-1])
-        if "union" in node_value:
-            var_name = "." + var_name
-        else:
-            var_name = "->" + var_name
-        child_node = ast_node['children'][0]
-        while child_node:
-            child_node_type = child_node['type']
-            if child_node_type == "DeclRefExpr":
-                var_name = str(child_node['value']) + var_name
-            elif child_node_type == "ArraySubscriptExpr":
-                iterating_var_node = child_node['children'][1]
-                iterating_var_name = iterating_var_node['value']
-                iterating_var_type = iterating_var_node['type']
-                if iterating_var_type == "DeclRefExpr":
-                    iterating_var_ref_type = iterating_var_node['ref_type']
-                    if iterating_var_ref_type in ["VarDecl", "ParmVarDecl"]:
-                        var_list.append(iterating_var_name)
-                        if var_name[:2] == "->":
-                            var_name = "." + var_name[2:]
-                        var_name = "[" + iterating_var_name + "]" + var_name
-            elif child_node_type == "MemberExpr":
-                child_node_value = child_node['value']
-                if "union" in child_node_value:
-                    var_name = "." + str(child_node_value.split(":")[-1]) + var_name
-                else:
-                    var_name = "->" + str(child_node_value.split(":")[-1]) + var_name
-            else:
-                print(ast_node)
-                error_exit("Unhandled exception at membership expr")
-            if len(child_node['children']) > 0:
-                child_node = child_node['children'][0]
-            else:
-                child_node = None
+        var_name, auxilary_list = get_member_expr_str(ast_node)
         var_list.append(var_name)
+        var_list = var_list + auxilary_list
         return var_list
     if child_count:
         for child_node in ast_node['children']:
@@ -166,6 +187,7 @@ def collect_var_ref_list(ast_node, start_line, end_line, only_in_range):
 
 def generate_available_variable_list(source_path, start_line, end_line, only_in_range):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    print(source_path)
     Output.normal("\t\t\tgenerating variable(available) list")
     variable_list = list()
     ast_map = Generator.get_ast_json(source_path)
