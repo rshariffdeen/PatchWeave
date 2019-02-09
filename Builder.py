@@ -227,3 +227,26 @@ def clean_all():
 
     Output.normal("\t" + Common.Project_D.path)
     clean_project(Common.Project_D.path)
+
+
+def build_instrumented_code(source_directory):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    Output.normal("\t\tbuilding instrumented code")
+    CXX_FLAGS = "'-g -O0 -static -DNDEBUG -ftrapv'"
+    C_FLAGS = "'-g -O0 -static -ftrapv -L/home/rshariffdeen/workspace/klee/build-rshariffdeen/lib -lkleeRuntest'"
+    build_command = "cd " + source_directory + ";"
+    build_command += "make CFLAGS=" + C_FLAGS + " "
+    build_command += "CXXFLAGS=" + CXX_FLAGS + " > " + Common.FILE_MAKE_LOG
+    # print(build_command)
+    ret_code = execute_command(build_command)
+    if int(ret_code) == 2:
+        # TODO: check only upto common directory
+        while source_directory != "" and ret_code != "0":
+            build_command = build_command.replace(source_directory, "???")
+            source_directory = "/".join(source_directory.split("/")[:-1])
+            build_command = build_command.replace("???", source_directory)
+            ret_code = execute_command(build_command)
+
+    if int(ret_code) != 0:
+        Output.error(build_command)
+        error_exit("BUILD FAILED!!\nExit Code: " + str(ret_code))

@@ -14,7 +14,7 @@ import Common
 import Logger
 import Concolic
 import Generator
-import Tracer
+import Builder
 import Weaver
 
 
@@ -36,29 +36,6 @@ def collect_symbolic_expressions(trace_file_path):
                     var_name, var_expr = line.split(":")
                     var_expr_map[var_name] = var_expr.replace("\n", "")
     return var_expr_map
-
-
-def build_instrumented_code(source_directory):
-    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal("\t\tbuilding instrumented code")
-    CXX_FLAGS = "'-g -O0 -static -DNDEBUG -ftrapv'"
-    C_FLAGS = "'-g -O0 -static -ftrapv -L/home/rshariffdeen/workspace/klee/build-rshariffdeen/lib -lkleeRuntest'"
-    build_command = "cd " + source_directory + ";"
-    build_command += "make CFLAGS=" + C_FLAGS + " "
-    build_command += "CXXFLAGS=" + CXX_FLAGS + " > " + Common.FILE_MAKE_LOG
-    # print(build_command)
-    ret_code = execute_command(build_command)
-    if int(ret_code) != 0:
-        # TODO: check only upto common directory
-        while source_directory != "" and ret_code != "0":
-            build_command = build_command.replace(source_directory, "???")
-            source_directory = "/".join(source_directory.split("/")[:-1])
-            build_command = build_command.replace("???", source_directory)
-            ret_code = execute_command(build_command)
-
-    if int(ret_code) != 0:
-        Output.error(build_command)
-        error_exit("BUILD FAILED!!\nExit Code: " + str(ret_code))
 
 
 def read_variable_name(source_path, start_pos, end_pos):
@@ -217,7 +194,7 @@ def generate_available_variable_list(source_path, start_line, end_line, only_in_
             variable_list = list(set(variable_list + child_var_ref_list + child_var_dec_list))
             break
 
-        if child_node_type in ["IfStmt", "ForStmt"]:
+        if child_node_type in ["IfStmt", "ForStmt", "CaseStmt", "SwitchStmt"]:
             if not is_intersect(start_line, end_line, child_node_start_line, child_node_end_line):
                 continue
             filter_var_ref_list = list()
@@ -259,7 +236,7 @@ def generate_symbolic_expressions(source_path, start_line, end_line, output_log,
     backup_file(binary_path, "original-bitcode")
 
     instrument_code_for_klee(source_path, start_line, end_line, only_in_range)
-    build_instrumented_code(source_directory)
+    Builder.build_instrumented_code(source_directory)
     extract_bitcode(binary_path)
     Concolic.generate_var_expressions(binary_args, binary_directory, binary_name, output_log)
     restore_file("original-bitcode", binary_path)
