@@ -102,18 +102,35 @@ def collect_var_dec_list(ast_node, start_line, end_line, only_in_range):
     return list(set(var_list))
 
 
+def get_cast_expr_str(ast_node):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    var_name = ""
+    var_list = list()
+    type_node = ast_node['children'][0]
+    type_value = type_node['value']
+    param_node = ast_node['children'][1]
+    param_node_type = param_node['type']
+    if param_node_type == "MemberExpr":
+        param_node_var_name, param_node_aux_list = get_member_expr_str(param_node)
+        var_list = var_list + param_node_aux_list
+        var_name = "(" + type_value + ") " + param_node_var_name + " " + var_name
+    else:
+        error_exit("Unhandled CStyleCAST")
+    print(var_name, var_list)
+    return var_name, var_list
+
+
 def get_member_expr_str(ast_node):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    node_value = ast_node['value']
     var_list = list()
     var_name = ""
-    if node_value == "":
-        return var_name, var_list
-    var_name = str(node_value.split(":")[-1])
-    if "union" in node_value:
-        var_name = "." + var_name
-    else:
-        var_name = "->" + var_name
+    if 'value' in ast_node.keys():
+        node_value = ast_node['value']
+        var_name = str(node_value.split(":")[-1])
+        if "union" in node_value:
+            var_name = "." + var_name
+        else:
+            var_name = "->" + var_name
 
     child_node = ast_node['children'][0]
 
@@ -134,16 +151,21 @@ def get_member_expr_str(ast_node):
                     var_name = "[" + iterating_var_name + "]" + var_name
         elif child_node_type == "ParenExpr":
             param_node = child_node['children'][0]
-            param_node_var_name, param_node_aux_list = get_member_expr_str(param_node)
+            param_node_type = param_node['type']
+            param_node_var_name = ""
+            param_node_aux_list = list()
+            if param_node_type == "MemberExpr":
+                param_node_var_name, param_node_aux_list = get_member_expr_str(param_node)
+            elif param_node_type == "CStyleCastExpr":
+                param_node_var_name, param_node_aux_list = get_cast_expr_str(param_node)
             var_list = var_list + param_node_aux_list
             var_name = "(" + param_node_var_name + ")" + var_name
+            break
         elif child_node_type == "CStyleCastExpr":
-            type_node = child_node['children'][0]
-            type_value = type_node['value']
-            param_node = child_node['children'][1]
-            param_node_var_name, param_node_aux_list = get_member_expr_str(param_node)
-            var_list = var_list + param_node_aux_list
-            var_name = "(" + type_value + ") " + param_node_var_name + " " + var_name
+            cast_var_name, cast_node_aux_list = get_cast_expr_str(child_node)
+            var_list = var_list + cast_node_aux_list
+            var_name = cast_var_name + var_name
+            break
         elif child_node_type == "MemberExpr":
             child_node_value = child_node['value']
             if "union" in child_node_value:
@@ -157,6 +179,7 @@ def get_member_expr_str(ast_node):
             child_node = child_node['children'][0]
         else:
             child_node = None
+    print(var_name, var_list)
     return var_name, var_list
 
 
