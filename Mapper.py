@@ -62,10 +62,13 @@ def instrument_code_for_klee(source_path, start_line, end_line, only_in_range):
     insert_code = dict()
     instrument_code = ""
     for variable, line_number in variable_list:
-        insert_code[line_number] = "klee_print_expr(\"[var-expr] " + variable + "\", " + variable + ");\n"
+        if line_number in insert_code.keys():
+            insert_code[line_number] += "klee_print_expr(\"[var-expr] " + variable + "\", " + variable + ");\n"
+        else:
+            insert_code[line_number] = "klee_print_expr(\"[var-expr] " + variable + "\", " + variable + ");\n"
 
     sorted_insert_code = collections.OrderedDict(sorted(insert_code.items(), reverse=True))
-    # print(sorted_insert_code)
+    print(sorted_insert_code)
     #
     # insert_line = 0
     # if Common.Project_B.path in source_path:
@@ -81,7 +84,8 @@ def instrument_code_for_klee(source_path, start_line, end_line, only_in_range):
                 if insert_line == sorted_insert_code.keys()[0]:
                     instrument_code += "exit(1);\n"
                 existing_line = content[insert_line-1]
-            content[insert_line-1] = existing_line + instrument_code
+                content[insert_line-1] = existing_line + instrument_code
+
     with open(source_path, 'w') as source_file:
         source_file.writelines(content)
 
@@ -203,7 +207,6 @@ def collect_var_ref_list(ast_node, start_line, end_line, only_in_range):
     start_column = int(ast_node['start column'])
     end_column = int(ast_node['end column'])
     node_type = ast_node['type']
-
     if only_in_range:
         if not is_intersect(node_start_line, node_end_line, start_line, end_line):
             return var_list
@@ -215,6 +218,12 @@ def collect_var_ref_list(ast_node, start_line, end_line, only_in_range):
         for aux_var_name in auxilary_list:
             var_list.append((aux_var_name, line_number))
         return var_list
+    if node_type in ["DeclRefExpr"]:
+        ref_type = ast_node['ref_type']
+        if ref_type == "VarDecl":
+            var_name = ast_node['value']
+            line_number = ast_node['start line']
+            var_list.append((var_name, line_number))
     if child_count:
         for child_node in ast_node['children']:
             var_list = var_list + list(set(collect_var_ref_list(child_node, start_line, end_line, only_in_range)))
@@ -223,7 +232,7 @@ def collect_var_ref_list(ast_node, start_line, end_line, only_in_range):
 
 def generate_available_variable_list(source_path, start_line, end_line, only_in_range):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    # print(source_path)
+    # print(source_path, start_line, end_line)
     Output.normal("\t\t\tgenerating variable(available) list")
     variable_list = list()
     ast_map = Generator.get_ast_json(source_path)
@@ -270,8 +279,6 @@ def generate_available_variable_list(source_path, start_line, end_line, only_in_
         #     child_var_ref_list = list(set(child_var_ref_list) - set(filter_var_ref_list))
         #     variable_list = list(set(variable_list + child_var_ref_list))
         # else:
-        # print(child_var_ref_list)
-        # print(child_var_dec_list)
         variable_list = list(set(variable_list + child_var_ref_list + child_var_dec_list))
     # print(variable_list)
     return variable_list
@@ -407,7 +414,6 @@ def generate_mapping(var_map_a, var_map_b):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.normal("\t\tgenerating variable map")
     var_map = dict()
-
     for var_a in var_map_a:
         # print(var_a)
         sym_expr = generate_z3_code_for_expr(var_map_a[var_a], var_a)
