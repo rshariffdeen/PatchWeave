@@ -818,7 +818,6 @@ def get_complete_function_node(function_def_node, source_path):
         return function_def_node, source_file_loc
     else:
         header_file_loc = source_dir + "/" + function_def_node['file']
-        # print(header_file_loc)
         function_name = function_def_node['identifier']
         source_file_loc = header_file_loc.replace(".h", ".c")
         source_file_loc = os.path.abspath(source_file_loc)
@@ -850,7 +849,6 @@ def transplant_missing_functions():
         source_path_d = info['source_d']
         Output.normal(function_name)
         function_def_node = get_ast_node_by_id(ast_map_a, int(node_id))
-        source_path_b = "/".join(source_path_b.split("/")[:-1])
         function_node, function_source_file = get_complete_function_node(function_def_node, source_path_b)
         missing_def_list = identify_missing_definitions(function_node)
         def_insert_point = get_definition_insertion_point(source_path_d)
@@ -858,14 +856,9 @@ def transplant_missing_functions():
         identify_missing_headers(function_node, source_path_d)
         start_line = function_node["start line"]
         end_line = function_node["end line"]
-
         # print(function_name)
-
-
         original_function = ""
-        print("start")
         for i in range(int(start_line), int(end_line + 1)):
-            print(original_function)
             original_function += get_code(function_source_file, int(i)) + "\n"
         # translated_patch = translate_patch(original_patch, var_map_ac)
         backup_file(source_path_d, FILENAME_BACKUP)
