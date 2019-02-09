@@ -875,7 +875,7 @@ def transplant_code(diff_info, diff_loc):
             # print(var_expr_map_b)
             # print(var_expr_map_c)
             var_map = Mapper.generate_mapping(var_expr_map_b, var_expr_map_c)
-            # print(var_map)
+            print(var_map)
             # print(ast_script_c)
 
             output_var_map(var_map)
@@ -890,8 +890,10 @@ def transplant_code(diff_info, diff_loc):
         filtered_ast_script = filter_ast_script(ast_script, line_range_a, line_range_b, ast_map_a, ast_map_b, skip_line_list)
         Mapper.generate_symbolic_expressions(source_path_b, line_range_b[0], line_range_b[1], FILE_VAR_EXPR_LOG_B)
         var_expr_map_b = Mapper.collect_symbolic_expressions(FILE_VAR_EXPR_LOG_B)
+        # print(var_expr_map_b)
         Mapper.generate_symbolic_expressions(source_path_a, line_range_a[0], line_range_a[1], FILE_VAR_EXPR_LOG_A)
         var_expr_map_a = Mapper.collect_symbolic_expressions(FILE_VAR_EXPR_LOG_A)
+        # print(var_expr_map_b)
         insertion_loc_list = identify_insertion_points(estimate_loc, var_expr_map_a)
         # print(insertion_loc_list)
         ast_script_c = list()
@@ -905,6 +907,7 @@ def transplant_code(diff_info, diff_loc):
             position_c = get_ast_node_position(function_node, int(line_number_c))
             Mapper.generate_symbolic_expressions(source_path_c, line_number_c, line_number_c, FILE_VAR_EXPR_LOG_C, False)
             var_expr_map_c = Mapper.collect_symbolic_expressions(FILE_VAR_EXPR_LOG_C)
+            # print(var_expr_map_c)
             var_map_ac = Mapper.generate_mapping(var_expr_map_a, var_expr_map_c)
             var_map_bc = Mapper.generate_mapping(var_expr_map_b, var_expr_map_c)
             for script_line in filtered_ast_script:
@@ -921,9 +924,7 @@ def transplant_code(diff_info, diff_loc):
                     replacing_node_str = (script_line.split(" with ")[0]).replace("Replace ", "")
                     replacing_node_id = (replacing_node_str.split("(")[1]).split(")")[0]
                     replacing_node = get_ast_node_by_id(ast_map_a, int(replacing_node_id))
-                    print(replacing_node)
                     target_node_str = get_matching_node(function_node, replacing_node, var_map_ac)
-                    print(target_node_str)
                     if target_node_str is None:
                         continue
                     elif "Macro" in target_node_str:
@@ -943,6 +944,7 @@ def transplant_code(diff_info, diff_loc):
                     else:
                         translated_command = script_line.replace(replacing_node_str, target_node_str)
                         ast_script_c.append(translated_command)
+            print(var_map_ac)
             output_var_map(var_map_ac)
             output_ast_script(ast_script_c)
             ret_code = execute_ast_transformation(source_path_b, source_path_d)

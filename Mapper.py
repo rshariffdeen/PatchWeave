@@ -78,7 +78,7 @@ def instrument_code_for_klee(source_path, start_line, end_line, only_in_range):
             content = source_file.readlines()
             for insert_line in sorted_insert_code:
                 instrument_code = sorted_insert_code[insert_line]
-                if insert_line == sorted_insert_code.keys()[-1]:
+                if insert_line == sorted_insert_code.keys()[0]:
                     instrument_code += "exit(1);\n"
                 existing_line = content[insert_line-1]
             content[insert_line-1] = existing_line + instrument_code
@@ -248,27 +248,31 @@ def generate_available_variable_list(source_path, start_line, end_line, only_in_
         filter_declarations = False
         # print(child_node_start_line, child_node_end_line)
         child_var_dec_list = collect_var_dec_list(child_node, start_line, end_line, only_in_range)
+        # print(child_var_dec_list)
         child_var_ref_list = collect_var_ref_list(child_node, start_line, end_line, only_in_range)
+        # print(child_var_ref_list)
         if child_node_start_line <= int(end_line) <= child_node_end_line:
             variable_list = list(set(variable_list + child_var_ref_list + child_var_dec_list))
             break
-
-        if child_node_type in ["IfStmt", "ForStmt", "CaseStmt", "SwitchStmt", "DoStmt"]:
-            # print("Inside")
-            if not is_intersect(start_line, end_line, child_node_start_line, child_node_end_line):
-                continue
-            filter_var_ref_list = list()
-            for var_ref in child_var_ref_list:
-                if var_ref in child_var_dec_list:
-                    child_var_ref_list.remove(var_ref)
-                elif "->" in var_ref:
-                    var_name = var_ref.split("->")[0]
-                    if var_name in child_var_dec_list:
-                        filter_var_ref_list.append(var_ref)
-            child_var_ref_list = list(set(child_var_ref_list) - set(filter_var_ref_list))
-            variable_list = list(set(variable_list + child_var_ref_list))
-        else:
-            variable_list = list(set(variable_list + child_var_ref_list + child_var_dec_list))
+        #
+        # if child_node_type in ["IfStmt", "ForStmt", "CaseStmt", "SwitchStmt", "DoStmt"]:
+        #     # print("Inside")
+        #     if not is_intersect(start_line, end_line, child_node_start_line, child_node_end_line):
+        #         continue
+        #     filter_var_ref_list = list()
+        #     for var_ref in child_var_ref_list:
+        #         if var_ref in child_var_dec_list:
+        #             child_var_ref_list.remove(var_ref)
+        #         elif "->" in var_ref:
+        #             var_name = var_ref.split("->")[0]
+        #             if var_name in child_var_dec_list:
+        #                 filter_var_ref_list.append(var_ref)
+        #     child_var_ref_list = list(set(child_var_ref_list) - set(filter_var_ref_list))
+        #     variable_list = list(set(variable_list + child_var_ref_list))
+        # else:
+        # print(child_var_ref_list)
+        # print(child_var_dec_list)
+        variable_list = list(set(variable_list + child_var_ref_list + child_var_dec_list))
     # print(variable_list)
     return variable_list
 
