@@ -12,6 +12,7 @@ import Builder
 import Differ
 import Concolic
 import Weaver
+import Slicer
 import Verifier
 
 def first_run_check():
@@ -48,6 +49,10 @@ def run_patchweave():
     time_check = time.time()
     Concolic.execute()
     time_info[Common.KEY_DURATION_SYMBOLIC_TRACE_ANALYSIS] = str(time.time() - time_check)
+
+    time_check = time.time()
+    Slicer.slice()
+    time_info[Common.KEY_DURATION_SLICE] = str(time.time() - time_check)
 
     time_check = time.time()
     Weaver.weave()
