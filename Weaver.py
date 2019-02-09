@@ -663,6 +663,19 @@ def identify_missing_functions(ast_node, source_path_b, source_path_d):
                     error_exit("MULTIPLE FUNCTION REFERENCES ON DIFFERENT TARGETS FOUND!!!")
 
 
+def identify_missing_headers(function_node, target_file):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    global missing_header_list
+    function_definition = function_node['value']
+    function_name = function_node['identifier']
+    return_type = (function_definition.replace(function_name, "")).split("(")[1]
+    if return_type.strip() == "_Bool":
+        if "stdbool.h" not in missing_header_list.keys():
+            missing_header_list["stdbool.h"] = target_file
+        else:
+            error_exit("UNKNOWN RETURN TYPE")
+
+
 def identify_missing_definitions(function_node):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     global missing_function_list
@@ -798,15 +811,17 @@ def transplant_missing_macros():
 
 def get_complete_function_node(function_def_node, source_path):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    source_dir = "/".join(source_path.split("/")[:-1])
     if len(function_def_node['children']) > 1:
-        source_path = "/".join(source_path.split("/")[:-1])
-        source_file_loc = source_path + "/" + function_def_node['file']
+        source_file_loc = source_dir + "/" + function_def_node['file']
+        source_file_loc = os.path.abspath(source_file_loc)
         return function_def_node, source_file_loc
     else:
-        header_file_loc = source_path + "/" + function_def_node['file']
+        header_file_loc = source_dir + "/" + function_def_node['file']
         # print(header_file_loc)
         function_name = function_def_node['identifier']
         source_file_loc = header_file_loc.replace(".h", ".c")
+        source_file_loc = os.path.abspath(source_file_loc)
         if not os.path.exists(source_file_loc):
             source_file_name = source_file_loc.split("/")[-1]
             header_file_dir = "/".join(source_file_loc.split("/")[:-1])
@@ -838,27 +853,19 @@ def transplant_missing_functions():
         source_path_b = "/".join(source_path_b.split("/")[:-1])
         function_node, function_source_file = get_complete_function_node(function_def_node, source_path_b)
         missing_def_list = identify_missing_definitions(function_node)
-        # print(missing_def_list)
-        # print(source_path_d)
         def_insert_point = get_definition_insertion_point(source_path_d)
-        # print(def_insert_point)
-        # print(function_source_file)
         identify_missing_macros(function_node, function_source_file, source_path_d)
+        identify_missing_headers(function_node, source_path_d)
         start_line = function_node["start line"]
         end_line = function_node["end line"]
-        function_definition = function_node['value']
-        function_name = function_node['identifier']
+
         # print(function_name)
-        return_type = (function_definition.replace(function_name, "")).split("(")[1]
-        # print(return_type)
-        if return_type.strip() == "_Bool":
-            if "stdbool.h" not in missing_header_list.keys():
-                missing_header_list["stdbool.h"] = source_path_d
-            else:
-                error_exit("UNKNOWN RETURN TYPE")
+
 
         original_function = ""
+        print("start")
         for i in range(int(start_line), int(end_line + 1)):
+            print(original_function)
             original_function += get_code(function_source_file, int(i)) + "\n"
         # translated_patch = translate_patch(original_patch, var_map_ac)
         backup_file(source_path_d, FILENAME_BACKUP)
@@ -886,7 +893,7 @@ def transplant_code(diff_info, diff_loc):
         skip_line_list = diff_info['skip-lines']
         line_range_b = (start_line_b, end_line_b)
         line_range_a = (-1, -1)
-        filtered_ast_script = filter_ast_script(ast_script, line_range_a, line_range_b, ast_map_a, ast_map_b)
+        filtered_ast_script = filter_ast_script(ast_script, line_range_a, line_range_b, ast_map_a, ast_map_b, skip_line_list)
         Mapper.generate_symbolic_expressions(source_path_b, start_line_b,  end_line_b, FILE_VAR_EXPR_LOG_B)
         var_expr_map_b = Mapper.collect_symbolic_expressions(FILE_VAR_EXPR_LOG_B)
         # print(var_expr_map_b)
