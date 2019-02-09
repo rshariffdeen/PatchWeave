@@ -43,6 +43,7 @@ def create_patch_dir():
 
 def read_conf():
     Output.normal("reading configuration values")
+    print(sys.argv)
     if len(sys.argv) > 1:
         for arg in sys.argv:
             if Common.ARG_DEBUG in arg:
@@ -53,10 +54,10 @@ def read_conf():
                 Common.FILE_CONFIGURATION = str(arg).replace(Common.ARG_CONF_FILE, '')
             elif Common.ARG_NO_SYM_TRACE_GEN in arg:
                 Common.NO_SYM_TRACE_GEN = True
-            elif arg == "PatchWeave.py":
+            elif "PatchWeave.py" in arg:
                 continue
             else:
-                Output.error("Invalid argument")
+                Output.error("Invalid argument: " + arg)
                 Output.help()
                 exit()
     else:
