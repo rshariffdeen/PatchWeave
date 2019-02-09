@@ -68,7 +68,7 @@ def instrument_code_for_klee(source_path, start_line, end_line, only_in_range):
             insert_code[line_number] = "klee_print_expr(\"[var-expr] " + variable + "\", " + variable + ");\n"
 
     sorted_insert_code = collections.OrderedDict(sorted(insert_code.items(), reverse=True))
-    print(sorted_insert_code)
+    # print(sorted_insert_code)
     #
     # insert_line = 0
     # if Common.Project_B.path in source_path:
@@ -218,12 +218,16 @@ def collect_var_ref_list(ast_node, start_line, end_line, only_in_range):
         for aux_var_name in auxilary_list:
             var_list.append((aux_var_name, line_number))
         return var_list
-    if node_type in ["DeclRefExpr"]:
-        ref_type = ast_node['ref_type']
-        if ref_type == "VarDecl":
-            var_name = ast_node['value']
-            line_number = ast_node['start line']
-            var_list.append((var_name, line_number))
+    if node_type in ["CallExpr"]:
+        line_number = ast_node['end line']
+        for child_node in ast_node['children']:
+            child_node_type = child_node['type']
+            if child_node_type == "DeclRefExpr":
+                ref_type = child_node['ref_type']
+                if ref_type == "VarDecl":
+                    var_name = child_node['value']
+                    var_list.append((var_name, line_number))
+        return var_list
     if child_count:
         for child_node in ast_node['children']:
             var_list = var_list + list(set(collect_var_ref_list(child_node, start_line, end_line, only_in_range)))
