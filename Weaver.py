@@ -123,11 +123,14 @@ def filter_trace_list(trace_list, estimate_loc):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.normal("\tfiltering trace based on estimation point")
     filtered_trace_list = list()
+    # print(trace_list)
+    # print(estimate_loc)
     for n in range(len(trace_list) - 1, 0, -1):
         filtered_trace_list.append(trace_list[n])
-        if estimate_loc is trace_list[n]:
+        if estimate_loc == trace_list[n]:
             break
     filtered_trace_list.reverse()
+    # print(filtered_trace_list)
     return filtered_trace_list
 
 
@@ -181,6 +184,7 @@ def estimate_divergent_point(byte_list):
     grab_nearest = False
     for n in range(length, 0, -1):
         path = Tracer.list_trace_c[n]
+        path = os.path.abspath(path)
         if grab_nearest:
             if ".c" in path:
                 estimated_loc = path
@@ -944,7 +948,7 @@ def transplant_code(diff_info, diff_loc):
                     else:
                         translated_command = script_line.replace(replacing_node_str, target_node_str)
                         ast_script_c.append(translated_command)
-            print(var_map_ac)
+            # print(var_map_ac)
             output_var_map(var_map_ac)
             output_ast_script(ast_script_c)
             ret_code = execute_ast_transformation(source_path_b, source_path_d)
