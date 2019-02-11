@@ -41,6 +41,7 @@ FILE_VAR_EXPR_LOG_A = Common.DIRECTORY_OUTPUT + "/log-sym-expr-a"
 FILE_VAR_EXPR_LOG_B = Common.DIRECTORY_OUTPUT + "/log-sym-expr-b"
 FILE_VAR_EXPR_LOG_C = Common.DIRECTORY_OUTPUT + "/log-sym-expr-c"
 FILE_VAR_MAP = Common.DIRECTORY_OUTPUT + "/var-map"
+FILE_SKIP_LIST = Common.DIRECTORY_OUTPUT + "/skip-list"
 FILE_AST_SCRIPT = Common.DIRECTORY_OUTPUT + "/gen-ast-script"
 FILE_TEMP_FIX = Common.DIRECTORY_OUTPUT + "/temp-fix"
 FILE_MACRO_DEF = Common.DIRECTORY_OUTPUT + "/macro-def"
@@ -504,6 +505,15 @@ def output_var_map(var_map):
         map_file.writelines(content)
 
 
+def output_skip_list(skip_list):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    content = "0\n"
+    for line_number in skip_list:
+        content += str(line_number) +  "\n"
+    with open(FILE_SKIP_LIST, 'w') as map_file:
+        map_file.writelines(content)
+
+
 def output_ast_script(ast_script):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     with open(FILE_AST_SCRIPT, 'w') as script_file:
@@ -516,8 +526,8 @@ def execute_ast_transformation(source_path_b, source_path_d):
     Output.normal("\t\texecuting AST transformation")
     parameters = " -map=" + FILE_VAR_MAP + " -script=" + FILE_AST_SCRIPT
     parameters += " -source=" + source_path_b + " -target=" + source_path_d
+    parameters += " -skip-list=" + FILE_SKIP_LIST
     transform_command = TOOL_AST_PATCH + parameters + " > " + FILE_TEMP_FIX
-    # print(transform_command)
     ret_code = int(execute_command(transform_command))
     if source_path_d not in modified_source_list:
         modified_source_list.append(source_path_d)
@@ -526,7 +536,6 @@ def execute_ast_transformation(source_path_b, source_path_d):
         show_partial_diff(source_path_d, FILE_TEMP_FIX)
         execute_command(move_command)
     return ret_code
-
 
 
 def show_final_patch(source_path_a, source_path_b, source_path_c, source_path_d):
@@ -850,6 +859,7 @@ def transplant_code(diff_info, diff_loc):
     if operation == 'insert':
         start_line_b, end_line_b = diff_info['new-lines']
         skip_line_list = diff_info['skip-lines']
+        output_skip_list(skip_line_list)
         line_range_b = (start_line_b, end_line_b)
         line_range_a = (-1, -1)
         filtered_ast_script = filter_ast_script(ast_script, line_range_a, line_range_b, ast_map_a, ast_map_b, skip_line_list)
@@ -891,6 +901,7 @@ def transplant_code(diff_info, diff_loc):
         line_range_a = diff_info['old-lines']
         line_range_b = diff_info['new-lines']
         skip_line_list = diff_info['skip-lines']
+        output_skip_list(skip_line_list)
         filtered_ast_script = filter_ast_script(ast_script, line_range_a, line_range_b, ast_map_a, ast_map_b, skip_line_list)
         Mapper.generate_symbolic_expressions(source_path_b, line_range_b[0], line_range_b[1], FILE_VAR_EXPR_LOG_B)
         var_expr_map_b = Mapper.collect_symbolic_expressions(FILE_VAR_EXPR_LOG_B)
