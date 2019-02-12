@@ -227,6 +227,11 @@ def collect_var_ref_list(ast_node, start_line, end_line, only_in_range):
                 if ref_type == "VarDecl":
                     var_name = child_node['value']
                     var_list.append((var_name, line_number))
+            if child_node_type == "MemberExpr":
+                var_name, auxilary_list = get_member_expr_str(child_node)
+                var_list.append((var_name, line_number))
+                for aux_var_name in auxilary_list:
+                    var_list.append((aux_var_name, line_number))
         return var_list
     if child_count:
         for child_node in ast_node['children']:
