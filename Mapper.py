@@ -211,6 +211,12 @@ def collect_var_ref_list(ast_node, start_line, end_line, only_in_range):
         if not is_intersect(node_start_line, node_end_line, start_line, end_line):
             return var_list
 
+    if node_type == "DeclRefExpr":
+        ref_type = ast_node['ref_type']
+        line_number = int(ast_node['start line'])
+        if ref_type == "VarDecl":
+            var_name = ast_node['value']
+            var_list.append((var_name, line_number))
     if node_type in ["MemberExpr"]:
         var_name, auxilary_list = get_member_expr_str(ast_node)
         line_number = int(ast_node['start line'])
@@ -220,18 +226,19 @@ def collect_var_ref_list(ast_node, start_line, end_line, only_in_range):
         return var_list
     if node_type in ["CallExpr"]:
         line_number = ast_node['end line']
-        for child_node in ast_node['children']:
-            child_node_type = child_node['type']
-            if child_node_type == "DeclRefExpr":
-                ref_type = child_node['ref_type']
-                if ref_type == "VarDecl":
-                    var_name = child_node['value']
+        if line_number <= end_line:
+            for child_node in ast_node['children']:
+                child_node_type = child_node['type']
+                if child_node_type == "DeclRefExpr":
+                    ref_type = child_node['ref_type']
+                    if ref_type == "VarDecl":
+                        var_name = child_node['value']
+                        var_list.append((var_name, line_number))
+                if child_node_type == "MemberExpr":
+                    var_name, auxilary_list = get_member_expr_str(child_node)
                     var_list.append((var_name, line_number))
-            if child_node_type == "MemberExpr":
-                var_name, auxilary_list = get_member_expr_str(child_node)
-                var_list.append((var_name, line_number))
-                for aux_var_name in auxilary_list:
-                    var_list.append((aux_var_name, line_number))
+                    for aux_var_name in auxilary_list:
+                        var_list.append((aux_var_name, line_number))
         return var_list
     if child_count:
         for child_node in ast_node['children']:
