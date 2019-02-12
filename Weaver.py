@@ -474,7 +474,13 @@ def filter_ast_script(ast_script, line_range_a, line_range_b, ast_node_a, ast_no
             node_line_numbers = set(range(node_line_start, node_line_end))
             intersection = line_numbers_b.intersection(node_line_numbers)
             if intersection:
-                filtered_ast_script.append(script_line)
+                body_node = node_b['children'][1]
+                count = 0
+                for child_node in body_node['children']:
+                    if int(child_node['start line']) not in skip_lines:
+                        count = count + 1
+                if count != 0:
+                    filtered_ast_script.append(script_line)
         elif "Delete" in script_line:
             node_id_a = int((script_line.split("(")[1]).split(")")[0])
             node_a = get_ast_node_by_id(ast_node_a, node_id_a)
