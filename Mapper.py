@@ -90,6 +90,10 @@ def instrument_code_for_klee(source_path, start_line, end_line, only_in_range):
     with open(source_path, 'w') as source_file:
         source_file.writelines(content)
 
+    syntax_fix_command = "clang-tidy --fix-errors " + source_path
+    ret_code = execute_command(syntax_fix_command)
+    if int(ret_code) != 0:
+        error_exit("SYNTAX ERROR IN INSTRUMENTATION")
 
 def collect_var_dec_list(ast_node, start_line, end_line, only_in_range):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
@@ -213,11 +217,13 @@ def collect_var_ref_list(ast_node, start_line, end_line, only_in_range):
             return var_list
 
     if node_type == "DeclRefExpr":
-        ref_type = ast_node['ref_type']
         line_number = int(ast_node['start line'])
-        if ref_type == "VarDecl":
-            var_name = ast_node['value']
-            var_list.append((var_name, line_number))
+        if hasattr(ast_node, "ref_type"):
+            ref_type = ast_node['ref_type']
+            if ref_type == "FunctionDecl":
+                return var_list
+        var_name = ast_node['value']
+        var_list.append((var_name, line_number))
     if node_type in ["MemberExpr"]:
         var_name, auxilary_list = get_member_expr_str(ast_node)
         line_number = int(ast_node['start line'])
@@ -225,6 +231,15 @@ def collect_var_ref_list(ast_node, start_line, end_line, only_in_range):
         for aux_var_name in auxilary_list:
             var_list.append((aux_var_name, line_number))
         return var_list
+    if node_type in ["IfStmt"]:
+       condition_node = ast_node['children'][0]
+       body_node = ast_node['children'][1]
+       insert_line = body_node['start line']
+       condition_node_var_list = collect_var_ref_list(condition_node, start_line, end_line, only_in_range)
+       for var_name, line_number in condition_node_var_list:
+           var_list.append((var_name, insert_line))
+       var_list = var_list + collect_var_ref_list(body_node, start_line, end_line, only_in_range)
+       return var_list
     if node_type in ["CallExpr"]:
         line_number = ast_node['end line']
         if line_number <= end_line:
@@ -255,17 +270,17 @@ def generate_available_variable_list(source_path, start_line, end_line, only_in_
     ast_map = Generator.get_ast_json(source_path)
     func_node = Weaver.get_fun_node(ast_map, int(end_line), source_path)
     # print(source_path, start_line, end_line)
+    compound_node = func_node['children'][1]
     if not only_in_range:
         param_node = func_node['children'][0]
+        line_number = compound_node['start line']
         for child_node in param_node['children']:
             child_node_type = child_node['type']
             if child_node_type == "ParmVarDecl":
-                line_number = int(child_node['start line'])
                 var_name = str(child_node['identifier'])
                 if var_name not in variable_list:
                     variable_list.append((var_name, line_number))
 
-    compound_node = func_node['children'][1]
     for child_node in compound_node['children']:
         child_node_type = child_node['type']
         # print(child_node_type)
