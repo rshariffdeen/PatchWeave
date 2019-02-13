@@ -72,6 +72,8 @@ def is_declaration_line(source_file, line_number):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     ast_tree = Generator.get_ast_json(source_file)
     function_node = Weaver.get_fun_node(ast_tree, int(line_number), source_file)
+    if function_node is None:
+        error_exit("FUNCTION NODE NOT FOUND!!")
     dec_line_list = get_declaration_lines(function_node)
     if line_number in dec_line_list:
         return True
@@ -95,9 +97,11 @@ def filter_from_trace():
                     if is_declaration_line(source_file, line_number):
                         continue
                     statement = get_code(source_file, line_number)
+
                     if "}" not in statement:
                         skip_lines.append(line_number)
         diff_info['skip-lines'] = skip_lines
+
 
 
 def filter_function_calls():
