@@ -15,6 +15,7 @@ import Weaver
 import Slicer
 import Verifier
 
+
 def first_run_check():
     create_directories()
 

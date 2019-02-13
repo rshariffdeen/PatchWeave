@@ -28,20 +28,11 @@ def create_directories():
     if not os.path.isdir(Common.DIRECTORY_LOG):
         os.makedirs(Common.DIRECTORY_LOG)
 
-    if not os.path.isdir(Common.DIRECTORY_OUTPUT):
-        os.makedirs(Common.DIRECTORY_OUTPUT)
+    if not os.path.isdir(Common.DIRECTORY_OUTPUT_BASE):
+        os.makedirs(Common.DIRECTORY_OUTPUT_BASE)
 
     if not os.path.isdir(Common.DIRECTORY_BACKUP):
         os.makedirs(Common.DIRECTORY_BACKUP)
-
-    if not os.path.isdir(Common.DIRECTORY_VECTORS_A):
-        os.makedirs(Common.DIRECTORY_VECTORS_A)
-
-    if not os.path.isdir(Common.DIRECTORY_VECTORS_B):
-        os.makedirs(Common.DIRECTORY_VECTORS_B)
-
-    if not os.path.isdir(Common.DIRECTORY_VECTORS_C):
-        os.makedirs(Common.DIRECTORY_VECTORS_C)
 
 
 def error_exit(*args):

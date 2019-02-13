@@ -41,6 +41,15 @@ def create_patch_dir():
         execute_command(create_command)
 
 
+def create_output_dir():
+    conf_file_name = Common.FILE_CONFIGURATION.split("/")[-1]
+    dir_name = conf_file_name.replace(".conf", "")
+    Common.DIRECTORY_OUTPUT = Common.DIRECTORY_OUTPUT_BASE + "/" + dir_name
+    if not os.path.isdir(Common.DIRECTORY_OUTPUT):
+        create_command = "mkdir " + Common.DIRECTORY_OUTPUT
+        execute_command(create_command)
+
+
 def read_conf():
     Output.normal("reading configuration values")
     if len(sys.argv) > 1:
@@ -100,6 +109,7 @@ def initialize():
     Output.sub_title("loading configuration")
     read_conf()
     create_patch_dir()
+    create_output_dir()
     load_values()
     Output.sub_title("set environment")
     set_env_value()
