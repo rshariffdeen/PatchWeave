@@ -37,14 +37,14 @@ ast_map_c = dict()
 
 TOOL_AST_PATCH = "patchweave"
 
-FILE_VAR_EXPR_LOG_A = Common.DIRECTORY_OUTPUT + "/log-sym-expr-a"
-FILE_VAR_EXPR_LOG_B = Common.DIRECTORY_OUTPUT + "/log-sym-expr-b"
-FILE_VAR_EXPR_LOG_C = Common.DIRECTORY_OUTPUT + "/log-sym-expr-c"
-FILE_VAR_MAP = Common.DIRECTORY_OUTPUT + "/var-map"
-FILE_SKIP_LIST = Common.DIRECTORY_OUTPUT + "/skip-list"
-FILE_AST_SCRIPT = Common.DIRECTORY_OUTPUT + "/gen-ast-script"
-FILE_TEMP_FIX = Common.DIRECTORY_OUTPUT + "/temp-fix"
-FILE_MACRO_DEF = Common.DIRECTORY_OUTPUT + "/macro-def"
+FILE_VAR_EXPR_LOG_A = ""
+FILE_VAR_EXPR_LOG_B = ""
+FILE_VAR_EXPR_LOG_C = ""
+FILE_VAR_MAP = ""
+FILE_SKIP_LIST = ""
+FILE_AST_SCRIPT = ""
+FILE_TEMP_FIX = ""
+FILE_MACRO_DEF = ""
 FILENAME_BACKUP = "temp-source"
 
 
@@ -1040,7 +1040,23 @@ def safe_exec(function_def, title, *args):
     return result
 
 
+def set_values():
+    global FILE_VAR_EXPR_LOG_A, FILE_VAR_EXPR_LOG_B, FILE_VAR_EXPR_LOG_C
+    global FILE_VAR_MAP, FILE_SKIP_LIST, FILE_AST_SCRIPT
+    global FILE_TEMP_FIX, FILE_MACRO_DEF
+
+    FILE_VAR_EXPR_LOG_A = Common.DIRECTORY_OUTPUT + "/log-sym-expr-a"
+    FILE_VAR_EXPR_LOG_B = Common.DIRECTORY_OUTPUT + "/log-sym-expr-b"
+    FILE_VAR_EXPR_LOG_C = Common.DIRECTORY_OUTPUT + "/log-sym-expr-c"
+    FILE_VAR_MAP = Common.DIRECTORY_OUTPUT + "/var-map"
+    FILE_SKIP_LIST = Common.DIRECTORY_OUTPUT + "/skip-list"
+    FILE_AST_SCRIPT = Common.DIRECTORY_OUTPUT + "/gen-ast-script"
+    FILE_TEMP_FIX = Common.DIRECTORY_OUTPUT + "/temp-fix"
+    FILE_MACRO_DEF = Common.DIRECTORY_OUTPUT + "/macro-def"
+
+
 def weave():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.title("repairing bug")
+    set_values()
     safe_exec(transplant_patch, "transplanting patch")

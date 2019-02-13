@@ -137,5 +137,6 @@ def get_code(source_path, line_number):
     if os.path.exists(source_path):
         with open(source_path, 'r') as source_file:
             content = source_file.readlines()
+            # print(len(content))
             return content[line_number-1]
     return None
