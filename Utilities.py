@@ -8,7 +8,7 @@ import Output
 import Common
 
 WLLVM_EXTRACTOR = "extract-bc"
-FILE_PARTIAL_DIFF = Common.DIRECTORY_OUTPUT + "/gen-patch"
+FILE_PARTIAL_DIFF = Common.DIRECTORY_TMP + "/gen-patch"
 
 
 def execute_command(command, show_output=True):
@@ -33,6 +33,9 @@ def create_directories():
 
     if not os.path.isdir(Common.DIRECTORY_BACKUP):
         os.makedirs(Common.DIRECTORY_BACKUP)
+
+    if not os.path.isdir(Common.DIRECTORY_TMP):
+        os.makedirs(Common.DIRECTORY_TMP)
 
 
 def error_exit(*args):
