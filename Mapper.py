@@ -231,15 +231,25 @@ def collect_var_ref_list(ast_node, start_line, end_line, only_in_range):
         for aux_var_name in auxilary_list:
             var_list.append((aux_var_name, line_number))
         return var_list
+    if node_type in ["ForStmt"]:
+        body_node = ast_node['children'][child_count - 1]
+        insert_line = body_node['start line']
+        for i in range(0, child_count - 1):
+            condition_node = ast_node['children'][i]
+            condition_node_var_list = collect_var_ref_list(condition_node, start_line, end_line, only_in_range)
+            for var_name, line_number in condition_node_var_list:
+                var_list.append((var_name, insert_line))
+        var_list = var_list + collect_var_ref_list(body_node, start_line, end_line, only_in_range)
+        return var_list
     if node_type in ["IfStmt"]:
-       condition_node = ast_node['children'][0]
-       body_node = ast_node['children'][1]
-       insert_line = body_node['start line']
-       condition_node_var_list = collect_var_ref_list(condition_node, start_line, end_line, only_in_range)
-       for var_name, line_number in condition_node_var_list:
-           var_list.append((var_name, insert_line))
-       var_list = var_list + collect_var_ref_list(body_node, start_line, end_line, only_in_range)
-       return var_list
+        condition_node = ast_node['children'][0]
+        body_node = ast_node['children'][1]
+        insert_line = body_node['start line']
+        condition_node_var_list = collect_var_ref_list(condition_node, start_line, end_line, only_in_range)
+        for var_name, line_number in condition_node_var_list:
+            var_list.append((var_name, insert_line))
+        var_list = var_list + collect_var_ref_list(body_node, start_line, end_line, only_in_range)
+        return var_list
     if node_type in ["CallExpr"]:
         line_number = ast_node['end line']
         if line_number <= end_line:
