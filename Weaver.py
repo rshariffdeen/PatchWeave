@@ -176,9 +176,8 @@ def estimate_divergent_point(byte_list):
     for n in range(length, 0, -1):
         key = Concolic.sym_path_c.keys()[n]
         sym_path = Concolic.sym_path_c[key]
-        model = Mapper.get_model_from_solver(sym_path)
-        bytes_temp = Mapper.extract_values_from_model(model)
-        count = len(list(set(byte_list).intersection(bytes_temp.keys())))
+        bytes_temp = Mapper.get_input_bytes_used(sym_path)
+        count = len(list(set(byte_list).intersection(bytes_temp)))
         if count == count_common:
             candidate_list.append(key)
     length = len(Tracer.list_trace_c) - 1
@@ -197,14 +196,6 @@ def estimate_divergent_point(byte_list):
                 else:
                     estimated_loc = path
                     break
-
-    # print("\t\testimated loc:\n\t\t" + str(estimated_loc))
-    # filtered_list = list()
-    # for i in range(n, length):
-    #     if list_trace_c[i] not in filtered_list:
-    #         filtered_list.append(list_trace_c[i])
-    # for path in filtered_list:
-    #     print(path)
     return estimated_loc
 
 
@@ -238,11 +229,11 @@ def compute_common_bytes(div_source_loc):
     common_byte_list = list()
     if Concolic.sym_path_c:
         last_sympath_c = Concolic.sym_path_c[Concolic.sym_path_c.keys()[-1]]
-        model_a = Mapper.get_model_from_solver(div_sympath)
-        bytes_a = Mapper.extract_values_from_model(model_a)
-        model_c = Mapper.get_model_from_solver(last_sympath_c)
-        bytes_c = Mapper.extract_values_from_model(model_c)
-        common_byte_list = list(set(bytes_a.keys()).intersection(bytes_c.keys()))
+        # model_a = Mapper.get_model_from_solver(div_sympath)
+        bytes_a = Mapper.get_input_bytes_used(div_sympath)
+        # model_c = Mapper.get_model_from_solver(last_sympath_c)
+        bytes_c = Mapper.get_input_bytes_used(last_sympath_c)
+        common_byte_list = list(set(bytes_a).intersection(bytes_c))
     return common_byte_list
 
 

@@ -17,6 +17,7 @@ import Generator
 import Builder
 import Weaver
 import collections
+import z3
 
 
 KLEE_SYMBOLIC_ENGINE = "klee "
@@ -342,24 +343,17 @@ def get_model_from_solver(str_formula):
     return model.__dict__['z3_model']
 
 
-def extract_values_from_model(model):
+def extract_keys_from_model(model):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    byte_array = dict()
-    # print(model)
-    for dec in model.decls():
-        # print(dec)
-        # print(model[dec])
-        if dec.name() == "A-data":
-            if hasattr(model[dec], "num_entries"):
-                var_list = model[dec].as_list()
-                # print(var_list)
-                for pair in var_list:
-                    if type(pair) == list:
-                        byte_array[pair[0]] = pair[1]
-            else:
-                return None
-
-    return byte_array
+    byte_list = list()
+    k_list = ""
+    for dec in model:
+        if hasattr(model[dec], "num_entries"):
+            k_list = model[dec].as_list()
+    for pair in k_list:
+        if type(pair) == list:
+            byte_list.append(pair[0])
+    return byte_list
 
 
 def create_z3_code(var_expr, var_name, bit_size):
@@ -411,8 +405,8 @@ def get_input_bytes_used(sym_expr):
     # print(model_a)
     input_byte_list = list()
     if model_a is not None:
-        input_bytes_map = extract_values_from_model(model_a)
-        if input_bytes_map is None:
+        input_byte_list = extract_keys_from_model(model_a)
+        if input_byte_list is None:
             script_lines = str(sym_expr).split("\n")
             value_line = script_lines[3]
             tokens = value_line.split("A-data")
@@ -421,8 +415,6 @@ def get_input_bytes_used(sym_expr):
             else:
                 byte_index = ((tokens[1].split(")")[0]).split("bv")[1]).split(" ")[0]
                 input_byte_list.append(int(byte_index))
-        else:
-            input_byte_list = list(set(input_bytes_map.keys()))
     return input_byte_list
 
 
