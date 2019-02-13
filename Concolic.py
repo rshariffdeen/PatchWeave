@@ -29,16 +29,13 @@ VALUE_BINARY_PATH_A = ""
 VALUE_BINARY_PATH_B = ""
 VALUE_BINARY_PATH_C = ""
 
-FILE_KLEE_LOG_A = Common.DIRECTORY_OUTPUT + "/log-klee-pa"
-FILE_KLEE_LOG_B = Common.DIRECTORY_OUTPUT + "/log-klee-pb"
-FILE_KLEE_LOG_C = Common.DIRECTORY_OUTPUT + "/log-klee-pc"
-
-
-FILE_SYM_PATH_A = Common.DIRECTORY_OUTPUT + "/sym-path-a"
-FILE_SYM_PATH_B = Common.DIRECTORY_OUTPUT + "/sym-path-b"
-FILE_SYM_PATH_C = Common.DIRECTORY_OUTPUT + "/sym-path-c"
-
-FILE_SYMBOLIC_POC = Common.DIRECTORY_OUTPUT + "/symbolic.ktest"
+FILE_KLEE_LOG_A = ""
+FILE_KLEE_LOG_B = ""
+FILE_KLEE_LOG_C = ""
+FILE_SYM_PATH_A = ""
+FILE_SYM_PATH_B = ""
+FILE_SYM_PATH_C = ""
+FILE_SYMBOLIC_POC = ""
 
 sym_path_a = dict()
 sym_path_b = dict()
@@ -169,9 +166,23 @@ def safe_exec(function_def, title, *args):
     return result
 
 
+def set_values():
+    global FILE_KLEE_LOG_A, FILE_KLEE_LOG_B, FILE_KLEE_LOG_C
+    global FILE_SYM_PATH_A, FILE_SYM_PATH_B, FILE_SYM_PATH_C
+    global FILE_SYMBOLIC_POC
+    FILE_KLEE_LOG_A = Common.DIRECTORY_OUTPUT + "/log-klee-pa"
+    FILE_KLEE_LOG_B = Common.DIRECTORY_OUTPUT + "/log-klee-pb"
+    FILE_KLEE_LOG_C = Common.DIRECTORY_OUTPUT + "/log-klee-pc"
+    FILE_SYM_PATH_A = Common.DIRECTORY_OUTPUT + "/sym-path-a"
+    FILE_SYM_PATH_B = Common.DIRECTORY_OUTPUT + "/sym-path-b"
+    FILE_SYM_PATH_C = Common.DIRECTORY_OUTPUT + "/sym-path-c"
+    FILE_SYMBOLIC_POC = Common.DIRECTORY_OUTPUT + "/symbolic.ktest"
+
+
 def execute():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.title("Concolic execution traces")
+    set_values()
     convert_poc()
     safe_exec(generate_trace_donor, "generating symbolic trace information from donor program")
     safe_exec(generate_trace_target, "generating symbolic trace information from target program")

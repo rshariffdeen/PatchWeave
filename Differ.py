@@ -14,19 +14,17 @@ import Vector
 import Logger
 
 
-FILE_EXCLUDED_EXTENSIONS = Common.DIRECTORY_OUTPUT + "/excluded-extensions"
-FILE_EXCLUDED_EXTENSIONS_A = Common.DIRECTORY_OUTPUT + "/excluded-extensions-a"
-FILE_EXCLUDED_EXTENSIONS_B = Common.DIRECTORY_OUTPUT + "/excluded-extensions-b"
-FILE_DIFF_C = Common.DIRECTORY_OUTPUT + "/diff_C"
-FILE_DIFF_H = Common.DIRECTORY_OUTPUT + "/diff_H"
-FILE_DIFF_ALL = Common.DIRECTORY_OUTPUT + "/diff_all"
-FILE_TEMP_DIFF = Common.DIRECTORY_OUTPUT + "/temp_diff"
-FILE_AST_SCRIPT = Common.DIRECTORY_OUTPUT + "/ast-script"
-FILE_AST_DIFF_ERROR = Common.DIRECTORY_OUTPUT + "/errors_ast_diff"
-
+FILE_EXCLUDED_EXTENSIONS = ""
+FILE_EXCLUDED_EXTENSIONS_A = ""
+FILE_EXCLUDED_EXTENSIONS_B = ""
+FILE_DIFF_C = ""
+FILE_DIFF_H = ""
+FILE_DIFF_ALL = ""
+FILE_TEMP_DIFF = ""
+FILE_AST_SCRIPT = ""
+FILE_AST_DIFF_ERROR = ""
 APP_AST_DIFF = "crochet-diff"
 AST_DIFF_SIZE = "10"
-
 
 diff_info = dict()
 
@@ -34,6 +32,7 @@ diff_info = dict()
 def find_diff_files():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.normal("finding changed files...")
+    global FILE_DIFF_H
     extensions = get_file_extension_list(Common.Project_A.path, FILE_EXCLUDED_EXTENSIONS_A)
     extensions = extensions.union(get_file_extension_list(Common.Project_B.path, FILE_EXCLUDED_EXTENSIONS_B))
     with open(FILE_EXCLUDED_EXTENSIONS, 'w') as exclusions:
@@ -322,7 +321,23 @@ def safe_exec(function_def, title, *args):
     return result
 
 
+def set_values():
+    global FILE_DIFF_C, FILE_DIFF_H, FILE_DIFF_ALL
+    global FILE_TEMP_DIFF, FILE_AST_SCRIPT, FILE_AST_DIFF_ERROR
+    global FILE_EXCLUDED_EXTENSIONS, FILE_EXCLUDED_EXTENSIONS_A, FILE_EXCLUDED_EXTENSIONS_B
+    FILE_EXCLUDED_EXTENSIONS = Common.DIRECTORY_OUTPUT + "/excluded-extensions"
+    FILE_EXCLUDED_EXTENSIONS_A = Common.DIRECTORY_OUTPUT + "/excluded-extensions-a"
+    FILE_EXCLUDED_EXTENSIONS_B = Common.DIRECTORY_OUTPUT + "/excluded-extensions-b"
+    FILE_DIFF_C = Common.DIRECTORY_OUTPUT + "/diff_C"
+    FILE_DIFF_H = Common.DIRECTORY_OUTPUT + "/diff_H"
+    FILE_DIFF_ALL = Common.DIRECTORY_OUTPUT + "/diff_all"
+    FILE_TEMP_DIFF = Common.DIRECTORY_OUTPUT + "/temp_diff"
+    FILE_AST_SCRIPT = Common.DIRECTORY_OUTPUT + "/ast-script"
+    FILE_AST_DIFF_ERROR = Common.DIRECTORY_OUTPUT + "/errors_ast_diff"
+
+
 def diff():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.title("Locating changed functions")
+    set_values()
     safe_exec(generate_diff, "search for changed functions")

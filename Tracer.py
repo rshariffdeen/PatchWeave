@@ -217,10 +217,20 @@ def safe_exec(function_def, title, *args):
     return result
 
 
+def set_values():
+    global FILE_EXPLOIT_OUTPUT_A, FILE_EXPLOIT_OUTPUT_C
+    global FILE_TRACE_LOG_A, FILE_TRACE_LOG_B, FILE_TRACE_LOG_C
+    FILE_EXPLOIT_OUTPUT_A = Common.DIRECTORY_OUTPUT + "/exploit-a"
+    FILE_EXPLOIT_OUTPUT_C = Common.DIRECTORY_OUTPUT + "/exploit-c"
+    FILE_TRACE_LOG_A = Common.DIRECTORY_OUTPUT + "/trace-klee-pa"
+    FILE_TRACE_LOG_B = Common.DIRECTORY_OUTPUT + "/trace-klee-pb"
+    FILE_TRACE_LOG_C = Common.DIRECTORY_OUTPUT + "/trace-klee-pc"
+
+
 def trace():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.title("Analysing execution traces")
-    # Builder.build_normal()
+    set_values()
     safe_exec(test_exploits, "testing crash case")
     safe_exec(generate_trace_donor, "generating trace information from donor program")
     safe_exec(generate_trace_target, "generating trace information from target program")
