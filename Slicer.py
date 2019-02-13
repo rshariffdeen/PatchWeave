@@ -42,6 +42,8 @@ def get_function_call_lines(source_file, line_number):
     line_list = dict()
     ast_tree = Generator.get_ast_json(source_file)
     function_node = Weaver.get_fun_node(ast_tree, int(line_number), source_file)
+    if function_node is None:
+        return line_list
     call_node_list = Weaver.extract_function_calls(function_node)
     for call_node in call_node_list:
         line_list[call_node['start line']] = call_node
@@ -73,7 +75,7 @@ def is_declaration_line(source_file, line_number):
     ast_tree = Generator.get_ast_json(source_file)
     function_node = Weaver.get_fun_node(ast_tree, int(line_number), source_file)
     if function_node is None:
-        error_exit("FUNCTION NODE NOT FOUND!!")
+        return False
     dec_line_list = get_declaration_lines(function_node)
     if line_number in dec_line_list:
         return True
@@ -103,6 +105,20 @@ def filter_from_trace():
         diff_info['skip-lines'] = skip_lines
 
 
+def remove_skipped_diff_locs():
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    filtered_diff_info = dict()
+    for diff_loc in Differ.diff_info:
+        diff_info = Differ.diff_info[diff_loc]
+        if 'new-lines' in diff_info.keys():
+            start_line, end_line = diff_info['new-lines']
+            line_numbers = set(range(int(start_line), int(end_line) + 1))
+            skip_lines = diff_info['skip-lines']
+            if set(line_numbers) == set(skip_lines):
+                continue
+        filtered_diff_info[diff_loc] = diff_info
+    Differ.diff_info = filtered_diff_info
+
 
 def filter_function_calls():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
@@ -127,7 +143,9 @@ def filter_function_calls():
 def slice_diff():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     filter_from_trace()
+    remove_skipped_diff_locs()
     filter_function_calls()
+    remove_skipped_diff_locs()
 
 
 def safe_exec(function_def, title, *args):
