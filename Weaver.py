@@ -283,6 +283,13 @@ def get_fun_node(ast_node, line_number, source_path):
             child_node_end_line = int(child_node['end line'])
             if line_number in range(child_node_start_line, child_node_end_line + 1):
                 return child_node
+
+    for child_node in ast_node['children']:
+        if child_node_type == "Macro":
+            child_node_start_line = int(child_node['start line'])
+            child_node_end_line = int(child_node['end line'])
+            if line_number in range(child_node_start_line, child_node_end_line + 1):
+                return child_node
     return None
 
 
