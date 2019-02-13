@@ -18,7 +18,7 @@ import Generator
 import Tracer
 import Weaver
 
-FILE_SYNTAX_ERRORS = Common.DIRECTORY_OUTPUT + "/syntax-errors"
+FILE_SYNTAX_ERRORS = ""
 FILENAME_BACKUP = "backup-syntax-fix"
 
 
@@ -113,7 +113,13 @@ def check_syntax_errors():
             Output.normal("\tno syntax errors")
 
 
+def set_values():
+    global FILE_SYNTAX_ERRORS
+    FILE_SYNTAX_ERRORS = Common.DIRECTORY_OUTPUT + "/syntax-errors"
+
+
 def check():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.sub_title("checking syntax errors")
+    set_values()
     check_syntax_errors()
