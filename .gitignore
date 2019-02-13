@@ -1,6 +1,7 @@
 build
 logs/
 backup/
+tmp/
 conf/
 cmake-build-debug
 .idea
