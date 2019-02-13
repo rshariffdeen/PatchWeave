@@ -352,7 +352,7 @@ def extract_keys_from_model(model):
             k_list = model[dec].as_list()
     for pair in k_list:
         if type(pair) == list:
-            byte_list.append(pair[0])
+            byte_list.append(int(str(pair[0])))
     return byte_list
 
 
@@ -415,6 +415,9 @@ def get_input_bytes_used(sym_expr):
             else:
                 byte_index = ((tokens[1].split(")")[0]).split("bv")[1]).split(" ")[0]
                 input_byte_list.append(int(byte_index))
+    if input_byte_list:
+        input_byte_list.sort()
+
     return input_byte_list
 
 
