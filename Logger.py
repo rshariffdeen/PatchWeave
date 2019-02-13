@@ -38,7 +38,7 @@ def information(message):
 
 
 def trace(function_name, arguments):
-    message = "[TRACE]: " + function_name + ": " + str(arguments) + "\n"
+    message = "[TRACE]: " + function_name + ": " + str(arguments.keys()) + "\n"
     log(message)
 
 
