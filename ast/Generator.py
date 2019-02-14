@@ -11,9 +11,12 @@ import sys
 import Common
 import json
 import os
+import Differ
 
-APP_DIFF = "crochet-diff "
 APP_FORMAT_LLVM = "clang-format -style=LLVM "
+APP_AST_DIFF = "crochet-diff"
+AST_DIFF_SIZE = "10"
+
 
 interesting = ["VarDecl", "DeclRefExpr", "ParmVarDecl", "TypedefDecl",
                "FieldDecl", "EnumDecl", "EnumConstantDecl", "RecordDecl"]
@@ -34,7 +37,7 @@ def generate_vector(file_path, f_or_struct, start_line, end_line, is_deckard=Tru
 
 def ast_dump(file_path, output_path, is_header=False):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    dump_command = APP_DIFF + "-ast-dump-json " + file_path
+    dump_command = APP_AST_DIFF + " -ast-dump-json " + file_path
     if file_path[-1] == "h":
         dump_command += " --"
     dump_command += " 2> output/errors_AST_dump > " + output_path
@@ -86,7 +89,6 @@ def parse_ast(file_path, use_deckard=True):
     dict_file = dict()
     try:
         ast = generate_json(file_path)
-
     except Exception as exception:
         print(exception)
         Output.warning("Failed parsing AST for file:\n\t" + file_path)
@@ -138,11 +140,30 @@ def get_vars(proj, file, dict_file):
 
 def is_intersect(start, end, start2, end2):
     return not (end2 < start or start2 > end)
-    
+
+
+def generate_ast_script(source_a, source_b, dump_matches=False):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    command = Common.DIFF_COMMAND + "-dump-matches " + source_a + " " + source_b
+    extra_args = " "
+    if dump_matches:
+        extra_args = " -dump-matches "
+    generate_command = APP_AST_DIFF + " -s=" + AST_DIFF_SIZE + extra_args
+    generate_command += source_a + " " + source_b
+    if source_a[-1] == "h":
+        command += " --"
+    generate_command += " 2> " + Differ.FILE_AST_DIFF_ERROR
+    generate_command += " | grep -P '^Match ' | grep -P '^Match ' > " + Differ.FILE_AST_SCRIPT
+
+    try:
+        execute_command(command, False)
+    except Exception as exception:
+        error_exit(exception, "Unexpected error in generate_ast_script.")
+
                         
 def get_function_name_list(project, source_file, pertinent_lines):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal("\t\tproject " + project.name + ":")
+    Output.normal("\t\t" + project.path + ":")
     try:
         function_list, definition_list = parse_ast(source_file, False)
     except Exception as e:

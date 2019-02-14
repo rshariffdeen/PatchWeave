@@ -12,6 +12,8 @@ import Common
 import Generator
 import Vector
 import Logger
+import Mapper
+import Filter
 
 
 FILE_EXCLUDED_EXTENSIONS = ""
@@ -23,8 +25,7 @@ FILE_DIFF_ALL = ""
 FILE_TEMP_DIFF = ""
 FILE_AST_SCRIPT = ""
 FILE_AST_DIFF_ERROR = ""
-APP_AST_DIFF = "crochet-diff"
-AST_DIFF_SIZE = "10"
+
 
 diff_info = dict()
 
@@ -56,8 +57,6 @@ def extract_h_file_list():
             diff_line = diff_line.split(" ")
             file_a = diff_line[1]
             file_b = diff_line[3]
-            # Generator.convert_to_llvm(file_a)
-            # Generator.convert_to_llvm(file_b)
             Generator.parseAST(file_a, Common.Project_A, is_deckard=True, is_header=True)
             file_list.append(file_a.split("/")[-1])
             diff_line = diff_file.readline().strip()
@@ -70,15 +69,12 @@ def extract_h_file_list():
 def extract_diff_info():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.normal("\tcollecting diff info...")
-    function_list = list()
     with open(FILE_DIFF_C, 'r') as diff_file:
         diff_line = diff_file.readline().strip()
         while diff_line:
             diff_line = diff_line.split(" ")
             file_a = diff_line[1]
             file_b = diff_line[3]
-            # Generator.convert_to_llvm(file_a)
-            # Generator.convert_to_llvm(file_b)
             diff_command = "diff -ENBZbwr " + file_a + " " + file_b + " > " + FILE_TEMP_DIFF
             execute_command(diff_command)
             pertinent_lines_a = []
@@ -101,18 +97,17 @@ def extract_diff_info():
                         elif 'c' in file_line:
                             line_info = file_line.split('c')
                             operation = "modify"
+
                         # range for file_a
                         line_a = line_info[0].split(',')
                         start_a = int(line_a[0])
                         end_a = int(line_a[-1])
+
                         # range for file_b
                         line_b = line_info[1].split(',')
                         start_b = int(line_b[0])
                         end_b = int(line_b[-1])
-                        # Pertinent lines in file_a
-                        pertinent_lines_a.append((start_a, end_a))
 
-                        pertinent_lines_b.append((start_b, end_b))
                         diff_loc = file_a + ":" + str(start_a)
                         diff_info[diff_loc] = dict()
                         diff_info[diff_loc]['operation'] = operation
@@ -124,16 +119,8 @@ def extract_diff_info():
                         elif operation == "modify":
                             diff_info[diff_loc]['old-lines'] = (start_a, end_a)
                             diff_info[diff_loc]['new-lines'] = (start_b, end_b)
-
                     file_line = temp_diff_file.readline().strip()
-            try:
-                Generator.get_function_name_list(Common.Project_A, file_a, pertinent_lines_a)
-                Generator.get_function_name_list(Common.Project_B, file_b, pertinent_lines_b)
-
-            except Exception as exception:
-                error_exit(exception, "failed at finding affected functions.")
             diff_line = diff_file.readline().strip()
-    return function_list
 
 
 def extract_c_file_list():
@@ -146,41 +133,13 @@ def extract_c_file_list():
             diff_line = diff_line.split(" ")
             file_a = diff_line[1]
             file_b = diff_line[3]
-            # Generator.convert_to_llvm(file_a)
-            # Generator.convert_to_llvm(file_b)
             file_list.append(file_a.split("/")[-1])
             diff_line = diff_file.readline().strip()
     if len(file_list) > 0:
         Output.normal("\t\tsource files:")
         for source_file in file_list:
-            Output.normal("\t\t" + source_file)
+            Output.normal("\t\t\t" + source_file)
     return file_list
-
-
-def generate_ast_script(source_a, source_b, dump_matches=False):
-    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    extra_args = " "
-    if dump_matches:
-        extra_args = " -dump-matches "
-
-    generate_command = APP_AST_DIFF + " -s=" + AST_DIFF_SIZE  + extra_args + \
-                       source_a + " " + source_b  + " 2> " + FILE_AST_DIFF_ERROR + \
-                       " > " + FILE_AST_SCRIPT
-    execute_command(generate_command)
-
-
-def get_ast_mapping(source_a, source_b):
-    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    generate_ast_script(source_a, source_b, True)
-    mapping = dict()
-    with open(FILE_AST_SCRIPT, "r") as script_file:
-        script_lines = script_file.readlines()
-        for script_line in script_lines:
-            if "Match" in script_line:
-                node_id_a = int(((script_line.split(" to ")[0]).split("(")[1]).split(")")[0])
-                node_id_b = int(((script_line.split(" to ")[1]).split("(")[1]).split(")")[0])
-                mapping[node_id_b] = node_id_a
-    return mapping
 
 
 def safe_exec(function_def, title, *args):
@@ -203,6 +162,62 @@ def safe_exec(function_def, title, *args):
     return result
 
 
+def get_ast_script(source_a, source_b):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    Output.normal("\t\tgenerating AST script")
+    Generator.generate_ast_script(source_a, source_b)
+    with open(FILE_AST_SCRIPT, "r") as script_file:
+        script_lines = script_file.readlines()
+        return script_lines
+
+
+def collect_source_diff():
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    find_diff_files()
+    extract_h_file_list()
+    extract_c_file_list()
+    extract_diff_info()
+
+
+def extract_ast_script(diff_info, diff_loc):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    source_path_a, line_number_a = diff_loc.split(":")
+    source_path_b = str(source_path_a).replace(Common.VALUE_PATH_A, Common.VALUE_PATH_B)
+    ast_script = get_ast_script(source_path_a, source_path_b)
+    operation = diff_info['operation']
+    ast_map_a = Generator.get_ast_json(source_path_a)
+    ast_map_b = Generator.get_ast_json(source_path_b)
+    mapping_ba = Mapper.get_ast_mapping(source_path_a, source_path_b)
+    if operation == 'insert':
+        start_line_b, end_line_b = diff_info['new-lines']
+        line_range_b = (start_line_b, end_line_b)
+        line_range_a = (-1, -1)
+        filtered_ast_script = Filter.filter_ast_script(ast_script,
+                                                       line_range_a,
+                                                       line_range_b,
+                                                       ast_map_a,
+                                                       ast_map_b
+                                                       )
+    elif operation == 'modify':
+        line_range_a = diff_info['old-lines']
+        line_range_b = diff_info['new-lines']
+        filtered_ast_script = Filter.filter_ast_script(ast_script,
+                                                       line_range_a,
+                                                       line_range_b,
+                                                       ast_map_a,
+                                                       ast_map_b
+                                                       )
+
+
+def collect_ast_diff():
+    global diff_info
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    for diff_loc in diff_info.keys():
+        Output.normal("\t" + diff_loc)
+        diff_info = diff_info[diff_loc]
+        extract_ast_script(diff_info, diff_loc)
+
+
 def set_values():
     global FILE_DIFF_C, FILE_DIFF_H, FILE_DIFF_ALL
     global FILE_TEMP_DIFF, FILE_AST_SCRIPT, FILE_AST_DIFF_ERROR
@@ -216,22 +231,6 @@ def set_values():
     FILE_TEMP_DIFF = Common.DIRECTORY_OUTPUT + "/temp_diff"
     FILE_AST_SCRIPT = Common.DIRECTORY_OUTPUT + "/ast-script"
     FILE_AST_DIFF_ERROR = Common.DIRECTORY_OUTPUT + "/errors_ast_diff"
-
-
-def collect_source_diff():
-    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    find_diff_files()
-    extract_h_file_list()
-    extract_c_file_list()
-    extract_diff_info()
-
-
-def collect_ast_diff():
-    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    find_diff_files()
-    extract_h_file_list()
-    extract_c_file_list()
-    extract_diff_info()
 
 
 def diff():
