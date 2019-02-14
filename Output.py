@@ -27,7 +27,7 @@ def write(print_message, print_color, new_line=True):
 
 
 def title(title):
-    write("_"*100 + "\n\n\t" + title + "\n" + "="*100+"\n", CYAN)
+    write("\n" + "="*100 + "\n\n\t" + title + "\n" + "="*100+"\n", CYAN)
     Logger.information(title)
 
 

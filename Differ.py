@@ -164,7 +164,7 @@ def safe_exec(function_def, title, *args):
 
 def get_ast_script(source_a, source_b):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal("\t\tgenerating AST script")
+    Output.normal("\tgenerating AST script")
     Generator.generate_ast_script(source_a, source_b)
     with open(FILE_AST_SCRIPT, "r") as script_file:
         script_lines = script_file.readlines()
@@ -190,9 +190,9 @@ def collect_ast_diff():
     ast_map_b = ""
     mapping_ba = ""
     for diff_loc in diff_info.keys():
-        Output.normal("\t" + diff_loc)
         source_path, line_number = diff_loc.split(":")
         if source_path != source_path_a:
+            Output.sub_sub_title(source_path)
             source_path_a = source_path
             line_number_a = line_number
             source_path_b = str(source_path_a).replace(Common.VALUE_PATH_A, Common.VALUE_PATH_B)
@@ -200,6 +200,7 @@ def collect_ast_diff():
             ast_map_a = Generator.get_ast_json(source_path_a)
             ast_map_b = Generator.get_ast_json(source_path_b)
             mapping_ba = Mapper.get_ast_mapping(source_path_a, source_path_b)
+        Output.normal("\tline number:" + line_number)
         diff_loc_info = diff_info[diff_loc]
         operation = diff_loc_info['operation']
         filtered_ast_script = list()
