@@ -418,9 +418,9 @@ def merge_ast_script(ast_script, ast_node_a, ast_node_b):
     merged_ast_script = list()
     inserted_node_list = list()
     deleted_node_list = list()
-    print(ast_script)
+    # print(ast_script)
     for script_line in ast_script:
-        print(script_line)
+        # print(script_line)
         if "Insert" in script_line:
             node_id_a = int(((script_line.split(" into ")[0]).split("(")[1]).split(")")[0])
             node_id_b = int(((script_line.split(" into ")[1]).split("(")[1]).split(")")[0])

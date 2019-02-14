@@ -224,6 +224,18 @@ def collect_var_ref_list(ast_node, start_line, end_line, only_in_range):
         if not is_intersect(node_start_line, node_end_line, start_line, end_line):
             return var_list
 
+    if node_type == "BinaryOperator":
+        insert_line_number = int(ast_node['end line'])
+        node_value = ast_node['value']
+        if node_value == "=":
+            left_side = ast_node['children'][0]
+            right_side = ast_node['children'][1]
+            right_var_list = collect_var_ref_list(right_side, start_line, end_line, only_in_range)
+            left_var_list = collect_var_ref_list(left_side, start_line, end_line, only_in_range)
+            operands_var_list = right_var_list + left_var_list
+            for var_name, line_number in operands_var_list:
+                var_list.append((var_name, insert_line_number))
+            return var_list
     if node_type == "DeclRefExpr":
         line_number = int(ast_node['start line'])
         if hasattr(ast_node, "ref_type"):

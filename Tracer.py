@@ -16,6 +16,7 @@ SYMBOLIC_ENGINE = "klee --posix-runtime --libc=uclibc --print-trace --print-stac
 
 FILE_EXPLOIT_OUTPUT_A = ""
 FILE_EXPLOIT_OUTPUT_C = ""
+FILE_EXPLOIT_OUTPUT_D = ""
 FILE_TRACE_LOG_A = ""
 FILE_TRACE_LOG_B = ""
 FILE_TRACE_LOG_C = ""
@@ -39,34 +40,37 @@ target_crashed = False
 target_suspect_line_list = list()
 donor_suspect_line_list = list()
 
+crash_word_list = ["abort", "core dumped", "crashed"]
+
 
 def test_exploits():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     global donor_exit_code, target_exit_code, donor_crashed, target_crashed
-    global FILE_EXPLOIT_OUTPUT_A, FILE_EXPLOIT_OUTPUT_C
+    global FILE_EXPLOIT_OUTPUT_A, FILE_EXPLOIT_OUTPUT_C, crash_word_list
     FILE_EXPLOIT_OUTPUT_A = Common.DIRECTORY_OUTPUT + "/exploit-log-a"
     FILE_EXPLOIT_OUTPUT_C = Common.DIRECTORY_OUTPUT + "/exploit-log-c"
     Output.sub_title("executing exploits")
     Output.normal(Common.Project_A.path)
     donor_exit_code, donor_output = run_exploit(Common.VALUE_EXPLOIT_A, Common.Project_A.path, Common.VALUE_PATH_POC, FILE_EXPLOIT_OUTPUT_A)
-    crash_word_list = ["abort", "core dumped", "crashed"]
-    if any(crash_word in donor_output.lower() for crash_word in crash_word_list):
+    if any(crash_word in str(donor_output).lower() for crash_word in crash_word_list):
         donor_crashed = True
         Output.normal("\tprogram crashed with exit code " + str(donor_exit_code))
     else:
         if donor_exit_code != 0:
             Output.normal("\tprogram exited with exit code " + str(donor_exit_code))
+            Output.program_output(donor_output)
         else:
             error_exit("program did not crash!!")
 
     Output.normal(Common.Project_C.path)
     target_exit_code, target_output = run_exploit(Common.VALUE_EXPLOIT_C, Common.Project_C.path, Common.VALUE_PATH_POC, FILE_EXPLOIT_OUTPUT_C)
-    if any(crash_word in target_output.lower() for crash_word in crash_word_list):
+    if any(crash_word in str(target_output).lower() for crash_word in crash_word_list):
         target_crashed = True
         Output.normal("\tprogram crashed with exit code " + str(target_exit_code))
     else:
         if donor_exit_code != 0:
             Output.normal("\tprogram exited with exit code " + str(target_exit_code))
+            Output.program_output(target_output)
         else:
             error_exit("program did not crash!!")
 
@@ -83,7 +87,7 @@ def run_exploit(exploit, project_path, poc_path, output_file_path):
     with open(output_file_path, "r") as output_file:
         output = output_file.readlines()
     # output = subprocess.check_output(exploit_command.split(" "))
-    return int(process.returncode), str(output)
+    return int(process.returncode), output
 
 
 def extract_stack_info(trace_file_path):
@@ -257,9 +261,10 @@ def safe_exec(function_def, title, *args):
 
 def set_values():
     global FILE_TRACE_LOG_A, FILE_TRACE_LOG_B, FILE_TRACE_LOG_C
-    global FILE_EXPLOIT_OUTPUT_A, FILE_EXPLOIT_OUTPUT_C
+    global FILE_EXPLOIT_OUTPUT_A, FILE_EXPLOIT_OUTPUT_C, FILE_EXPLOIT_OUTPUT_D
     FILE_EXPLOIT_OUTPUT_A = Common.DIRECTORY_OUTPUT + "/exploit-log-a"
     FILE_EXPLOIT_OUTPUT_C = Common.DIRECTORY_OUTPUT + "/exploit-log-c"
+    FILE_EXPLOIT_OUTPUT_D = Common.DIRECTORY_OUTPUT + "/exploit-log-d"
     FILE_TRACE_LOG_A = Common.DIRECTORY_OUTPUT + "/trace-klee-pa"
     FILE_TRACE_LOG_B = Common.DIRECTORY_OUTPUT + "/trace-klee-pb"
     FILE_TRACE_LOG_C = Common.DIRECTORY_OUTPUT + "/trace-klee-pc"

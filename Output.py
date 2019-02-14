@@ -74,6 +74,11 @@ def success(message):
     Logger.output(message)
 
 
+def program_output(output_message):
+    for line in output_message:
+        write(line.strip(), GREY)
+
+
 def warning(message):
     if Common.DEBUG:
         write(message, YELLOW)

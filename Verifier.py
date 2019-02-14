@@ -27,13 +27,34 @@ def verify_compilation():
 def verify_exploit():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.normal(Common.Project_D.path)
-    exit_code = Tracer.run_exploit(Common.VALUE_EXPLOIT_C, Common.Project_D.path, Common.VALUE_PATH_POC, Tracer.FILE_EXPLOIT_OUTPUT_C)
-    if int(exit_code) == int(Tracer.target_exit_code):
-        error_exit("\tprogram crashed with exit code " + str(exit_code))
+    if Tracer.crash_location_c == "":
+        Builder.build_asan()
+        Output.sub_title("verifying exploits")
+        target_exit_code, target_output = Tracer.run_exploit(Common.VALUE_EXPLOIT_C,
+                                                             Common.Project_D.path,
+                                                             Common.VALUE_PATH_POC,
+                                                             Tracer.FILE_EXPLOIT_OUTPUT_D)
+
+        if any(crash_word in target_output.lower() for crash_word in Tracer.crash_word_list):
+            target_crashed = True
+            Output.normal("\tprogram crashed with exit code " + str(target_exit_code))
+        else:
+            if target_exit_code != 0:
+                Output.normal("\tprogram exited with exit code " + str(target_exit_code))
+            else:
+                error_exit("program did not crash!!")
+
     else:
-        Output.normal("\tprogram did not crash!!")
-        Output.normal("\t\tbefore transplantation exit code " + str(Tracer.target_exit_code))
-        Output.normal("\t\tafter transplantation exit code " + str(exit_code))
+        exit_code, output = Tracer.run_exploit(Common.VALUE_EXPLOIT_C,
+                                               Common.Project_D.path,
+                                               Common.VALUE_PATH_POC,
+                                               Tracer.FILE_EXPLOIT_OUTPUT_D)
+        if int(exit_code) == int(Tracer.target_exit_code):
+            error_exit("\tprogram crashed with exit code " + str(exit_code))
+        else:
+            Output.normal("\tprogram did not crash!!")
+            Output.normal("\t\tbefore transplantation exit code " + str(Tracer.target_exit_code))
+            Output.normal("\t\tafter transplantation exit code " + str(exit_code))
 
 
 def safe_exec(function_def, title, *args):
