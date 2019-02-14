@@ -67,14 +67,9 @@ def extract_h_file_list():
             Output.normal("\t\t\t" + h_file)
 
 
-def extract_var_name_list():
+def extract_diff_info():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal("\textracting variables in diff...")
-
-
-def extract_function_name_list():
-    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal("\textracting changed function names...")
+    Output.normal("\tcollecting diff info...")
     function_list = list()
     with open(FILE_DIFF_C, 'r') as diff_file:
         diff_line = diff_file.readline().strip()
@@ -162,76 +157,6 @@ def extract_c_file_list():
     return file_list
 
 
-def generate_diff():
-    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    find_diff_files()
-    extract_h_file_list()
-    extract_c_file_list()
-    extract_function_name_list()
-    extract_var_name_list()
-
-
-def generate_vector_for_extension(file_extension, output, is_header=False):
-    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal("Generate vectors for " + file_extension + " files in " + Common.Project_C.name + "...")
-    # Generates an AST file for each file of extension ext
-    find_files(Common.Project_C.path, file_extension, output)
-    with open(output, 'r') as file_list:
-        file_name = file_list.readline().strip()
-        while file_name:
-            # Parses it to get useful information and generate vectors
-            try:
-                Generator.parseAST(file_name, Common.Project_C, use_deckard=True, is_header=is_header)
-            except Exception as e:
-                error_exit(e, "Unexpected error in parseAST with file:", file_name)
-            file_name = file_list.readline().strip()
-
-
-def generate_vectors():
-    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    # Generates an vector file for each .h file
-    generate_vector_for_extension("*\.h", "output/Hfiles", is_header=True)
-    Output("\n")
-    # Generates an vector file for each .c file
-    generate_vector_for_extension("*\.c", "output/Cfiles", is_header=False)
-
-
-def get_vector_list(project, extension):
-    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    if "c" in extension:
-        rxt = "C"
-    else:
-        rxt = "h"
-
-    Output.normal("Getting vectors for " + rxt + " files in " + project.name + "...")
-    filepath = "output/vectors_" + rxt + "_" + project.name
-    find_files(project.path, extension, filepath)
-    with open(filepath, "r", errors='replace') as file:
-        files = [vec.strip() for vec in file.readlines()]
-    vecs = []
-    for i in range(len(files)):
-        with open(files[i], 'r', errors='replace') as vec:
-            fl = vec.readline()
-            if fl:
-                v = [int(s) for s in vec.readline().strip().split(" ")]
-                v = Vector.Vector.normed(v)
-                vecs.append((files[i], v))
-    return vecs
-
-
-def generate_ast_map(source_a, source_b):
-    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    command = Common.DIFF_COMMAND + "-dump-matches " + source_a + " " + source_b
-    if source_a[-1] == "h":
-        command += " --"
-    command += " 2>> output/errors_clang_diff"
-    command += "| grep -P '^Match ' | grep -P '^Match ' > output/ast-map"
-    try:
-        execute_command(command, False)
-    except Exception as exception:
-        error_exit(exception, "Unexpected error in generate_ast_map.")
-
-
 def generate_ast_script(source_a, source_b, dump_matches=False):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     extra_args = " "
@@ -258,53 +183,10 @@ def get_ast_mapping(source_a, source_b):
     return mapping
 
 
-def get_ast_script(source_a, source_b):
-    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    generate_ast_script(source_a, source_b)
-    with open(FILE_AST_SCRIPT, "r") as script_file:
-        script_lines = script_file.readlines()
-        return script_lines
-
-
-def id_from_string(simplestring):
-    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    return int(simplestring.split("(")[-1][:-1])
-
-
-def clean_parse(content, separator):
-    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    if content.count(separator) == 1:
-        return content.split(separator)
-    i = 0
-    while i < len(content):
-        if content[i] == "\"":
-            i += 1
-            while i < len(content) - 1:
-                if content[i] == "\\":
-                    i += 2
-                elif content[i] == "\"":
-                    i += 1
-                    break
-                else:
-                    i += 1
-            prefix = content[:i]
-            rest = content[i:].split(separator)
-            node1 = prefix + rest[0]
-            node2 = separator.join(rest[1:])
-            return [node1, node2]
-        i += 1
-    # If all the above fails (it shouldn't), hope for some luck:
-    nodes = content.split(separator)
-    half = len(nodes) // 2
-    node1 = separator.join(nodes[:half])
-    node2 = separator.join(nodes[half:])
-    return [node1, node2]
-
-
 def safe_exec(function_def, title, *args):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     start_time = time.time()
-    Output.sub_title("starting " + title + "...")
+    Output.sub_title(title)
     description = title[0].lower() + title[1:]
     try:
         Logger.information("running " + str(function_def))
@@ -336,8 +218,26 @@ def set_values():
     FILE_AST_DIFF_ERROR = Common.DIRECTORY_OUTPUT + "/errors_ast_diff"
 
 
+def collect_source_diff():
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    find_diff_files()
+    extract_h_file_list()
+    extract_c_file_list()
+    extract_diff_info()
+
+
+def collect_ast_diff():
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    find_diff_files()
+    extract_h_file_list()
+    extract_c_file_list()
+    extract_diff_info()
+
+
 def diff():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.title("Locating changed functions")
+    Output.title("Analysing diff")
     set_values()
-    safe_exec(generate_diff, "search for changed functions")
+    safe_exec(collect_source_diff, "collecting source diff")
+    safe_exec(collect_ast_diff, "collecting ast diff")
+    exit(1)

@@ -74,6 +74,11 @@ def success(message):
     Logger.output(message)
 
 
+def special(message):
+    write(message, ROSE)
+    Logger.output(message)
+
+
 def program_output(output_message):
     for line in output_message:
         write(line.strip(), GREY)
