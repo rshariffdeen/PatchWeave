@@ -10,7 +10,6 @@ from Utilities import execute_command, error_exit, get_file_extension_list
 import Output
 import Common
 import Generator
-import Vector
 import Logger
 import Mapper
 import Filter

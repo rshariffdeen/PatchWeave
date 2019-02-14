@@ -2,25 +2,11 @@
 # -*- coding: utf-8 -*-
 
 
-import sys, os
-sys.path.append('./ast/')
-import time
-from Utilities import execute_command, error_exit, backup_file, restore_file, extract_bitcode, reset_git, is_intersect
-from six.moves import cStringIO
-from pysmt.smtlib.parser import SmtLibParser
-from pysmt.shortcuts import get_model
-import Output
-import Common
+import sys
 import Logger
-import Mapper
-import Concolic
-import Generator
-import Builder
-import Weaver
-import collections
-import Differ
-import z3
-import Searcher
+import Finder
+import Output
+import Extractor
 
 
 def merge_ast_script(ast_script, ast_node_a, ast_node_b, mapping_ba):
@@ -42,15 +28,15 @@ def merge_ast_script(ast_script, ast_node_a, ast_node_b, mapping_ba):
             node_id = int((script_line.split("(")[1]).split(")")[0])
             if node_id in deleted_node_list:
                 continue
-            node = Searcher.get_ast_node_by_id(ast_node_a, node_id)
-            child_id_list = Searcher.get_child_id_list(node)
+            node = Finder.search_ast_node_by_id(ast_node_a, node_id)
+            child_id_list = Extractor.extract_child_id_list(node)
             deleted_node_list = deleted_node_list + child_id_list
             merged_ast_script.append(script_line)
         elif "Move" in script_line:
             move_position = int((script_line.split(" at ")[1]))
             move_node_str = (script_line.split(" into ")[0]).replace("Move ", "")
             move_node_id = int((move_node_str.split("(")[1]).split(")")[0])
-            move_node = Searcher.get_ast_node_by_id(ast_node_b, move_node_id)
+            move_node = Finder.search_ast_node_by_id(ast_node_b, move_node_id)
             move_node_type = move_node['type']
             if move_node_type == "CaseStmt":
                 continue
@@ -58,7 +44,7 @@ def merge_ast_script(ast_script, ast_node_a, ast_node_b, mapping_ba):
             if target_node_id_b in inserted_node_list:
                 continue
             target_node_id_a = mapping_ba[target_node_id_b]
-            target_node_a = Searcher.get_ast_node_by_id(ast_node_a, target_node_id_a)
+            target_node_a = Finder.search_ast_node_by_id(ast_node_a, target_node_id_a)
             replacing_node = target_node_a['children'][move_position]
             replacing_node_id = replacing_node['id']
             replacing_node_str = replacing_node['type'] + "(" + str(replacing_node['id']) + ")"
@@ -66,7 +52,7 @@ def merge_ast_script(ast_script, ast_node_a, ast_node_b, mapping_ba):
 
             merged_ast_script.append(script_line)
             deleted_node_list.append(replacing_node_id)
-            child_id_list = Searcher.get_child_id_list(replacing_node)
+            child_id_list = Extractor.extract_child_id_list(replacing_node)
             deleted_node_list = deleted_node_list + child_id_list
     return merged_ast_script
 
@@ -74,8 +60,8 @@ def merge_ast_script(ast_script, ast_node_a, ast_node_b, mapping_ba):
 def filter_ast_script(ast_script, info_a, info_b, mapping_ba):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.normal("\t\tfiltering AST script")
-    source_path_a, line_range_a,  ast_node_a = info_a
-    source_path_b, line_range_b,  ast_node_b = info_b
+    source_path_a, line_range_a, ast_node_a = info_a
+    source_path_b, line_range_b, ast_node_b = info_b
     filtered_ast_script = list()
     line_range_start_a, line_range_end_a = line_range_a
     line_range_start_b, line_range_end_b = line_range_b
@@ -86,7 +72,7 @@ def filter_ast_script(ast_script, info_a, info_b, mapping_ba):
     for script_line in merged_ast_script:
         if "Insert" in script_line:
             node_id_b = int(((script_line.split(" into ")[0]).split("(")[1]).split(")")[0])
-            node_b = Searcher.get_ast_node_by_id(ast_node_b, node_id_b)
+            node_b = Finder.search_ast_node_by_id(ast_node_b, node_id_b)
             node_type_b = node_b['type']
             node_line_start = int(node_b['start line'])
             node_line_end = int(node_b['end line']) + 1
@@ -107,7 +93,7 @@ def filter_ast_script(ast_script, info_a, info_b, mapping_ba):
                     filtered_ast_script.append(script_line)
         elif "Delete" in script_line:
             node_id_a = int((script_line.split("(")[1]).split(")")[0])
-            node_a = Searcher.get_ast_node_by_id(ast_node_a, node_id_a)
+            node_a = Finder.search_ast_node_by_id(ast_node_a, node_id_a)
             node_line_start = int(node_a['start line'])
             node_line_end = int(node_a['end line']) + 1
             node_line_numbers = set(range(node_line_start, node_line_end))
@@ -116,7 +102,7 @@ def filter_ast_script(ast_script, info_a, info_b, mapping_ba):
                 filtered_ast_script.append(script_line)
         elif "Replace" in script_line:
             node_id_a = int(((script_line.split(" with ")[0]).split("(")[1]).split(")")[0])
-            node_a = Searcher.get_ast_node_by_id(ast_node_a, node_id_a)
+            node_a = Finder.search_ast_node_by_id(ast_node_a, node_id_a)
             node_line_start = int(node_a['start line'])
             node_line_end = int(node_a['end line']) + 1
             node_line_numbers = set(range(node_line_start, node_line_end))
@@ -129,8 +115,8 @@ def filter_ast_script(ast_script, info_a, info_b, mapping_ba):
 def filter_ast_script_by_line(ast_script, info_a, info_b, mapping_ba, skip_lines):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.normal("\t\tfiltering AST script")
-    source_path_a, line_range_a,  ast_node_a = info_a
-    source_path_b, line_range_b,  ast_node_b = info_b
+    source_path_a, line_range_a, ast_node_a = info_a
+    source_path_b, line_range_b, ast_node_b = info_b
     filtered_ast_script = list()
     line_range_start_a, line_range_end_a = line_range_a
     line_range_start_b, line_range_end_b = line_range_b
@@ -140,7 +126,7 @@ def filter_ast_script_by_line(ast_script, info_a, info_b, mapping_ba, skip_lines
     for script_line in ast_script:
         if "Insert" in script_line:
             node_id_b = int(((script_line.split(" into ")[0]).split("(")[1]).split(")")[0])
-            node_b = Searcher.get_ast_node_by_id(ast_node_b, node_id_b)
+            node_b = Finder.search_ast_node_by_id(ast_node_b, node_id_b)
             node_type_b = node_b['type']
             node_line_start = int(node_b['start line'])
             node_line_end = int(node_b['end line']) + 1

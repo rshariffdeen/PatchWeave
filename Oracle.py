@@ -7,7 +7,7 @@ sys.path.append('./ast/')
 import Logger
 import Generator
 import Converter
-import Searcher
+import Finder
 import Extractor
 
 
@@ -54,7 +54,7 @@ def is_function_important(source_path, function_call_node, sym_path_list):
     ast_tree = Generator.get_ast_json(source_path)
     function_ref_node = function_call_node['children'][0]
     function_name = function_ref_node['value']
-    function_def_node = Searcher.search_function_node_by_name(ast_tree, function_name)
+    function_def_node = Finder.search_function_node_by_name(ast_tree, function_name)
     function_node, file_path = Extractor.extract_complete_function_node(function_def_node, source_path)
     file_path = os.path.abspath(file_path)
     start_line = function_node['start line']
