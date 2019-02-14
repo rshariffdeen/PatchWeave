@@ -144,19 +144,21 @@ def is_intersect(start, end, start2, end2):
 
 def generate_ast_script(source_a, source_b, dump_matches=False):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    command = Common.DIFF_COMMAND + "-dump-matches " + source_a + " " + source_b
     extra_args = " "
     if dump_matches:
         extra_args = " -dump-matches "
     generate_command = APP_AST_DIFF + " -s=" + AST_DIFF_SIZE + extra_args
     generate_command += source_a + " " + source_b
     if source_a[-1] == "h":
-        command += " --"
+        generate_command += " --"
     generate_command += " 2> " + Differ.FILE_AST_DIFF_ERROR
-    generate_command += " | grep -P '^Match ' | grep -P '^Match ' > " + Differ.FILE_AST_SCRIPT
+    if dump_matches:
+        generate_command += " | grep -P '^Match ' | grep -P '^Match '"
+    generate_command += " > " + Differ.FILE_AST_SCRIPT
 
     try:
-        execute_command(command, False)
+        # print(generate_command)
+        execute_command(generate_command, False)
     except Exception as exception:
         error_exit(exception, "Unexpected error in generate_ast_script.")
 

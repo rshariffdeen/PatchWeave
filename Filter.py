@@ -12,6 +12,7 @@ from pysmt.shortcuts import get_model
 import Output
 import Common
 import Logger
+import Mapper
 import Concolic
 import Generator
 import Builder
@@ -21,11 +22,10 @@ import Differ
 import z3
 import Searcher
 
-mapping_ba = dict()
 
-
-def merge_ast_script(ast_script, ast_node_a, ast_node_b):
+def merge_ast_script(ast_script, ast_node_a, ast_node_b, mapping_ba):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    Output.normal("\t\tmerging AST script")
     merged_ast_script = list()
     inserted_node_list = list()
     deleted_node_list = list()
@@ -71,14 +71,17 @@ def merge_ast_script(ast_script, ast_node_a, ast_node_b):
     return merged_ast_script
 
 
-def filter_ast_script(ast_script, line_range_a, line_range_b, ast_node_a, ast_node_b):
+def filter_ast_script(ast_script, info_a, info_b, mapping_ba):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    Output.normal("\t\tfiltering AST script")
+    source_path_a, line_range_a,  ast_node_a = info_a
+    source_path_b, line_range_b,  ast_node_b = info_b
     filtered_ast_script = list()
     line_range_start_a, line_range_end_a = line_range_a
     line_range_start_b, line_range_end_b = line_range_b
     line_numbers_a = set(range(int(line_range_start_a), int(line_range_end_a) + 1))
     line_numbers_b = set(range(int(line_range_start_b), int(line_range_end_b) + 1))
-    merged_ast_script = merge_ast_script(ast_script, ast_node_a, ast_node_b)
+    merged_ast_script = merge_ast_script(ast_script, ast_node_a, ast_node_b, mapping_ba)
     # print(merged_ast_script)
     for script_line in merged_ast_script:
         if "Insert" in script_line:

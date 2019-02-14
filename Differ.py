@@ -179,43 +179,54 @@ def collect_source_diff():
     extract_diff_info()
 
 
-def extract_ast_script(diff_info, diff_loc):
-    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    source_path_a, line_number_a = diff_loc.split(":")
-    source_path_b = str(source_path_a).replace(Common.VALUE_PATH_A, Common.VALUE_PATH_B)
-    ast_script = get_ast_script(source_path_a, source_path_b)
-    operation = diff_info['operation']
-    ast_map_a = Generator.get_ast_json(source_path_a)
-    ast_map_b = Generator.get_ast_json(source_path_b)
-    mapping_ba = Mapper.get_ast_mapping(source_path_a, source_path_b)
-    if operation == 'insert':
-        start_line_b, end_line_b = diff_info['new-lines']
-        line_range_b = (start_line_b, end_line_b)
-        line_range_a = (-1, -1)
-        filtered_ast_script = Filter.filter_ast_script(ast_script,
-                                                       line_range_a,
-                                                       line_range_b,
-                                                       ast_map_a,
-                                                       ast_map_b
-                                                       )
-    elif operation == 'modify':
-        line_range_a = diff_info['old-lines']
-        line_range_b = diff_info['new-lines']
-        filtered_ast_script = Filter.filter_ast_script(ast_script,
-                                                       line_range_a,
-                                                       line_range_b,
-                                                       ast_map_a,
-                                                       ast_map_b
-                                                       )
-
-
 def collect_ast_diff():
     global diff_info
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    source_path_a = ""
+    line_number_a = ""
+    source_path_b = ""
+    ast_script = ""
+    ast_map_a = ""
+    ast_map_b = ""
+    mapping_ba = ""
     for diff_loc in diff_info.keys():
         Output.normal("\t" + diff_loc)
-        diff_info = diff_info[diff_loc]
-        extract_ast_script(diff_info, diff_loc)
+        source_path, line_number = diff_loc.split(":")
+        if source_path != source_path_a:
+            source_path_a = source_path
+            line_number_a = line_number
+            source_path_b = str(source_path_a).replace(Common.VALUE_PATH_A, Common.VALUE_PATH_B)
+            ast_script = get_ast_script(source_path_a, source_path_b)
+            ast_map_a = Generator.get_ast_json(source_path_a)
+            ast_map_b = Generator.get_ast_json(source_path_b)
+            mapping_ba = Mapper.get_ast_mapping(source_path_a, source_path_b)
+        diff_loc_info = diff_info[diff_loc]
+        operation = diff_loc_info['operation']
+        filtered_ast_script = list()
+        if operation == 'insert':
+            start_line_b, end_line_b = diff_loc_info['new-lines']
+            line_range_b = (start_line_b, end_line_b)
+            line_range_a = (-1, -1)
+            info_a = (source_path_a, line_range_a, ast_map_a)
+            info_b = (source_path_b, line_range_b, ast_map_b)
+            filtered_ast_script = Filter.filter_ast_script(ast_script,
+                                                           info_a,
+                                                           info_b,
+                                                           mapping_ba
+                                                           )
+        elif operation == 'modify':
+            line_range_a = diff_loc_info['old-lines']
+            line_range_b = diff_loc_info['new-lines']
+            info_a = (source_path_a, line_range_a, ast_map_a)
+            info_b = (source_path_b, line_range_b, ast_map_b)
+            filtered_ast_script = Filter.filter_ast_script(ast_script,
+                                                           info_a,
+                                                           info_b,
+                                                           mapping_ba
+                                                           )
+        # print(diff_loc)
+        # print(filtered_ast_script)
+        diff_info[diff_loc]['ast-script'] = filtered_ast_script
 
 
 def set_values():
