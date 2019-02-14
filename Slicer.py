@@ -16,38 +16,8 @@ import Differ
 import Concolic
 import Tracer
 import Weaver
+import Filter
 
-
-def is_function_important(source_path, function_call_node):
-    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    ast_tree = Generator.get_ast_json(source_path)
-    function_ref_node = function_call_node['children'][0]
-    function_name = function_ref_node['value']
-    function_node_id = Weaver.get_function_node_id(ast_tree, function_name)
-    function_def_node = Weaver.get_ast_node_by_id(ast_tree, int(function_node_id))
-    function_node, file_path = Weaver.get_complete_function_node(function_def_node, source_path)
-    file_path = os.path.abspath(file_path)
-    start_line = function_node['start line']
-    end_line = function_node['end line']
-    line_numbers = set(range(int(start_line), int(end_line) + 1))
-    for line_number in line_numbers:
-        loc_id = file_path + ":" + str(line_number)
-        if loc_id in Concolic.sym_path_b.keys():
-            return True
-    return False
-
-
-def get_function_call_lines(source_file, line_number):
-    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    line_list = dict()
-    ast_tree = Generator.get_ast_json(source_file)
-    function_node = Weaver.get_fun_node(ast_tree, int(line_number), source_file)
-    if function_node is None:
-        return line_list
-    call_node_list = Weaver.extract_function_calls(function_node)
-    for call_node in call_node_list:
-        line_list[call_node['start line']] = call_node
-    return line_list
 
 
 def get_declaration_lines(ast_node):

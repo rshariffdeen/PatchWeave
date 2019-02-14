@@ -6,7 +6,7 @@ import sys
 
 sys.path.append('./ast/')
 import time
-from Utilities import execute_command, error_exit, find_files, get_file_extension_list
+from Utilities import execute_command, error_exit, get_file_extension_list
 import Output
 import Common
 import Generator
@@ -251,4 +251,3 @@ def diff():
     set_values()
     safe_exec(collect_source_diff, "collecting source diff")
     safe_exec(collect_ast_diff, "collecting ast diff")
-    exit(1)

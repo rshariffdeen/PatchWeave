@@ -5,7 +5,7 @@
 import sys, os
 sys.path.append('./ast/')
 import time
-from Utilities import execute_command, error_exit, backup_file, show_partial_diff, get_file_list, get_code
+from Utilities import execute_command, error_exit, backup_file, show_partial_diff, get_code
 import Output
 import Common
 import Logger
@@ -46,18 +46,6 @@ FILE_AST_SCRIPT = ""
 FILE_TEMP_FIX = ""
 FILE_MACRO_DEF = ""
 FILENAME_BACKUP = "temp-source"
-
-
-def extract_source_list(trace_list):
-    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal("\t\tcollecting source file list from trace ...")
-    source_list = list()
-    for trace_line in trace_list:
-        source_path, line_number = str(trace_line).split(":")
-        source_path = source_path.strip()
-        if source_path not in source_list:
-            source_list.append(source_path)
-    return source_list
 
 
 def get_function_map(source_list):
@@ -324,8 +312,6 @@ def get_node_str(ast_node):
     return node_str
 
 
-
-
 def output_var_map(var_map):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     content = ""
@@ -428,18 +414,6 @@ def extract_decl_list(ast_node):
 #             if child_node_identifier == definition:
 #                 return True
 #     return False
-
-
-def get_function_node_id(ast_node, function_name):
-    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    function_id = -1
-    for child_node in ast_node['children']:
-        child_node_type = child_node['type']
-        if child_node_type == "FunctionDecl":
-            child_node_identifier = child_node['identifier']
-            if child_node_identifier == function_name:
-                function_id = int(child_node['id'])
-    return function_id
 
 
 def identify_missing_functions(ast_node, source_path_b, source_path_d, skip_list):
@@ -615,35 +589,6 @@ def transplant_missing_macros():
         insert_patch(transplant_code, target_file, def_insert_line)
         backup_file_path = Common.DIRECTORY_BACKUP + "/" + FILENAME_BACKUP
         show_partial_diff(backup_file_path, target_file)
-
-
-def get_complete_function_node(function_def_node, source_path):
-    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    source_dir = "/".join(source_path.split("/")[:-1])
-    if len(function_def_node['children']) > 1:
-        source_file_loc = source_dir + "/" + function_def_node['file']
-        source_file_loc = os.path.abspath(source_file_loc)
-        return function_def_node, source_file_loc
-    else:
-        header_file_loc = source_dir + "/" + function_def_node['file']
-        function_name = function_def_node['identifier']
-        source_file_loc = header_file_loc.replace(".h", ".c")
-        source_file_loc = os.path.abspath(source_file_loc)
-        if not os.path.exists(source_file_loc):
-            source_file_name = source_file_loc.split("/")[-1]
-            header_file_dir = "/".join(source_file_loc.split("/")[:-1])
-            search_dir = os.path.dirname(header_file_dir)
-            while not os.path.exists(source_file_loc):
-                search_dir_file_list = get_file_list(search_dir)
-                for file_name in search_dir_file_list:
-                    if source_file_name in file_name and file_name[-2:] == ".c":
-                        source_file_loc = file_name
-                        break
-                search_dir = os.path.dirname(search_dir)
-        ast_tree = Generator.get_ast_json(source_file_loc)
-        function_node_id = get_function_node_id(ast_tree, function_name)
-        function_node = get_ast_node_by_id(ast_tree, function_node_id)
-        return function_node, source_file_loc
 
 
 def transplant_missing_functions():
