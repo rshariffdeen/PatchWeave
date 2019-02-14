@@ -3,6 +3,7 @@
 
 
 import sys, os
+import subprocess
 sys.path.append('./ast/')
 import time
 from Utilities import execute_command, error_exit, extract_bitcode
@@ -11,24 +12,15 @@ import Common
 import Logger
 import Builder
 
+
 SYMBOLIC_ENGINE = "klee --posix-runtime --libc=uclibc --print-trace --print-stack "
 
+FILE_EXPLOIT_OUTPUT_A = ""
+FILE_EXPLOIT_OUTPUT_C = ""
+FILE_TRACE_LOG_A = ""
+FILE_TRACE_LOG_B = ""
+FILE_TRACE_LOG_C = ""
 
-FILE_VALGRIND_OUTPUT = Common.DIRECTORY_OUTPUT + "/output-valgrind"
-FILE_VALGRIND_ERROR = Common.DIRECTORY_OUTPUT + "/error-valgrind"
-FILE_CALLGRIND_OUTPUT = Common.DIRECTORY_OUTPUT + "/output-callgrind"
-FILE_CALLGRIND_ERROR = Common.DIRECTORY_OUTPUT + "/error-callgrind"
-
-FILE_VALGRIND_LOG_A = Common.DIRECTORY_OUTPUT + "/callgrind-pa"
-FILE_VALGRIND_LOG_B = Common.DIRECTORY_OUTPUT + "/callgrind-pb"
-FILE_VALGRIND_LOG_C = Common.DIRECTORY_OUTPUT + "/callgrind-pc"
-
-FILE_EXPLOIT_OUTPUT_A = Common.DIRECTORY_OUTPUT + "/exploit-a"
-FILE_EXPLOIT_OUTPUT_C = Common.DIRECTORY_OUTPUT + "/exploit-c"
-
-FILE_TRACE_LOG_A = Common.DIRECTORY_OUTPUT + "/trace-klee-pa"
-FILE_TRACE_LOG_B = Common.DIRECTORY_OUTPUT + "/trace-klee-pb"
-FILE_TRACE_LOG_C = Common.DIRECTORY_OUTPUT + "/trace-klee-pc"
 
 list_trace_a = list()
 list_trace_b = list()
@@ -42,32 +34,55 @@ divergent_location_list = list()
 crash_location_c = ""
 donor_exit_code = ""
 target_exit_code = ""
+donor_crashed = False
+target_crashed = False
+
+target_suspect_line_list = list()
+donor_suspect_line_list = list()
 
 
 def test_exploits():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    global donor_exit_code, target_exit_code
+    global donor_exit_code, target_exit_code, donor_crashed, target_crashed
     Output.normal(Common.Project_A.path)
-    donor_exit_code = run_exploit(Common.VALUE_EXPLOIT_A, Common.Project_A.path, Common.VALUE_PATH_POC, FILE_EXPLOIT_OUTPUT_A)
-    if donor_exit_code != 0:
+    donor_exit_code, donor_output = run_exploit(Common.VALUE_EXPLOIT_A, Common.Project_A.path, Common.VALUE_PATH_POC, FILE_EXPLOIT_OUTPUT_A)
+    crash_word_list = ["abort", "core dumped", "crashed"]
+    if any(crash_word in donor_output.lower() for crash_word in crash_word_list):
+        donor_crashed = True
         Output.normal("\tprogram crashed with exit code " + str(donor_exit_code))
     else:
-        error_exit("program did not crash!!")
+        if donor_exit_code != 0:
+            Output.normal("\tprogram exited with exit code " + str(donor_exit_code))
+        else:
+            error_exit("program did not crash!!")
 
     Output.normal(Common.Project_C.path)
-    target_exit_code = run_exploit(Common.VALUE_EXPLOIT_C, Common.Project_C.path, Common.VALUE_PATH_POC, FILE_EXPLOIT_OUTPUT_C)
-    if target_exit_code != 0:
+    target_exit_code, target_output = run_exploit(Common.VALUE_EXPLOIT_C, Common.Project_C.path, Common.VALUE_PATH_POC, FILE_EXPLOIT_OUTPUT_C)
+    if any(crash_word in target_output.lower() for crash_word in crash_word_list):
+        target_crashed = True
         Output.normal("\tprogram crashed with exit code " + str(target_exit_code))
     else:
-        error_exit("program did not crash!!")
+        if donor_exit_code != 0:
+            Output.normal("\tprogram exited with exit code " + str(target_exit_code))
+        else:
+            error_exit("program did not crash!!")
+
+    exit(1)
 
 
-def run_exploit(exploit, project_path, poc_path, output_file):
+def run_exploit(exploit, project_path, poc_path, output_file_path):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     exploit = str(exploit).replace('$POC', poc_path)
-    exploit_command = project_path + exploit + " > " + output_file
+    exploit_command = project_path + exploit + " > " + output_file_path + " 2>&1"
     # print(exploit_command)
-    return execute_command(exploit_command)
+    # Print executed command and execute it in console
+    Output.command(exploit_command)
+    process = subprocess.Popen([exploit_command], shell=True)
+    output, error = process.communicate()
+    with open(output_file_path, "r") as output_file:
+        output = output_file.readlines()
+    # output = subprocess.check_output(exploit_command.split(" "))
+    return int(process.returncode), str(output)
 
 
 def extract_stack_info(trace_file_path):

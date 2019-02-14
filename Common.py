@@ -62,6 +62,7 @@ CONF_FLAGS_A = "build_flags_a:"
 CONF_FLAGS_C = "build_flags_c:"
 CONF_PATH_POC = "path_poc:"
 CONF_EXPLOIT_PREPARE = "pre_exploit:"
+CONF_ASAN_FLAG = "asan_flag:"
 
 # ------------------ Configuration Values ---------------
 VALUE_PATH_A = ""
@@ -75,6 +76,7 @@ VALUE_BUILD_COMMAND_A = ""
 VALUE_BUILD_COMMAND_C = ""
 VALUE_PATH_POC = ""
 VALUE_EXPLOIT_PREPARE = ""
+VALUE_ASAN_FLAG = ""
 
 # ----------------- KEY DEFINITIONS -------------------
 

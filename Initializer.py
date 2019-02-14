@@ -102,6 +102,8 @@ def read_conf():
             Common.VALUE_BUILD_COMMAND_A = configuration.replace(Common.CONF_BUILD_COMMAND_A, '')
         elif Common.CONF_BUILD_COMMAND_C in configuration:
             Common.VALUE_BUILD_COMMAND_C = configuration.replace(Common.CONF_BUILD_COMMAND_C, '')
+        elif Common.CONF_ASAN_FLAG in configuration:
+            Common.VALUE_ASAN_FLAG = configuration.replace(Common.CONF_ASAN_FLAG, '')
 
 
 def initialize():
