@@ -271,5 +271,3 @@ def trace():
     set_values()
     safe_exec(generate_trace_donor, "generating trace information from donor program")
     safe_exec(generate_trace_target, "generating trace information from target program")
-    print(target_suspect_line_list)
-    print(donor_suspect_line_list)

@@ -27,13 +27,18 @@ def write(print_message, print_color, new_line=True):
 
 
 def title(title):
-    write("_"*100 + "\n\n\t" + title + "\n" + "_"*100+"\n", CYAN)
+    write("_"*100 + "\n\n\t" + title + "\n" + "="*100+"\n", CYAN)
     Logger.information(title)
 
 
 def sub_title(subtitle):
-    write("\n\t" + subtitle + "\n\t" + "-"*90+"\n", CYAN)
+    write("\n\t" + subtitle + "\n\t" + "_"*90+"\n", CYAN)
     Logger.information(subtitle)
+
+
+def sub_sub_title(sub_title):
+    write("\n\t\t" + sub_title + "\n\t\t" + "-"*90+"\n", CYAN)
+    Logger.information(sub_title)
 
 
 def command(message):
