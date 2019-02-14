@@ -59,6 +59,11 @@ def read_variable_name(source_path, start_pos, end_pos):
 def instrument_code_for_klee(source_path, start_line, end_line, only_in_range):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.normal("\t\tinstrumenting source code")
+    if not only_in_range:
+        syntax_format_command = "clang-tidy " + source_path + " -fix -checks=\"readability-braces-around-statements\""
+        ret_code = execute_command(syntax_format_command)
+        if int(ret_code) != 0:
+            error_exit("SYNTAX FORMAT ERROR IN INSTRUMENTATION")
     variable_list = generate_available_variable_list(source_path, start_line, end_line, only_in_range)
     insert_code = dict()
     instrument_code = ""
@@ -90,10 +95,13 @@ def instrument_code_for_klee(source_path, start_line, end_line, only_in_range):
     with open(source_path, 'w') as source_file:
         source_file.writelines(content)
 
-    syntax_fix_command = "clang-tidy --fix-errors " + source_path
-    ret_code = execute_command(syntax_fix_command)
-    if int(ret_code) != 0:
-        error_exit("SYNTAX ERROR IN INSTRUMENTATION")
+    ret_code = 1
+    while ret_code != 0:
+        syntax_fix_command = "clang-tidy --fix-errors " + source_path
+        execute_command(syntax_fix_command)
+        syntax_check_command = "clang-tidy " + source_path
+        ret_code = int(execute_command(syntax_check_command))
+
 
 def collect_var_dec_list(ast_node, start_line, end_line, only_in_range):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
@@ -279,6 +287,8 @@ def generate_available_variable_list(source_path, start_line, end_line, only_in_
     variable_list = list()
     ast_map = Generator.get_ast_json(source_path)
     func_node = Weaver.get_fun_node(ast_map, int(end_line), source_path)
+    if func_node is None:
+        return variable_list
     # print(source_path, start_line, end_line)
     compound_node = func_node['children'][1]
     if not only_in_range:
