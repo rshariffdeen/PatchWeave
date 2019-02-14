@@ -418,15 +418,15 @@ def merge_ast_script(ast_script, ast_node_a, ast_node_b):
     merged_ast_script = list()
     inserted_node_list = list()
     deleted_node_list = list()
-    # print(ast_script)
+    print(ast_script)
     for script_line in ast_script:
-        # print(script_line)
+        print(script_line)
         if "Insert" in script_line:
-            node_id_1 = int(((script_line.split(" into ")[0]).split("(")[1]).split(")")[0])
-            node_id_2 = int(((script_line.split(" into ")[1]).split("(")[1]).split(")")[0])
-            if node_id_2 not in inserted_node_list:
+            node_id_a = int(((script_line.split(" into ")[0]).split("(")[1]).split(")")[0])
+            node_id_b = int(((script_line.split(" into ")[1]).split("(")[1]).split(")")[0])
+            if node_id_b not in inserted_node_list:
                 merged_ast_script.append(script_line)
-            inserted_node_list.append(node_id_1)
+            inserted_node_list.append(node_id_a)
         elif "Delete" in script_line:
             node_id = int((script_line.split("(")[1]).split(")")[0])
             if node_id in deleted_node_list:
@@ -439,9 +439,14 @@ def merge_ast_script(ast_script, ast_node_a, ast_node_b):
             move_position = int((script_line.split(" at ")[1]))
             move_node_str = (script_line.split(" into ")[0]).replace("Move ", "")
             move_node_id = int((move_node_str.split("(")[1]).split(")")[0])
+            move_node = get_ast_node_by_id(ast_node_b, move_node_id)
+            move_node_type = move_node['type']
+            if move_node_type == "CaseStmt":
+                continue
             target_node_id_b = int(((script_line.split(" into ")[1]).split("(")[1]).split(")")[0])
             if target_node_id_b in inserted_node_list:
                 continue
+
             target_node_id_a = mapping_ba[target_node_id_b]
             target_node_a = get_ast_node_by_id(ast_node_a, target_node_id_a)
             replacing_node = target_node_a['children'][move_position]
