@@ -10,7 +10,6 @@ from Utilities import execute_command, error_exit, extract_bitcode
 import Output
 import Common
 import Logger
-import Builder
 
 
 SYMBOLIC_ENGINE = "klee --posix-runtime --libc=uclibc --print-trace --print-stack "
@@ -132,6 +131,7 @@ def extract_suspicious_points(trace_log):
             for read_line in trace_file:
                 if "runtime error:" in read_line:
                     crash_location = read_line.split(": runtime error: ")[0]
+                    crash_location = ":".join(crash_location.split(":")[:-1])
                     if crash_location not in suspect_list:
                         suspect_list.append(crash_location)
     return suspect_list
@@ -148,7 +148,7 @@ def trace_exploit(exploit_command, binary_path, binary_name, log_path):
     execute_command(trace_command)
 
 
-def collect_trace(file_path, project_path):
+def collect_trace(file_path, project_path, suspicious_loc_list):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.normal("\tcollecting trace")
     list_trace = list()
@@ -161,6 +161,8 @@ def collect_trace(file_path, project_path):
                         trace_line = trace_line.strip()
                         if (not list_trace) or (list_trace[-1] != trace_line):
                             list_trace.append(trace_line)
+                        if any(loc in line for loc in suspicious_loc_list):
+                            break
     return list_trace
 
 
@@ -173,17 +175,17 @@ def generate_trace_donor():
     if not Common.NO_SYM_TRACE_GEN:
         binary_path, binary_name = extract_bitcode(Common.VALUE_PATH_A + Common.VALUE_EXPLOIT_A.split(" ")[0])
         trace_exploit(" ".join(Common.VALUE_EXPLOIT_A.split(" ")[1:]), binary_path, binary_name, FILE_TRACE_LOG_A)
-    list_trace_a = collect_trace(FILE_TRACE_LOG_A, Common.VALUE_PATH_A)
     crash_location_a = extract_crash_point(FILE_TRACE_LOG_A)
+    stack_a = extract_stack_info(FILE_TRACE_LOG_A)
     if crash_location_a == "":
         donor_suspect_line_list = extract_suspicious_points(FILE_EXPLOIT_OUTPUT_A)
-    stack_a = extract_stack_info(FILE_TRACE_LOG_A)
-
+    list_trace_a = collect_trace(FILE_TRACE_LOG_A, Common.VALUE_PATH_A, donor_suspect_line_list)
+    # print(list_trace_a[-1])
     Output.normal(Common.VALUE_PATH_B)
     if not Common.NO_SYM_TRACE_GEN:
         binary_path, binary_name = extract_bitcode(Common.VALUE_PATH_B + Common.VALUE_EXPLOIT_A.split(" ")[0])
         trace_exploit(" ".join(Common.VALUE_EXPLOIT_A.split(" ")[1:]), binary_path, binary_name, FILE_TRACE_LOG_B)
-    list_trace_b = collect_trace(FILE_TRACE_LOG_B, Common.VALUE_PATH_B)
+    list_trace_b = collect_trace(FILE_TRACE_LOG_B, Common.VALUE_PATH_B, list())
     # extract_divergent_point()
 
 
@@ -225,11 +227,12 @@ def generate_trace_target():
     if not Common.NO_SYM_TRACE_GEN:
         binary_path, binary_name = extract_bitcode(Common.VALUE_PATH_C + Common.VALUE_EXPLOIT_C.split(" ")[0])
         trace_exploit(" ".join(Common.VALUE_EXPLOIT_C.split(" ")[1:]), binary_path, binary_name, FILE_TRACE_LOG_C)
-    list_trace_c = collect_trace(FILE_TRACE_LOG_C, Common.VALUE_PATH_C)
     crash_location_c = extract_crash_point(FILE_TRACE_LOG_C)
     stack_c = extract_stack_info(FILE_TRACE_LOG_C)
     if crash_location_c == "":
         target_suspect_line_list = extract_suspicious_points(FILE_EXPLOIT_OUTPUT_C)
+    list_trace_c = collect_trace(FILE_TRACE_LOG_C, Common.VALUE_PATH_C, target_suspect_line_list)
+    # print(list_trace_c[-1])
 
 
 def safe_exec(function_def, title, *args):
@@ -270,4 +273,3 @@ def trace():
     safe_exec(generate_trace_target, "generating trace information from target program")
     print(target_suspect_line_list)
     print(donor_suspect_line_list)
-    exit(1)
