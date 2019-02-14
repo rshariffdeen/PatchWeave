@@ -44,6 +44,10 @@ donor_suspect_line_list = list()
 def test_exploits():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     global donor_exit_code, target_exit_code, donor_crashed, target_crashed
+    global FILE_EXPLOIT_OUTPUT_A, FILE_EXPLOIT_OUTPUT_C
+    FILE_EXPLOIT_OUTPUT_A = Common.DIRECTORY_OUTPUT + "/exploit-log-a"
+    FILE_EXPLOIT_OUTPUT_C = Common.DIRECTORY_OUTPUT + "/exploit-log-c"
+    Output.sub_title("executing exploits")
     Output.normal(Common.Project_A.path)
     donor_exit_code, donor_output = run_exploit(Common.VALUE_EXPLOIT_A, Common.Project_A.path, Common.VALUE_PATH_POC, FILE_EXPLOIT_OUTPUT_A)
     crash_word_list = ["abort", "core dumped", "crashed"]
@@ -66,8 +70,6 @@ def test_exploits():
             Output.normal("\tprogram exited with exit code " + str(target_exit_code))
         else:
             error_exit("program did not crash!!")
-
-    exit(1)
 
 
 def run_exploit(exploit, project_path, poc_path, output_file_path):
@@ -121,6 +123,20 @@ def extract_crash_point(trace_file_path):
     return crash_location
 
 
+def extract_suspicious_points(trace_log):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    Output.normal("\textracting crash point")
+    suspect_list = list()
+    if os.path.exists(trace_log):
+        with open(trace_log, 'r') as trace_file:
+            for read_line in trace_file:
+                if "runtime error:" in read_line:
+                    crash_location = read_line.split(": runtime error: ")[0]
+                    if crash_location not in suspect_list:
+                        suspect_list.append(crash_location)
+    return suspect_list
+
+
 def trace_exploit(exploit_command, binary_path, binary_name, log_path):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.normal("\tgenerating trace for exploit")
@@ -150,7 +166,7 @@ def collect_trace(file_path, project_path):
 
 def generate_trace_donor():
     global list_trace_a, list_trace_b, stack_a
-    global crash_location_a, divergent_location
+    global crash_location_a, donor_suspect_line_list
 
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.normal(Common.VALUE_PATH_A)
@@ -159,6 +175,8 @@ def generate_trace_donor():
         trace_exploit(" ".join(Common.VALUE_EXPLOIT_A.split(" ")[1:]), binary_path, binary_name, FILE_TRACE_LOG_A)
     list_trace_a = collect_trace(FILE_TRACE_LOG_A, Common.VALUE_PATH_A)
     crash_location_a = extract_crash_point(FILE_TRACE_LOG_A)
+    if crash_location_a == "":
+        donor_suspect_line_list = extract_suspicious_points(FILE_EXPLOIT_OUTPUT_A)
     stack_a = extract_stack_info(FILE_TRACE_LOG_A)
 
     Output.normal(Common.VALUE_PATH_B)
@@ -201,7 +219,7 @@ def extract_divergent_point():
 
 def generate_trace_target():
     global list_trace_c, crash_location_c, stack_c
-
+    global target_suspect_line_list
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.normal(Common.VALUE_PATH_C)
     if not Common.NO_SYM_TRACE_GEN:
@@ -210,6 +228,8 @@ def generate_trace_target():
     list_trace_c = collect_trace(FILE_TRACE_LOG_C, Common.VALUE_PATH_C)
     crash_location_c = extract_crash_point(FILE_TRACE_LOG_C)
     stack_c = extract_stack_info(FILE_TRACE_LOG_C)
+    if crash_location_c == "":
+        target_suspect_line_list = extract_suspicious_points(FILE_EXPLOIT_OUTPUT_C)
 
 
 def safe_exec(function_def, title, *args):
@@ -233,10 +253,10 @@ def safe_exec(function_def, title, *args):
 
 
 def set_values():
-    global FILE_EXPLOIT_OUTPUT_A, FILE_EXPLOIT_OUTPUT_C
     global FILE_TRACE_LOG_A, FILE_TRACE_LOG_B, FILE_TRACE_LOG_C
-    FILE_EXPLOIT_OUTPUT_A = Common.DIRECTORY_OUTPUT + "/exploit-a"
-    FILE_EXPLOIT_OUTPUT_C = Common.DIRECTORY_OUTPUT + "/exploit-c"
+    global FILE_EXPLOIT_OUTPUT_A, FILE_EXPLOIT_OUTPUT_C
+    FILE_EXPLOIT_OUTPUT_A = Common.DIRECTORY_OUTPUT + "/exploit-log-a"
+    FILE_EXPLOIT_OUTPUT_C = Common.DIRECTORY_OUTPUT + "/exploit-log-c"
     FILE_TRACE_LOG_A = Common.DIRECTORY_OUTPUT + "/trace-klee-pa"
     FILE_TRACE_LOG_B = Common.DIRECTORY_OUTPUT + "/trace-klee-pb"
     FILE_TRACE_LOG_C = Common.DIRECTORY_OUTPUT + "/trace-klee-pc"
@@ -246,6 +266,8 @@ def trace():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.title("Analysing execution traces")
     set_values()
-    safe_exec(test_exploits, "testing crash case")
     safe_exec(generate_trace_donor, "generating trace information from donor program")
     safe_exec(generate_trace_target, "generating trace information from target program")
+    print(target_suspect_line_list)
+    print(donor_suspect_line_list)
+    exit(1)

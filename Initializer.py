@@ -5,12 +5,12 @@
 
 import os
 import sys
-from Utilities import execute_command, error_exit
+from Utilities import execute_command
 import Project
 import Common
 import Output
-import Logger
-from Builder import build_normal
+import Builder
+import Tracer
 
 
 def load_standard_list():
@@ -115,4 +115,8 @@ def initialize():
     load_values()
     Output.sub_title("set environment")
     set_env_value()
-    Output.sub_title("cleaning residue files")
+    if not Common.NO_BUILD:
+        Builder.build_asan()
+        Tracer.test_exploits()
+    else:
+        Builder.soft_restore_all()

@@ -144,8 +144,8 @@ def build_asan():
     CXX_FLAGS = "'-g -O0 -static'"
     C_FLAGS = "'-g -O0 -static'"
     config_all()
-    CXX_FLAGS = "'-g -O0 -static -DNDEBUG -fsanitize=undefined'"
-    C_FLAGS = "'-g -O0 -static -DNDEBUG -fsanitize=undefined'"
+    CXX_FLAGS = "'-g -O0 -static -DNDEBUG -fsanitize=" + Common.VALUE_ASAN_FLAG + "'"
+    C_FLAGS = "'-g -O0 -static -DNDEBUG -fsanitize=" + Common.VALUE_ASAN_FLAG + "'"
     build_all()
 
 
