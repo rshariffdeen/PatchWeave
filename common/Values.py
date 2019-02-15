@@ -40,6 +40,10 @@ EXPLOIT_PREPARE = ""
 ASAN_FLAG = ""
 
 
+diff_info = dict()
+
+
+
 header_file_list_to_patch = []
 c_file_list_to_patch = []
 

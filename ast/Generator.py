@@ -141,7 +141,7 @@ def is_intersect(start, end, start2, end2):
     return not (end2 < start or start2 > end)
 
 
-def generate_ast_script(source_a, source_b, dump_matches=False):
+def generate_ast_script(source_a, source_b, outfile_path, dump_matches=False):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     extra_args = " "
     if dump_matches:
@@ -153,7 +153,7 @@ def generate_ast_script(source_a, source_b, dump_matches=False):
     generate_command += " 2> " + Definitions.FILE_AST_DIFF_ERROR
     if dump_matches:
         generate_command += " | grep -P '^Match ' | grep -P '^Match '"
-    generate_command += " > " + Definitions.FILE_AST_SCRIPT
+    generate_command += " > " + outfile_path
 
     try:
         # print(generate_command)

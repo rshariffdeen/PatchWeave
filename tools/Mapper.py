@@ -157,11 +157,11 @@ def map_variable(var_map_a, var_map_b):
     return var_map
 
 
-def map_ast_from_source(source_a, source_b):
+def map_ast_from_source(source_a, source_b, script_file_path):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Generator.generate_ast_script(source_a, source_b, FILE_AST_SCRIPT, True)
+    Generator.generate_ast_script(source_a, source_b, script_file_path, True)
     mapping = dict()
-    with open(FILE_AST_SCRIPT, "r") as script_file:
+    with open(script_file_path, "r") as script_file:
         script_lines = script_file.readlines()
         for script_line in script_lines:
             if "Match" in script_line:

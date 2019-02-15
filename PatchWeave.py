@@ -29,7 +29,7 @@ def run_patchweave():
     time_info[Definitions.KEY_DURATION_BUILD] = str(time.time() - time_check)
 
     time_check = time.time()
-    Analyse.diff()
+    Analyse.analyse()
     time_info[Definitions.KEY_DURATION_DIFF_ANALYSIS] = str(time.time() - time_check)
 
     time_check = time.time()
