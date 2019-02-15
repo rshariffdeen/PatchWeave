@@ -5,17 +5,16 @@
 import sys
 import os
 sys.path.append('./ast/')
-from Utilities import error_exit, get_file_list, is_intersect, execute_command
+from common.Tools import error_exit, get_file_list, is_intersect, execute_command
 import Output
 import Logger
 import Generator
-import Common
-import Weaver
-import Converter
+from common import Vault
+from utilities import Converter
 import Finder
 
 
-FILE_MACRO_DEF = Common.DIRECTORY_TMP + "/macro-def"
+FILE_MACRO_DEF = Vault.DIRECTORY_TMP + "/macro-def"
 
 
 def extract_variable_name(source_path, start_pos, end_pos):
@@ -231,7 +230,7 @@ def extract_variable_list(source_path, start_line, end_line, only_in_range):
     Output.normal("\t\t\tgenerating variable(available) list")
     variable_list = list()
     ast_map = Generator.get_ast_json(source_path)
-    func_node = Weaver.get_fun_node(ast_map, int(end_line), source_path)
+    func_node = Finder.search_function_node_by_loc(ast_map, int(end_line), source_path)
     if func_node is None:
         return variable_list
     # print(source_path, start_line, end_line)

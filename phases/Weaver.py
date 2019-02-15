@@ -5,16 +5,13 @@
 import sys, os
 sys.path.append('./ast/')
 import time
-from Utilities import execute_command, error_exit, backup_file, show_partial_diff, get_code
-import Output
-import Common
-import Logger
+from common.Tools import execute_command, error_exit, backup_file, show_partial_diff, get_code
+from common import Vault
 import Concolic
 import Generator
 import Differ
 import Tracer
-import Mapper
-import Fixer
+from utilities import Mapper, Identifier, KleeExecutor, Logger, Solver, Fixer, Output, Writer
 
 function_list_a = list()
 function_list_b = list()
@@ -48,72 +45,27 @@ FILE_TEMP_FIX = ""
 FILENAME_BACKUP = "temp-source"
 
 
-
-
-
-
-
-
-
-
-
-def estimate_divergent_point(byte_list):
-    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal("\tfinding similar location in recipient")
-    length = len(Concolic.sym_path_c.keys()) - 1
-    count_common = len(byte_list)
-    candidate_list = list()
-    estimated_loc = ""
-    for n in range(length, 0, -1):
-        key = Concolic.sym_path_c.keys()[n]
-        sym_path = Concolic.sym_path_c[key]
-        bytes_temp = Mapper.get_input_bytes_used(sym_path)
-        count = len(list(set(byte_list).intersection(bytes_temp)))
-        if count == count_common:
-            candidate_list.append(key)
-    length = len(Tracer.list_trace_c) - 1
-    grab_nearest = False
-    for n in range(length, 0, -1):
-        path = Tracer.list_trace_c[n]
-        path = os.path.abspath(path)
-        if grab_nearest:
-            if ".c" in path:
-                estimated_loc = path
-                break
-        else:
-            if path in candidate_list:
-                if ".h" in path:
-                    grab_nearest = True
-                else:
-                    estimated_loc = path
-                    break
-    return estimated_loc
-
-
 def get_sym_path(source_location):
     sym_path = ""
-    if Common.VALUE_PATH_A in source_location:
+    if Vault.VALUE_PATH_A in source_location:
         for path in Tracer.list_trace_a:
             if path in Concolic.sym_path_a.keys():
                 sym_path = Concolic.sym_path_a[path]
             if path == source_location:
                 break
-    elif Common.VALUE_PATH_B in source_location:
+    elif Vault.VALUE_PATH_B in source_location:
         for path in Tracer.list_trace_b:
             if path in Concolic.sym_path_b.keys():
                 sym_path = Concolic.sym_path_b[path]
             if path == source_location:
                 break
-    elif Common.VALUE_PATH_C in source_location:
+    elif Vault.VALUE_PATH_C in source_location:
         for path in Tracer.list_trace_c:
             if path in Concolic.sym_path_c.keys():
                 sym_path = Concolic.sym_path_c[path]
             if path == source_location:
                 break
     return sym_path
-
-
-
 
 
 def translate_patch(patch_code, var_map):
@@ -139,7 +91,6 @@ def insert_patch(patch_code, source_path, line_number):
         source_file.writelines(content)
 
 
-
 def execute_ast_transformation(source_path_b, source_path_d):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     global modified_source_list
@@ -162,18 +113,6 @@ def show_final_patch(source_path_a, source_path_b, source_path_c, source_path_d)
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
 
 
-
-
-def extract_macro_definitions(source_path):
-    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal("\textracting macro definitions from\n\t\t" + str(source_path))
-    extract_command = "clang -E -dM " + source_path + " > " + FILE_MACRO_DEF
-    execute_command(extract_command)
-    with open(FILE_MACRO_DEF, "r") as macro_file:
-        macro_def_list = macro_file.readlines()
-        return macro_def_list
-
-
 def transplant_missing_header():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.sub_title("transplanting missing header")
@@ -185,7 +124,7 @@ def transplant_missing_header():
         def_insert_line = get_definition_insertion_point(target_file)
         backup_file(target_file, FILENAME_BACKUP)
         insert_patch(transplant_code, target_file, def_insert_line)
-        backup_file_path = Common.DIRECTORY_BACKUP + "/" + FILENAME_BACKUP
+        backup_file_path = Vault.DIRECTORY_BACKUP + "/" + FILENAME_BACKUP
         show_partial_diff(backup_file_path, target_file)
 
 
@@ -207,7 +146,7 @@ def transplant_missing_macros():
                         transplant_code += "\n" + macro_def + "\n"
         backup_file(target_file, FILENAME_BACKUP)
         insert_patch(transplant_code, target_file, def_insert_line)
-        backup_file_path = Common.DIRECTORY_BACKUP + "/" + FILENAME_BACKUP
+        backup_file_path = Vault.DIRECTORY_BACKUP + "/" + FILENAME_BACKUP
         show_partial_diff(backup_file_path, target_file)
 
 
@@ -236,7 +175,7 @@ def transplant_missing_functions():
         # translated_patch = translate_patch(original_patch, var_map_ac)
         backup_file(source_path_d, FILENAME_BACKUP)
         insert_patch(original_function, source_path_d, def_insert_point)
-        backup_file_path = Common.DIRECTORY_BACKUP + "/" + FILENAME_BACKUP
+        backup_file_path = Vault.DIRECTORY_BACKUP + "/" + FILENAME_BACKUP
         show_partial_diff(backup_file_path, source_path_d)
 
 
@@ -247,17 +186,21 @@ def transplant_code(diff_info, diff_loc):
     operation = diff_info['operation']
     ast_script = diff_info['ast-script']
     source_path_a, line_number_a = diff_loc.split(":")
-    source_path_b = str(source_path_a).replace(Common.VALUE_PATH_A, Common.VALUE_PATH_B)
-    byte_list = compute_common_bytes(diff_loc)
-    estimate_loc = estimate_divergent_point(byte_list)
+    source_path_b = str(source_path_a).replace(Vault.VALUE_PATH_A, Vault.VALUE_PATH_B)
+    byte_list = Solver.compute_common_bytes(diff_loc)
+    estimate_loc = Identifier.identify_divergent_point(byte_list)
 
     if operation == 'insert':
         start_line_b, end_line_b = diff_info['new-lines']
         skip_line_list = diff_info['skip-lines']
-        output_skip_list(skip_line_list)
+        Writer.write_skip_list(skip_line_list, FILE_SKIP_LIST)
         line_range_b = (start_line_b, end_line_b)
         line_range_a = (-1, -1)
-        Mapper.generate_symbolic_expressions(source_path_b, start_line_b,  end_line_b, FILE_VAR_EXPR_LOG_B)
+        KleeExecutor.generate_symbolic_expressions(source_path_b,
+                                                   start_line_b,
+                                                   end_line_b,
+                                                   FILE_VAR_EXPR_LOG_B)
+
         var_expr_map_b = Mapper.collect_symbolic_expressions(FILE_VAR_EXPR_LOG_B)
         # print(var_expr_map_b)
         insertion_loc_list = identify_insertion_points(estimate_loc, var_expr_map_b)
@@ -267,7 +210,7 @@ def transplant_code(diff_info, diff_loc):
             Output.normal("\t\t" + insertion_loc)
             source_path_c, line_number_c = insertion_loc.split(":")
             ast_map_c = Generator.get_ast_json(source_path_c)
-            source_path_d = source_path_c.replace(Common.Project_C.path, Common.Project_D.path)
+            source_path_d = source_path_c.replace(Vault.Project_C.path, Vault.Project_D.path)
             function_node = get_fun_node(ast_map_c, int(line_number_c), source_path_c)
             position_c = get_ast_node_position(function_node, int(line_number_c))
             for script_line in ast_script:
@@ -308,7 +251,7 @@ def transplant_code(diff_info, diff_loc):
         for insertion_loc in insertion_loc_list:
             Output.normal("\t\t" + insertion_loc)
             source_path_c, line_number_c = insertion_loc.split(":")
-            source_path_d = source_path_c.replace(Common.Project_C.path, Common.Project_D.path)
+            source_path_d = source_path_c.replace(Vault.Project_C.path, Vault.Project_D.path)
             ast_map_c = Generator.get_ast_json(source_path_c)
             # print(insertion_loc)
             function_node = get_fun_node(ast_map_c, int(line_number_c), source_path_c)
@@ -372,35 +315,10 @@ def transplant_patch():
     Fixer.check()
 
 
-def get_best_insertion_point(insertion_point_list):
-    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    return insertion_point_list[0]
-
-
-def identify_insertion_points(estimated_loc, var_expr_map):
-    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    insertion_point_list = list()
-    function_list = generate_candidate_function_list(estimated_loc, var_expr_map)
-    stack_info = Tracer.stack_c
-
-    for function_id in function_list:
-        source_path, function_name = function_id.split(":")
-        info = function_list[function_id]
-        start_line = int(info['begin-line'])
-        last_line = int(info['last-line'])
-        exec_line_list = info['exec-lines']
-        # don't include the last line (possible crash line)
-        for exec_line in exec_line_list:
-            # if exec_line == last_line:
-            #     continue
-            insertion_point_list.append(source_path + ":" + str(exec_line))
-    return insertion_point_list
-
-
 def safe_exec(function_def, title, *args):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     start_time = time.time()
-    Output.sub_title( title + "...")
+    Output.sub_title(title + "...")
     description = title[0].lower() + title[1:]
     try:
         Logger.information("running " + str(function_def))
@@ -422,15 +340,13 @@ def set_values():
     global FILE_VAR_MAP, FILE_SKIP_LIST, FILE_AST_SCRIPT
     global FILE_TEMP_FIX, FILE_MACRO_DEF
 
-    FILE_VAR_EXPR_LOG_A = Common.DIRECTORY_OUTPUT + "/log-sym-expr-a"
-    FILE_VAR_EXPR_LOG_B = Common.DIRECTORY_OUTPUT + "/log-sym-expr-b"
-    FILE_VAR_EXPR_LOG_C = Common.DIRECTORY_OUTPUT + "/log-sym-expr-c"
-    FILE_VAR_MAP = Common.DIRECTORY_OUTPUT + "/var-map"
-    FILE_SKIP_LIST = Common.DIRECTORY_OUTPUT + "/skip-list"
-    FILE_AST_SCRIPT = Common.DIRECTORY_OUTPUT + "/gen-ast-script"
-    FILE_TEMP_FIX = Common.DIRECTORY_OUTPUT + "/temp-fix"
-
-
+    FILE_VAR_EXPR_LOG_A = Vault.DIRECTORY_OUTPUT + "/log-sym-expr-a"
+    FILE_VAR_EXPR_LOG_B = Vault.DIRECTORY_OUTPUT + "/log-sym-expr-b"
+    FILE_VAR_EXPR_LOG_C = Vault.DIRECTORY_OUTPUT + "/log-sym-expr-c"
+    FILE_VAR_MAP = Vault.DIRECTORY_OUTPUT + "/var-map"
+    FILE_SKIP_LIST = Vault.DIRECTORY_OUTPUT + "/skip-list"
+    FILE_AST_SCRIPT = Vault.DIRECTORY_OUTPUT + "/gen-ast-script"
+    FILE_TEMP_FIX = Vault.DIRECTORY_OUTPUT + "/temp-fix"
 
 def weave():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())

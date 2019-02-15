@@ -6,14 +6,10 @@ import sys
 
 sys.path.append('./ast/')
 import time
-from Utilities import execute_command, error_exit, get_file_extension_list
-import Output
-import Common
+from common.Tools import execute_command, error_exit, get_file_extension_list
+from common import Vault
 import Generator
-import Logger
-import Mapper
-import Filter
-
+from utilities import Mapper, Logger, Filter, Output
 
 FILE_EXCLUDED_EXTENSIONS = ""
 FILE_EXCLUDED_EXTENSIONS_A = ""
@@ -33,13 +29,13 @@ def find_diff_files():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.normal("finding changed files...")
     global FILE_DIFF_H
-    extensions = get_file_extension_list(Common.Project_A.path, FILE_EXCLUDED_EXTENSIONS_A)
-    extensions = extensions.union(get_file_extension_list(Common.Project_B.path, FILE_EXCLUDED_EXTENSIONS_B))
+    extensions = get_file_extension_list(Vault.Project_A.path, FILE_EXCLUDED_EXTENSIONS_A)
+    extensions = extensions.union(get_file_extension_list(Vault.Project_B.path, FILE_EXCLUDED_EXTENSIONS_B))
     with open(FILE_EXCLUDED_EXTENSIONS, 'w') as exclusions:
         for pattern in extensions:
             exclusions.write(pattern + "\n")
     # TODO: Include cases where a file is added or removed
-    diff_command = "diff -ENZBbwqr " + Common.Project_A.path + " " + Common.Project_B.path + " -X " \
+    diff_command = "diff -ENZBbwqr " + Vault.Project_A.path + " " + Vault.Project_B.path + " -X " \
                    + FILE_EXCLUDED_EXTENSIONS + "> " + FILE_DIFF_ALL + ";"
     diff_command += "cat " + FILE_DIFF_ALL + "| grep -P '\.c and ' > " + FILE_DIFF_C + ";"
     diff_command += "cat " + FILE_DIFF_ALL + "| grep -P '\.h and ' > " + FILE_DIFF_H
@@ -56,7 +52,7 @@ def extract_h_file_list():
             diff_line = diff_line.split(" ")
             file_a = diff_line[1]
             file_b = diff_line[3]
-            Generator.parseAST(file_a, Common.Project_A, is_deckard=True, is_header=True)
+            Generator.parseAST(file_a, Vault.Project_A, is_deckard=True, is_header=True)
             file_list.append(file_a.split("/")[-1])
             diff_line = diff_file.readline().strip()
     if len(file_list) > 0:
@@ -194,7 +190,7 @@ def collect_ast_diff():
             Output.sub_sub_title(source_path)
             source_path_a = source_path
             line_number_a = line_number
-            source_path_b = str(source_path_a).replace(Common.VALUE_PATH_A, Common.VALUE_PATH_B)
+            source_path_b = str(source_path_a).replace(Vault.VALUE_PATH_A, Vault.VALUE_PATH_B)
             ast_script = get_ast_script(source_path_a, source_path_b)
             ast_map_a = Generator.get_ast_json(source_path_a)
             ast_map_b = Generator.get_ast_json(source_path_b)
@@ -231,15 +227,15 @@ def set_values():
     global FILE_DIFF_C, FILE_DIFF_H, FILE_DIFF_ALL
     global FILE_TEMP_DIFF, FILE_AST_SCRIPT, FILE_AST_DIFF_ERROR
     global FILE_EXCLUDED_EXTENSIONS, FILE_EXCLUDED_EXTENSIONS_A, FILE_EXCLUDED_EXTENSIONS_B
-    FILE_EXCLUDED_EXTENSIONS = Common.DIRECTORY_OUTPUT + "/excluded-extensions"
-    FILE_EXCLUDED_EXTENSIONS_A = Common.DIRECTORY_OUTPUT + "/excluded-extensions-a"
-    FILE_EXCLUDED_EXTENSIONS_B = Common.DIRECTORY_OUTPUT + "/excluded-extensions-b"
-    FILE_DIFF_C = Common.DIRECTORY_OUTPUT + "/diff_C"
-    FILE_DIFF_H = Common.DIRECTORY_OUTPUT + "/diff_H"
-    FILE_DIFF_ALL = Common.DIRECTORY_OUTPUT + "/diff_all"
-    FILE_TEMP_DIFF = Common.DIRECTORY_OUTPUT + "/temp_diff"
-    FILE_AST_SCRIPT = Common.DIRECTORY_OUTPUT + "/ast-script"
-    FILE_AST_DIFF_ERROR = Common.DIRECTORY_OUTPUT + "/errors_ast_diff"
+    FILE_EXCLUDED_EXTENSIONS = Vault.DIRECTORY_OUTPUT + "/excluded-extensions"
+    FILE_EXCLUDED_EXTENSIONS_A = Vault.DIRECTORY_OUTPUT + "/excluded-extensions-a"
+    FILE_EXCLUDED_EXTENSIONS_B = Vault.DIRECTORY_OUTPUT + "/excluded-extensions-b"
+    FILE_DIFF_C = Vault.DIRECTORY_OUTPUT + "/diff_C"
+    FILE_DIFF_H = Vault.DIRECTORY_OUTPUT + "/diff_H"
+    FILE_DIFF_ALL = Vault.DIRECTORY_OUTPUT + "/diff_all"
+    FILE_TEMP_DIFF = Vault.DIRECTORY_OUTPUT + "/temp_diff"
+    FILE_AST_SCRIPT = Vault.DIRECTORY_OUTPUT + "/ast-script"
+    FILE_AST_DIFF_ERROR = Vault.DIRECTORY_OUTPUT + "/errors_ast_diff"
 
 
 def diff():

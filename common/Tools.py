@@ -3,18 +3,17 @@
 import os
 import sys
 import subprocess
-import Logger
-import Output
-import Common
+from utilities import Logger, Output
+import Vault
 
 
-FILE_PARTIAL_DIFF = Common.DIRECTORY_TMP + "/gen-patch"
+FILE_PARTIAL_DIFF = Vault.DIRECTORY_TMP + "/gen-patch"
 
 
 def execute_command(command, show_output=True):
     # Print executed command and execute it in console
     Output.command(command)
-    command = "{ " + command + " ;} 2> " + Common.FILE_ERROR_LOG
+    command = "{ " + command + " ;} 2> " + Vault.FILE_ERROR_LOG
     if not show_output:
         command += " > /dev/null"
     # print(command)
@@ -25,17 +24,17 @@ def execute_command(command, show_output=True):
 
 
 def create_directories():
-    if not os.path.isdir(Common.DIRECTORY_LOG):
-        os.makedirs(Common.DIRECTORY_LOG)
+    if not os.path.isdir(Vault.DIRECTORY_LOG):
+        os.makedirs(Vault.DIRECTORY_LOG)
 
-    if not os.path.isdir(Common.DIRECTORY_OUTPUT_BASE):
-        os.makedirs(Common.DIRECTORY_OUTPUT_BASE)
+    if not os.path.isdir(Vault.DIRECTORY_OUTPUT_BASE):
+        os.makedirs(Vault.DIRECTORY_OUTPUT_BASE)
 
-    if not os.path.isdir(Common.DIRECTORY_BACKUP):
-        os.makedirs(Common.DIRECTORY_BACKUP)
+    if not os.path.isdir(Vault.DIRECTORY_BACKUP):
+        os.makedirs(Vault.DIRECTORY_BACKUP)
 
-    if not os.path.isdir(Common.DIRECTORY_TMP):
-        os.makedirs(Common.DIRECTORY_TMP)
+    if not os.path.isdir(Vault.DIRECTORY_TMP):
+        os.makedirs(Vault.DIRECTORY_TMP)
 
 
 def error_exit(*args):
@@ -58,7 +57,7 @@ def clean_files():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.information("Removing other residual files...")
     if os.path.isdir("output"):
-        clean_command = "rm -rf " + Common.DIRECTORY_OUTPUT
+        clean_command = "rm -rf " + Vault.DIRECTORY_OUTPUT
         execute_command(clean_command)
 
 
@@ -82,13 +81,13 @@ def get_file_extension_list(src_path, output_file_name):
 
 def backup_file(file_path, backup_name):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    backup_command = "cp " + file_path + " " + Common.DIRECTORY_BACKUP + "/" + backup_name
+    backup_command = "cp " + file_path + " " + Vault.DIRECTORY_BACKUP + "/" + backup_name
     execute_command(backup_command)
 
 
 def restore_file(file_path, backup_name):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    restore_command = "cp " + Common.DIRECTORY_BACKUP + "/" + backup_name + " " + file_path
+    restore_command = "cp " + Vault.DIRECTORY_BACKUP + "/" + backup_name + " " + file_path
     execute_command(restore_command)
 
 

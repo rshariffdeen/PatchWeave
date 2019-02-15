@@ -2,7 +2,7 @@
 
 import json
 import sys
-import Logger
+from utilities import Logger
 
 ttype = [None]
 label = [None]

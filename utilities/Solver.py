@@ -4,17 +4,12 @@
 
 import sys, os
 sys.path.append('./ast/')
-import time
-from Utilities import execute_command, error_exit, backup_file, show_partial_diff, get_code
+from common.Tools import execute_command, error_exit, show_partial_diff
 import Output
-import Common
-import Logger
-import Concolic
+from common import Vault
 import Generator
-import Differ
-import Tracer
-import Mapper
-import Fixer
+from phases import Tracer, Concolic
+from utilities import Mapper, Logger
 
 
 def get_function_map(source_list):
@@ -158,19 +153,19 @@ def estimate_divergent_point(byte_list):
 
 def get_sym_path(source_location):
     sym_path = ""
-    if Common.VALUE_PATH_A in source_location:
+    if Vault.VALUE_PATH_A in source_location:
         for path in Tracer.list_trace_a:
             if path in Concolic.sym_path_a.keys():
                 sym_path = Concolic.sym_path_a[path]
             if path == source_location:
                 break
-    elif Common.VALUE_PATH_B in source_location:
+    elif Vault.VALUE_PATH_B in source_location:
         for path in Tracer.list_trace_b:
             if path in Concolic.sym_path_b.keys():
                 sym_path = Concolic.sym_path_b[path]
             if path == source_location:
                 break
-    elif Common.VALUE_PATH_C in source_location:
+    elif Vault.VALUE_PATH_C in source_location:
         for path in Tracer.list_trace_c:
             if path in Concolic.sym_path_c.keys():
                 sym_path = Concolic.sym_path_c[path]
@@ -407,11 +402,11 @@ def identify_missing_definitions(function_node):
                 if identifier not in dec_list:
                     missing_definition_list.append(identifier)
             elif ref_type == "FunctionDecl":
-                if identifier in Common.STANDARD_FUNCTION_LIST:
+                if identifier in Vault.STANDARD_FUNCTION_LIST:
                     continue
                 if identifier not in missing_function_list:
                     print(identifier)
-                    print(Common.STANDARD_FUNCTION_LIST)
+                    print(Vault.STANDARD_FUNCTION_LIST)
                     error_exit("FOUND NEW DEPENDENT FUNCTION")
     return list(set(missing_definition_list))
 
@@ -430,12 +425,12 @@ def identify_missing_macros(function_node, source_file, target_file):
             node_child_count = len(ref_node['children'])
             if function_identifier in identifier or "(" in identifier:
                 continue
-            if identifier in Common.STANDARD_MACRO_LIST:
+            if identifier in Vault.STANDARD_MACRO_LIST:
                 continue
             if node_child_count:
                 for child_node in ref_node['children']:
                     identifier = str(child_node['value'])
-                    if identifier in Common.STANDARD_MACRO_LIST:
+                    if identifier in Vault.STANDARD_MACRO_LIST:
                         continue
                     if identifier not in dec_list:
                         if identifier not in missing_macro_list.keys():

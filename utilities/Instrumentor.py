@@ -4,11 +4,11 @@
 
 import sys
 import os
-from Utilities import execute_command, error_exit
+from common.Tools import execute_command, error_exit
 import Output
 import Logger
 import collections
-import Extractor
+from utilities import Extractor
 
 
 def instrument_klee_var_expr(source_path, start_line, end_line, only_in_range):

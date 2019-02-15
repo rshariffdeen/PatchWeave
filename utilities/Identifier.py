@@ -3,17 +3,18 @@
 
 
 import sys
+import os
 sys.path.append('./ast/')
-from Utilities import error_exit
+from common.Tools import error_exit
 import Output
-import Common
+from common import Vault
 import Logger
 import Generator
 import Extractor
 import Finder
 import KleeExecutor
 import Filter
-import Collector
+from utilities import Collector
 import Mapper
 
 
@@ -78,11 +79,11 @@ def identify_missing_definitions(function_node):
                 if identifier not in dec_list:
                     missing_definition_list.append(identifier)
             elif ref_type == "FunctionDecl":
-                if identifier in Common.STANDARD_FUNCTION_LIST:
+                if identifier in Vault.STANDARD_FUNCTION_LIST:
                     continue
                 if identifier not in missing_function_list:
                     print(identifier)
-                    print(Common.STANDARD_FUNCTION_LIST)
+                    print(Vault.STANDARD_FUNCTION_LIST)
                     error_exit("FOUND NEW DEPENDENT FUNCTION")
     return list(set(missing_definition_list))
 
@@ -101,12 +102,12 @@ def identify_missing_macros(function_node, source_file, target_file):
             node_child_count = len(ref_node['children'])
             if function_identifier in identifier or "(" in identifier:
                 continue
-            if identifier in Common.STANDARD_MACRO_LIST:
+            if identifier in Vault.STANDARD_MACRO_LIST:
                 continue
             if node_child_count:
                 for child_node in ref_node['children']:
                     identifier = str(child_node['value'])
-                    if identifier in Common.STANDARD_MACRO_LIST:
+                    if identifier in Vault.STANDARD_MACRO_LIST:
                         continue
                     if identifier not in dec_list:
                         if identifier not in missing_macro_list.keys():
@@ -224,3 +225,35 @@ def identify_functions_in_source(source_list):
             error_exit(e, "Error in parse_ast.")
     return source_function_map
 
+
+def identify_divergent_point(byte_list, sym_path, trace_list):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    Output.normal("\tfinding similar location in recipient")
+    length = len(sym_path) - 1
+    count_common = len(byte_list)
+    candidate_list = list()
+    estimated_loc = ""
+    for n in range(length, 0, -1):
+        key = sym_path[n]
+        sym_path = sym_path[key]
+        bytes_temp = Mapper.get_input_bytes_used(sym_path)
+        count = len(list(set(byte_list).intersection(bytes_temp)))
+        if count == count_common:
+            candidate_list.append(key)
+    length = len(trace_list) - 1
+    grab_nearest = False
+    for n in range(length, 0, -1):
+        path = trace_list[n]
+        path = os.path.abspath(path)
+        if grab_nearest:
+            if ".c" in path:
+                estimated_loc = path
+                break
+        else:
+            if path in candidate_list:
+                if ".h" in path:
+                    grab_nearest = True
+                else:
+                    estimated_loc = path
+                    break
+    return estimated_loc

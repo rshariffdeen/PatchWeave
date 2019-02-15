@@ -3,10 +3,9 @@
 
 
 import sys
-import Logger
 import Finder
 import Output
-import Extractor
+from utilities import Extractor, Logger
 
 
 def filter_trace_list_by_loc(trace_list, estimate_loc):

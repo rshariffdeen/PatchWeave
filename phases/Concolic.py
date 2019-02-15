@@ -2,17 +2,13 @@
 # -*- coding: utf-8 -*-
 
 
-import sys, os
+import sys
+
 sys.path.append('./ast/')
 import time
-from Utilities import execute_command, error_exit
-import Output
-import Common
-import Logger
-import Converter
-import KleeExecutor
-import Collector
-
+from common.Tools import execute_command, error_exit
+from common import Vault
+from utilities import Collector, Converter, KleeExecutor, Logger, Output
 
 VALUE_BIT_SIZE = 0
 VALUE_BINARY_PATH_A = ""
@@ -36,11 +32,11 @@ estimate_loc_map = dict()
 def generate_sympath_donor():
     global sym_path_a, sym_path_b
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal(Common.VALUE_PATH_A)
-    if not Common.NO_SYM_TRACE_GEN:
-        binary_path = Common.VALUE_PATH_A + Common.VALUE_EXPLOIT_A.split(" ")[0]
+    Output.normal(Vault.VALUE_PATH_A)
+    if not Vault.NO_SYM_TRACE_GEN:
+        binary_path = Vault.VALUE_PATH_A + Vault.VALUE_EXPLOIT_A.split(" ")[0]
         binary_dir, binary_name = Converter.convert_binary_to_llvm(binary_path)
-        binary_args = " ".join(Common.VALUE_EXPLOIT_A.split(" ")[1:])
+        binary_args = " ".join(Vault.VALUE_EXPLOIT_A.split(" ")[1:])
         sym_file_path = KleeExecutor.generate_path_condition(binary_args,
                                                              binary_dir,
                                                              binary_name,
@@ -49,13 +45,13 @@ def generate_sympath_donor():
                                                              FILE_KLEE_LOG_A)
         copy_command = "cp " + sym_file_path + " " + FILE_SYM_PATH_A
         execute_command(copy_command)
-    sym_path_a = Collector.collect_symbolic_path(FILE_KLEE_LOG_A, Common.VALUE_PATH_A)
+    sym_path_a = Collector.collect_symbolic_path(FILE_KLEE_LOG_A, Vault.VALUE_PATH_A)
 
-    Output.normal(Common.VALUE_PATH_B)
-    if not Common.NO_SYM_TRACE_GEN:
-        binary_path = Common.VALUE_PATH_B + Common.VALUE_EXPLOIT_A.split(" ")[0]
+    Output.normal(Vault.VALUE_PATH_B)
+    if not Vault.NO_SYM_TRACE_GEN:
+        binary_path = Vault.VALUE_PATH_B + Vault.VALUE_EXPLOIT_A.split(" ")[0]
         binary_dir, binary_name = Converter.convert_binary_to_llvm(binary_path)
-        binary_args = " ".join(Common.VALUE_EXPLOIT_A.split(" ")[1:])
+        binary_args = " ".join(Vault.VALUE_EXPLOIT_A.split(" ")[1:])
         sym_file_path = KleeExecutor.generate_path_condition(binary_args,
                                                              binary_dir,
                                                              binary_name,
@@ -64,17 +60,17 @@ def generate_sympath_donor():
                                                              FILE_KLEE_LOG_B)
         copy_command = "cp " + sym_file_path + " " + FILE_SYM_PATH_B
         execute_command(copy_command)
-    sym_path_b = Collector.collect_symbolic_path(FILE_KLEE_LOG_B, Common.VALUE_PATH_B)
+    sym_path_b = Collector.collect_symbolic_path(FILE_KLEE_LOG_B, Vault.VALUE_PATH_B)
 
 
 def generate_sympath_target():
     global sym_path_c
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal(Common.VALUE_PATH_C)
-    if not Common.NO_SYM_TRACE_GEN:
-        binary_path = Common.VALUE_PATH_C + Common.VALUE_EXPLOIT_C.split(" ")[0]
+    Output.normal(Vault.VALUE_PATH_C)
+    if not Vault.NO_SYM_TRACE_GEN:
+        binary_path = Vault.VALUE_PATH_C + Vault.VALUE_EXPLOIT_C.split(" ")[0]
         binary_dir, binary_name = Converter.convert_binary_to_llvm(binary_path)
-        binary_args = " ".join(Common.VALUE_EXPLOIT_C.split(" ")[1:])
+        binary_args = " ".join(Vault.VALUE_EXPLOIT_C.split(" ")[1:])
         sym_file_path = KleeExecutor.generate_path_condition(binary_args,
                                                              binary_dir,
                                                              binary_name,
@@ -83,7 +79,7 @@ def generate_sympath_target():
                                                              FILE_KLEE_LOG_C)
         copy_command = "cp " + sym_file_path + " " + FILE_SYM_PATH_C
         execute_command(copy_command)
-    sym_path_c = Collector.collect_symbolic_path(FILE_KLEE_LOG_C, Common.VALUE_PATH_C)
+    sym_path_c = Collector.collect_symbolic_path(FILE_KLEE_LOG_C, Vault.VALUE_PATH_C)
 
 
 def safe_exec(function_def, title, *args):
@@ -110,13 +106,13 @@ def set_values():
     global FILE_KLEE_LOG_A, FILE_KLEE_LOG_B, FILE_KLEE_LOG_C
     global FILE_SYM_PATH_A, FILE_SYM_PATH_B, FILE_SYM_PATH_C
     global FILE_SYMBOLIC_POC, VALUE_BIT_SIZE
-    FILE_KLEE_LOG_A = Common.DIRECTORY_OUTPUT + "/log-klee-pa"
-    FILE_KLEE_LOG_B = Common.DIRECTORY_OUTPUT + "/log-klee-pb"
-    FILE_KLEE_LOG_C = Common.DIRECTORY_OUTPUT + "/log-klee-pc"
-    FILE_SYM_PATH_A = Common.DIRECTORY_OUTPUT + "/sym-path-a"
-    FILE_SYM_PATH_B = Common.DIRECTORY_OUTPUT + "/sym-path-b"
-    FILE_SYM_PATH_C = Common.DIRECTORY_OUTPUT + "/sym-path-c"
-    FILE_SYMBOLIC_POC = Common.DIRECTORY_OUTPUT + "/symbolic.ktest"
+    FILE_KLEE_LOG_A = Vault.DIRECTORY_OUTPUT + "/log-klee-pa"
+    FILE_KLEE_LOG_B = Vault.DIRECTORY_OUTPUT + "/log-klee-pb"
+    FILE_KLEE_LOG_C = Vault.DIRECTORY_OUTPUT + "/log-klee-pc"
+    FILE_SYM_PATH_A = Vault.DIRECTORY_OUTPUT + "/sym-path-a"
+    FILE_SYM_PATH_B = Vault.DIRECTORY_OUTPUT + "/sym-path-b"
+    FILE_SYM_PATH_C = Vault.DIRECTORY_OUTPUT + "/sym-path-c"
+    FILE_SYMBOLIC_POC = Vault.DIRECTORY_OUTPUT + "/symbolic.ktest"
     VALUE_BIT_SIZE = Converter.convert_poc_to_ktest(FILE_SYMBOLIC_POC)
 
 

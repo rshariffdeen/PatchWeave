@@ -3,7 +3,7 @@
 
 
 import sys
-from Utilities import execute_command, error_exit
+from common.Tools import execute_command, error_exit
 import Output
 import Logger
 

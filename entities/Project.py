@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os
-from Utilities import error_exit, execute_command
-import Output
-import Common
+from utilities import Output
 
 
 class Project:

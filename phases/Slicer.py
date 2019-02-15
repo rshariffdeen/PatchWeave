@@ -4,14 +4,11 @@
 
 import sys
 import time
-from Utilities import error_exit, get_code
-import Output
-import Common
-import Logger
+from common.Tools import error_exit, get_code
+from common import Vault
 import Differ
 import Tracer
-import Extractor
-import Oracle
+from utilities import Extractor, Oracle, Logger, Output
 import Concolic
 
 
@@ -20,7 +17,7 @@ def slice_code_from_trace():
     Output.normal("slicing unrelated diff based on trace")
     for diff_loc in Differ.diff_info:
         source_file, start_line = diff_loc.split(":")
-        source_file = source_file.replace(Common.VALUE_PATH_A, Common.VALUE_PATH_B)
+        source_file = source_file.replace(Vault.VALUE_PATH_A, Vault.VALUE_PATH_B)
         skip_lines = list()
         diff_info = Differ.diff_info[diff_loc]
         if 'new-lines' in diff_info.keys():
@@ -58,12 +55,12 @@ def slice_function_calls():
     Output.normal("slicing unrelated function calls")
     for diff_loc in Differ.diff_info:
         source_file, start_line = diff_loc.split(":")
-        source_file = source_file.replace(Common.VALUE_PATH_A, Common.VALUE_PATH_B)
+        source_file = source_file.replace(Vault.VALUE_PATH_A, Vault.VALUE_PATH_B)
         diff_info = Differ.diff_info[diff_loc]
         skip_lines = diff_info['skip-lines']
         if 'new-lines' in diff_info.keys():
             function_call_node_list = Extractor.extract_function_call_list(source_file,
-                                                                       start_line)
+                                                                           start_line)
             start_line, end_line = diff_info['new-lines']
             line_numbers = set(range(int(start_line), int(end_line) + 1))
             for line_number in line_numbers:

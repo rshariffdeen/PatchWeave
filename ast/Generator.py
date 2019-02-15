@@ -2,16 +2,15 @@
 
 ''' Main vector generation functions '''
 
-from Utilities import error_exit, execute_command, backup_file, restore_file
+from common.Tools import error_exit, execute_command, backup_file, restore_file
 import Vector
 import AST
-import Output
-import Logger
+from utilities import Logger, Output
 import sys
-import Common
+from common import Vault
 import json
 import os
-import Differ
+from phases import Differ
 
 APP_FORMAT_LLVM = "clang-format -style=LLVM "
 APP_AST_DIFF = "crochet-diff"
@@ -67,9 +66,9 @@ def convert_to_llvm(file_path):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     try:
         backup_name = "last.c"
-        convert_file_path = Common.DIRECTORY_OUTPUT + "/temp_llvm.c"
+        convert_file_path = Vault.DIRECTORY_OUTPUT + "/temp_llvm.c"
         backup_file(file_path, backup_name)
-        format_command = APP_FORMAT_LLVM + file_path + "> " + convert_file_path + " 2>" + Common.FILE_ERROR_LOG
+        format_command = APP_FORMAT_LLVM + file_path + "> " + convert_file_path + " 2>" + Vault.FILE_ERROR_LOG
         replace_command = format_command + ";" + "cp " + convert_file_path + " " + file_path
         execute_command(replace_command)
     except Exception as exception:

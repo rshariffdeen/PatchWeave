@@ -6,9 +6,8 @@ import sys, os
 sys.path.append('./ast/')
 import Logger
 import Generator
-import Converter
+from utilities import Converter, Extractor
 import Finder
-import Extractor
 
 
 def is_node_equal(node_a, node_b, var_map):

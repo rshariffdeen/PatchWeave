@@ -3,7 +3,7 @@
 
 
 import sys
-import Logger
+from utilities import Logger
 
 
 def write_var_map(var_map, output_file):

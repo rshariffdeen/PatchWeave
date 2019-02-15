@@ -4,19 +4,12 @@
 
 import sys, os
 sys.path.append('./ast/')
-import time
-from Utilities import execute_command, error_exit, show_partial_diff, backup_file
+from common.Tools import execute_command, error_exit, show_partial_diff, backup_file
 import Output
-import Common
-import Logger
-import Differ
-import Builder
-from six.moves import cStringIO
-from pysmt.smtlib.parser import SmtLibParser
-from pysmt.shortcuts import get_model
+from common import Vault
+from utilities import Logger
 import Generator
-import Tracer
-import Weaver
+from phases import Weaver
 
 FILE_SYNTAX_ERRORS = ""
 FILENAME_BACKUP = "backup-syntax-fix"
@@ -82,7 +75,7 @@ def fix_return_type(source_file, source_location):
         new_statement = "return;\n"
         backup_file(source_file, FILENAME_BACKUP)
         replace_code(new_statement, source_file, start_line)
-        backup_file_path = Common.DIRECTORY_BACKUP + "/" + FILENAME_BACKUP
+        backup_file_path = Vault.DIRECTORY_BACKUP + "/" + FILENAME_BACKUP
         show_partial_diff(backup_file_path, source_file)
     else:
         error_exit("NEW RETURN TYPE!")
@@ -115,7 +108,7 @@ def check_syntax_errors():
 
 def set_values():
     global FILE_SYNTAX_ERRORS
-    FILE_SYNTAX_ERRORS = Common.DIRECTORY_OUTPUT + "/syntax-errors"
+    FILE_SYNTAX_ERRORS = Vault.DIRECTORY_OUTPUT + "/syntax-errors"
 
 
 def check():

@@ -2,28 +2,23 @@
 # -*- coding: utf-8 -*-
 
 
-import sys, os
+import sys
+
 sys.path.append('./ast/')
-import time
-from Utilities import execute_command, error_exit, backup_file, restore_file, reset_git
+from common.Tools import error_exit, backup_file, restore_file, reset_git
 from six.moves import cStringIO
 from pysmt.smtlib.parser import SmtLibParser
 from pysmt.shortcuts import get_model
 import Output
-import Common
+from common import Vault
 import Logger
-import Concolic
 import Generator
-import Builder
-import Differ
-import Collector
-import z3
-
+from phases import Builder
 
 KLEE_SYMBOLIC_ENGINE = "klee "
 SYMBOLIC_ARGUMENTS = "--no-exit-on-error --libc=uclibc --posix-runtime --external-calls=all --only-replay-seeds --seed-out=$KTEST"
 TOOL_KLEE_INSTRUMENTATION = "/home/ridwan/workspace/llvm/llvm-7/build/bin/gizmo"
-FILE_TEMP_INSTRUMENTED = Common.DIRECTORY_OUTPUT + "/temp-instrumented"
+FILE_TEMP_INSTRUMENTED = Vault.DIRECTORY_OUTPUT + "/temp-instrumented"
 
 
 def generate_symbolic_expressions(source_path, start_line, end_line, output_log, only_in_range=True):
@@ -32,18 +27,18 @@ def generate_symbolic_expressions(source_path, start_line, end_line, output_log,
     source_file_name = str(source_path).split("/")[-1]
     source_directory = "/".join(str(source_path).split("/")[:-1])
 
-    if Common.Project_A.path in source_path:
-        binary_path = Common.Project_A.path + Common.VALUE_EXPLOIT_A.split(" ")[0]
-        binary_args = " ".join(Common.VALUE_EXPLOIT_A.split(" ")[1:])
-    elif Common.Project_B.path in source_path:
-        binary_path = Common.Project_B.path + Common.VALUE_EXPLOIT_A.split(" ")[0]
-        binary_args = " ".join(Common.VALUE_EXPLOIT_A.split(" ")[1:])
-    elif Common.Project_C.path in source_path:
-        binary_path = Common.Project_C.path + Common.VALUE_EXPLOIT_C.split(" ")[0]
-        binary_args = " ".join(Common.VALUE_EXPLOIT_C.split(" ")[1:])
+    if Vault.Project_A.path in source_path:
+        binary_path = Vault.Project_A.path + Vault.VALUE_EXPLOIT_A.split(" ")[0]
+        binary_args = " ".join(Vault.VALUE_EXPLOIT_A.split(" ")[1:])
+    elif Vault.Project_B.path in source_path:
+        binary_path = Vault.Project_B.path + Vault.VALUE_EXPLOIT_A.split(" ")[0]
+        binary_args = " ".join(Vault.VALUE_EXPLOIT_A.split(" ")[1:])
+    elif Vault.Project_C.path in source_path:
+        binary_path = Vault.Project_C.path + Vault.VALUE_EXPLOIT_C.split(" ")[0]
+        binary_args = " ".join(Vault.VALUE_EXPLOIT_C.split(" ")[1:])
     else:
-        binary_path = Common.Project_D.path + Common.VALUE_EXPLOIT_C.split(" ")[0]
-        binary_args = " ".join(Common.VALUE_EXPLOIT_C.split(" ")[1:])
+        binary_path = Vault.Project_D.path + Vault.VALUE_EXPLOIT_C.split(" ")[0]
+        binary_args = " ".join(Vault.VALUE_EXPLOIT_C.split(" ")[1:])
 
     binary_name = str(binary_path).split("/")[-1]
     binary_directory = "/".join(str(binary_path).split("/")[:-1])
