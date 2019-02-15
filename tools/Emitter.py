@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import sys
-from common import Definitions
+from common import Definitions, Values
 from tools import Logger
 
 GREY = '\t\x1b[1;30m'
@@ -42,7 +42,7 @@ def sub_sub_title(sub_title):
 
 
 def command(message):
-    if Definitions.DEBUG:
+    if Values.DEBUG:
         message = "running command\n\t" + message
         write(message, ROSE)
     Logger.command(message)
@@ -54,7 +54,7 @@ def normal(message, jump_line=True):
 
 
 def information(message, jump_line=True):
-    if Definitions.DEBUG:
+    if Values.DEBUG:
         write(message, GREY, jump_line)
     Logger.information(message)
 
@@ -85,7 +85,7 @@ def program_output(output_message):
 
 
 def warning(message):
-    if Definitions.DEBUG:
+    if Values.DEBUG:
         write(message, YELLOW)
     Logger.warning(message)
 

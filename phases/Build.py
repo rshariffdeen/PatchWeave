@@ -3,14 +3,14 @@
 
 import sys
 import time
-from common import Definitions
+from common import Definitions, Values
 from tools import Emitter, Builder, Logger
 from phases import Trace
 from common.Utilities import error_exit
 
 
 def build_projects():
-    if not Definitions.NO_BUILD:
+    if not Values.NO_BUILD:
         Builder.build_asan()
         Trace.test_exploits()
         Builder.build_llvm()

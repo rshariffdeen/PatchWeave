@@ -4,7 +4,7 @@ import os
 import sys
 import subprocess
 from tools import Logger, Emitter
-import Definitions
+import Definitions, Values
 
 
 def execute_command(command, show_output=True):

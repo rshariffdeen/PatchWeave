@@ -5,7 +5,7 @@
 import os
 import sys
 from common.Utilities import execute_command, error_exit
-from common import Definitions
+from common import Definitions, Values
 from tools import Logger, Emitter
 
 CC = "clang"
@@ -63,49 +63,49 @@ def build_project(project_path, build_command=None):
 def build_all():
     Emitter.normal("building")
 
-    Emitter.normal("\t" + Definitions.Project_A.path)
+    Emitter.normal("\t" + Values.Project_A.path)
     if not Definitions.VALUE_BUILD_COMMAND_A:
-        build_project(Definitions.Project_A.path)
+        build_project(Values.Project_A.path)
     else:
-        build_project(Definitions.Project_A.path, Definitions.VALUE_BUILD_COMMAND_A)
+        build_project(Values.Project_A.path, Values.VALUE_BUILD_COMMAND_A)
 
-    Emitter.normal("\t" + Definitions.Project_B.path)
+    Emitter.normal("\t" + Values.Project_B.path)
     if not Definitions.VALUE_BUILD_COMMAND_A:
-        build_project(Definitions.Project_B.path)
+        build_project(Values.Project_B.path)
     else:
-        build_project(Definitions.Project_B.path, Definitions.VALUE_BUILD_COMMAND_A)
+        build_project(Values.Project_B.path, Values.VALUE_BUILD_COMMAND_A)
 
-    Emitter.normal("\t" + Definitions.Project_C.path)
+    Emitter.normal("\t" + Values.Project_C.path)
     if not Definitions.VALUE_BUILD_COMMAND_C:
-        build_project(Definitions.Project_C.path)
+        build_project(Values.Project_C.path)
     else:
-        build_project(Definitions.Project_C.path, Definitions.VALUE_BUILD_COMMAND_C)
+        build_project(Values.Project_C.path, Values.VALUE_BUILD_COMMAND_C)
 
-    Emitter.normal("\t" + Definitions.Project_D.path)
-    if not Definitions.VALUE_BUILD_COMMAND_C:
-        build_project(Definitions.Project_D.path)
+    Emitter.normal("\t" + Values.Project_D.path)
+    if not Values.VALUE_BUILD_COMMAND_C:
+        build_project(Values.Project_D.path)
     else:
-        build_project(Definitions.Project_D.path, Definitions.VALUE_BUILD_COMMAND_C)
+        build_project(Values.Project_D.path, Values.VALUE_BUILD_COMMAND_C)
 
 
 def config_all(is_llvm=False):
     Emitter.normal("configuring projects")
 
-    Emitter.normal("\t" + Definitions.Project_A.path)
-    if not Definitions.VALUE_BUILD_COMMAND_A:
-        config_project(Definitions.Project_A.path, is_llvm)
+    Emitter.normal("\t" + Values.Project_A.path)
+    if not Values.VALUE_BUILD_COMMAND_A:
+        config_project(Values.Project_A.path, is_llvm)
 
-    Emitter.normal("\t" + Definitions.Project_B.path)
-    if not Definitions.VALUE_BUILD_COMMAND_A:
-        config_project(Definitions.Project_B.path, is_llvm)
+    Emitter.normal("\t" + Values.Project_B.path)
+    if not Values.VALUE_BUILD_COMMAND_A:
+        config_project(Values.Project_B.path, is_llvm)
 
-    Emitter.normal("\t" + Definitions.Project_C.path)
-    if not Definitions.VALUE_BUILD_COMMAND_C:
-        config_project(Definitions.Project_C.path, is_llvm)
+    Emitter.normal("\t" + Values.Project_C.path)
+    if not Values.VALUE_BUILD_COMMAND_C:
+        config_project(Values.Project_C.path, is_llvm)
 
-    Emitter.normal("\t" + Definitions.Project_D.path)
-    if not Definitions.VALUE_BUILD_COMMAND_C:
-        config_project(Definitions.Project_D.path, is_llvm)
+    Emitter.normal("\t" + Values.Project_D.path)
+    if not Values.VALUE_BUILD_COMMAND_C:
+        config_project(Values.Project_D.path, is_llvm)
 
 
 def build_normal():
@@ -126,11 +126,11 @@ def build_verify():
     Emitter.sub_title("building projects")
     CXX_FLAGS = "'-g -O0 -static -DNDEBUG -ftrapv'"
     C_FLAGS = "'-g -O0 -static -DNDEBUG -ftrapv'"
-    Emitter.normal("\t" + Definitions.Project_D.path)
-    if not Definitions.VALUE_BUILD_COMMAND_C:
-        build_project(Definitions.Project_D.path)
+    Emitter.normal("\t" + Values.Project_D.path)
+    if not Values.VALUE_BUILD_COMMAND_C:
+        build_project(Values.Project_D.path)
     else:
-        build_project(Definitions.Project_D.path, Definitions.VALUE_BUILD_COMMAND_C)
+        build_project(Values.Project_D.path, Values.VALUE_BUILD_COMMAND_C)
 
 
 def build_asan():
@@ -142,8 +142,8 @@ def build_asan():
     CXX_FLAGS = "'-g -O0 -static'"
     C_FLAGS = "'-g -O0 -static'"
     config_all()
-    CXX_FLAGS = "'-g -O0 -static -DNDEBUG -fsanitize=" + Definitions.VALUE_ASAN_FLAG + "'"
-    C_FLAGS = "'-g -O0 -static -DNDEBUG -fsanitize=" + Definitions.VALUE_ASAN_FLAG + "'"
+    CXX_FLAGS = "'-g -O0 -static -DNDEBUG -fsanitize=" + Values.VALUE_ASAN_FLAG + "'"
+    C_FLAGS = "'-g -O0 -static -DNDEBUG -fsanitize=" + Values.VALUE_ASAN_FLAG + "'"
     build_all()
 
 
@@ -184,26 +184,26 @@ def soft_restore_project(project_path):
 
 def restore_all():
     Emitter.normal("restoring projects")
-    Emitter.normal("\t" + Definitions.Project_A.path)
-    restore_project(Definitions.Project_A.path)
-    Emitter.normal("\t" + Definitions.Project_B.path)
-    restore_project(Definitions.Project_B.path)
-    Emitter.normal("\t" + Definitions.Project_C.path)
-    restore_project(Definitions.Project_C.path)
-    Emitter.normal("\t" + Definitions.Project_D.path)
-    restore_project(Definitions.Project_D.path)
+    Emitter.normal("\t" + Values.Project_A.path)
+    restore_project(Values.Project_A.path)
+    Emitter.normal("\t" + Values.Project_B.path)
+    restore_project(Values.Project_B.path)
+    Emitter.normal("\t" + Values.Project_C.path)
+    restore_project(Values.Project_C.path)
+    Emitter.normal("\t" + Values.Project_D.path)
+    restore_project(Values.Project_D.path)
 
 
 def soft_restore_all():
     Emitter.normal("restoring(soft) projects")
-    Emitter.normal("\t" + Definitions.Project_A.path)
-    soft_restore_project(Definitions.Project_A.path)
-    Emitter.normal("\t" + Definitions.Project_B.path)
-    soft_restore_project(Definitions.Project_B.path)
-    Emitter.normal("\t" + Definitions.Project_C.path)
-    soft_restore_project(Definitions.Project_C.path)
-    Emitter.normal("\t" + Definitions.Project_D.path)
-    soft_restore_project(Definitions.Project_D.path)
+    Emitter.normal("\t" + Values.Project_A.path)
+    soft_restore_project(Values.Project_A.path)
+    Emitter.normal("\t" + Values.Project_B.path)
+    soft_restore_project(Values.Project_B.path)
+    Emitter.normal("\t" + Values.Project_C.path)
+    soft_restore_project(Values.Project_C.path)
+    Emitter.normal("\t" + Values.Project_D.path)
+    soft_restore_project(Values.Project_D.path)
 
 
 def clean_project(project_path):
@@ -214,17 +214,17 @@ def clean_project(project_path):
 def clean_all():
     restore_all()
     Emitter.normal("cleaning projects")
-    Emitter.normal("\t" + Definitions.Project_A.path)
-    clean_project(Definitions.Project_A.path)
+    Emitter.normal("\t" + Values.Project_A.path)
+    clean_project(Values.Project_A.path)
 
-    Emitter.normal("\t" + Definitions.Project_B.path)
-    clean_project(Definitions.Project_B.path)
+    Emitter.normal("\t" + Values.Project_B.path)
+    clean_project(Values.Project_B.path)
 
-    Emitter.normal("\t" + Definitions.Project_C.path)
-    clean_project(Definitions.Project_C.path)
+    Emitter.normal("\t" + Values.Project_C.path)
+    clean_project(Values.Project_C.path)
 
-    Emitter.normal("\t" + Definitions.Project_D.path)
-    clean_project(Definitions.Project_D.path)
+    Emitter.normal("\t" + Values.Project_D.path)
+    clean_project(Values.Project_D.path)
 
 
 def build_instrumented_code(source_directory):

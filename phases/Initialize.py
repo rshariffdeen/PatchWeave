@@ -2,12 +2,11 @@
 # -*- coding: utf-8 -*-
 
 
-
 import os
 import sys
 from common.Utilities import execute_command
 from entities import Project
-from common import Definitions
+from common import Definitions, Values
 from tools import Emitter
 
 
@@ -25,17 +24,17 @@ def set_env_value():
 
 
 def load_values():
-    Definitions.Project_A = Project.Project(Definitions.VALUE_PATH_A, "Pa", Definitions.VALUE_EXPLOIT_A)
-    Definitions.Project_B = Project.Project(Definitions.VALUE_PATH_B, "Pb")
-    Definitions.Project_C = Project.Project(Definitions.VALUE_PATH_C, "Pc", Definitions.VALUE_EXPLOIT_C)
-    Definitions.Project_D = Project.Project(Definitions.VALUE_PATH_C + "-patch", "Pd")
+    Values.Project_A = Project.Project(Values.VALUE_PATH_A, "Pa", Values.VALUE_EXPLOIT_A)
+    Values.Project_B = Project.Project(Values.VALUE_PATH_B, "Pb")
+    Values.Project_C = Project.Project(Values.VALUE_PATH_C, "Pc", Values.VALUE_EXPLOIT_C)
+    Values.Project_D = Project.Project(Values.VALUE_PATH_C + "-patch", "Pd")
     load_standard_list()
 
 
 def create_patch_dir():
-    patch_dir = Definitions.VALUE_PATH_C + "-patch"
+    patch_dir = Values.VALUE_PATH_C + "-patch"
     if not os.path.isdir(patch_dir):
-        create_command = "cp -rf " + Definitions.VALUE_PATH_C + " " + Definitions.VALUE_PATH_C + "-patch"
+        create_command = "cp -rf " + Values.VALUE_PATH_C + " " + Values.VALUE_PATH_C + "-patch"
         execute_command(create_command)
 
 
@@ -53,13 +52,13 @@ def read_conf():
     if len(sys.argv) > 1:
         for arg in sys.argv:
             if Definitions.ARG_DEBUG in arg:
-                Definitions.DEBUG = True
+                Values.DEBUG = True
             elif Definitions.ARG_NO_BUILD in arg:
-                Definitions.NO_BUILD = True
+                Values.NO_BUILD = True
             elif Definitions.ARG_CONF_FILE in arg:
-                Definitions.FILE_CONFIGURATION = str(arg).replace(Definitions.ARG_CONF_FILE, '')
+                Values.FILE_CONFIGURATION = str(arg).replace(Definitions.ARG_CONF_FILE, '')
             elif Definitions.ARG_NO_SYM_TRACE_GEN in arg:
-                Definitions.NO_SYM_TRACE_GEN = True
+                Values.NO_SYM_TRACE_GEN = True
             elif "PatchWeave.py" in arg:
                 continue
             else:
@@ -70,38 +69,38 @@ def read_conf():
         Emitter.help()
         exit()
 
-    if not os.path.exists(Definitions.FILE_CONFIGURATION):
-        Emitter.error("[NOT FOUND] Configuration file " + Definitions.FILE_CONFIGURATION)
+    if not os.path.exists(Values.FILE_CONFIGURATION):
+        Emitter.error("[NOT FOUND] Configuration file " + Values.FILE_CONFIGURATION)
         exit()
 
-    with open(Definitions.FILE_CONFIGURATION, 'r') as conf_file:
+    with open(Values.FILE_CONFIGURATION, 'r') as conf_file:
         configuration_list = [i.strip() for i in conf_file.readlines()]
 
     for configuration in configuration_list:
         if Definitions.CONF_EXPLOIT_A in configuration:
-            Definitions.VALUE_EXPLOIT_A = configuration.replace(Definitions.CONF_EXPLOIT_A, '')
+            Values.VALUE_EXPLOIT_A = configuration.replace(Definitions.CONF_EXPLOIT_A, '')
         elif Definitions.CONF_EXPLOIT_C in configuration:
-            Definitions.VALUE_EXPLOIT_C = configuration.replace(Definitions.CONF_EXPLOIT_C, '')
+            Values.VALUE_EXPLOIT_C = configuration.replace(Definitions.CONF_EXPLOIT_C, '')
         elif Definitions.CONF_PATH_POC in configuration:
-            Definitions.VALUE_PATH_POC = configuration.replace(Definitions.CONF_PATH_POC, '')
+            Values.VALUE_PATH_POC = configuration.replace(Definitions.CONF_PATH_POC, '')
         elif Definitions.CONF_PATH_A in configuration:
-            Definitions.VALUE_PATH_A = configuration.replace(Definitions.CONF_PATH_A, '')
+            Values.VALUE_PATH_A = configuration.replace(Definitions.CONF_PATH_A, '')
         elif Definitions.CONF_PATH_B in configuration:
-            Definitions.VALUE_PATH_B = configuration.replace(Definitions.CONF_PATH_B, '')
+            Values.VALUE_PATH_B = configuration.replace(Definitions.CONF_PATH_B, '')
         elif Definitions.CONF_PATH_C in configuration:
-            Definitions.VALUE_PATH_C = configuration.replace(Definitions.CONF_PATH_C, '')
+            Values.VALUE_PATH_C = configuration.replace(Definitions.CONF_PATH_C, '')
         elif Definitions.CONF_EXPLOIT_PREPARE in configuration:
-            Definitions.VALUE_EXPLOIT_PREPARE = configuration.replace(Definitions.CONF_EXPLOIT_PREPARE, '')
+            Values.VALUE_EXPLOIT_PREPARE = configuration.replace(Definitions.CONF_EXPLOIT_PREPARE, '')
         elif Definitions.CONF_FLAGS_A in configuration:
-            Definitions.VALUE_BUILD_FLAGS_A = configuration.replace(Definitions.CONF_FLAGS_A, '')
+            Values.VALUE_BUILD_FLAGS_A = configuration.replace(Definitions.CONF_FLAGS_A, '')
         elif Definitions.CONF_FLAGS_C in configuration:
-            Definitions.VALUE_BUILD_FLAGS_C = configuration.replace(Definitions.CONF_FLAGS_C, '')
+            Values.VALUE_BUILD_FLAGS_C = configuration.replace(Definitions.CONF_FLAGS_C, '')
         elif Definitions.CONF_BUILD_COMMAND_A in configuration:
-            Definitions.VALUE_BUILD_COMMAND_A = configuration.replace(Definitions.CONF_BUILD_COMMAND_A, '')
+            Values.VALUE_BUILD_COMMAND_A = configuration.replace(Definitions.CONF_BUILD_COMMAND_A, '')
         elif Definitions.CONF_BUILD_COMMAND_C in configuration:
-            Definitions.VALUE_BUILD_COMMAND_C = configuration.replace(Definitions.CONF_BUILD_COMMAND_C, '')
+            Values.VALUE_BUILD_COMMAND_C = configuration.replace(Definitions.CONF_BUILD_COMMAND_C, '')
         elif Definitions.CONF_ASAN_FLAG in configuration:
-            Definitions.VALUE_ASAN_FLAG = configuration.replace(Definitions.CONF_ASAN_FLAG, '')
+            Values.VALUE_ASAN_FLAG = configuration.replace(Definitions.CONF_ASAN_FLAG, '')
 
 
 def initialize():
