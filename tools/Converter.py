@@ -7,7 +7,7 @@ import os
 sys.path.append('./ast/')
 from common.Utilities import error_exit, execute_command
 import Logger
-from common import Definitions
+
 
 SYMBOLIC_CONVERTER = "gen-bout"
 BINARY_CONVERTER = "extract-bc"
@@ -95,13 +95,13 @@ def convert_member_expr(ast_node, only_string=False):
     return var_name, var_list
 
 
-def convert_poc_to_ktest(file_path):
+def convert_poc_to_ktest(poc_path, ktest_path):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    concrete_file = open(Definitions.VALUE_PATH_POC, 'rb')
+    concrete_file = open(poc_path, 'rb')
     bit_size = os.fstat(concrete_file.fileno()).st_size
-    convert_command = SYMBOLIC_CONVERTER + " --sym-file " + Definitions.VALUE_PATH_POC
+    convert_command = SYMBOLIC_CONVERTER + " --sym-file " + poc_path
     execute_command(convert_command)
-    move_command = "mv file.bout " + file_path
+    move_command = "mv file.bout " + ktest_path
     execute_command(move_command)
     return bit_size
 

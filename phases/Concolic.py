@@ -7,7 +7,7 @@ import sys
 sys.path.append('./ast/')
 import time
 from common.Utilities import execute_command, error_exit
-from common import Definitions
+from common import Definitions, Values
 from tools import Collector, Converter, KleeExecutor, Logger, Emitter
 
 VALUE_BIT_SIZE = 0
@@ -32,11 +32,18 @@ estimate_loc_map = dict()
 def generate_sympath_donor():
     global sym_path_a, sym_path_b
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Emitter.normal(Definitions.VALUE_PATH_A)
-    if not Definitions.NO_SYM_TRACE_GEN:
-        binary_path = Definitions.VALUE_PATH_A + Definitions.VALUE_EXPLOIT_A.split(" ")[0]
+
+    project_path_a = Values.PATH_A
+    project_path_b = Values.PATH_B
+    exploit_a = Values.EXPLOIT_A
+    exploit_command = " ".join(exploit_a.split(" ")[1:])
+    poc_path = Values.PATH_POC
+    Emitter.normal(project_path_a)
+
+    if not Values.NO_SYM_TRACE_GEN:
+        binary_path = project_path_a + exploit_a.split(" ")[0]
         binary_dir, binary_name = Converter.convert_binary_to_llvm(binary_path)
-        binary_args = " ".join(Definitions.VALUE_EXPLOIT_A.split(" ")[1:])
+        binary_args = " ".join(exploit_a.split(" ")[1:])
         sym_file_path = KleeExecutor.generate_path_condition(binary_args,
                                                              binary_dir,
                                                              binary_name,
@@ -45,13 +52,13 @@ def generate_sympath_donor():
                                                              FILE_KLEE_LOG_A)
         copy_command = "cp " + sym_file_path + " " + FILE_SYM_PATH_A
         execute_command(copy_command)
-    sym_path_a = Collector.collect_symbolic_path(FILE_KLEE_LOG_A, Definitions.VALUE_PATH_A)
+    sym_path_a = Collector.collect_symbolic_path(FILE_KLEE_LOG_A, project_path_a)
 
-    Emitter.normal(Definitions.VALUE_PATH_B)
-    if not Definitions.NO_SYM_TRACE_GEN:
-        binary_path = Definitions.VALUE_PATH_B + Definitions.VALUE_EXPLOIT_A.split(" ")[0]
+    Emitter.normal(project_path_b)
+    if not Values.NO_SYM_TRACE_GEN:
+        binary_path = project_path_b + exploit_a.split(" ")[0]
         binary_dir, binary_name = Converter.convert_binary_to_llvm(binary_path)
-        binary_args = " ".join(Definitions.VALUE_EXPLOIT_A.split(" ")[1:])
+        binary_args = " ".join(exploit_a.split(" ")[1:])
         sym_file_path = KleeExecutor.generate_path_condition(binary_args,
                                                              binary_dir,
                                                              binary_name,
@@ -60,7 +67,7 @@ def generate_sympath_donor():
                                                              FILE_KLEE_LOG_B)
         copy_command = "cp " + sym_file_path + " " + FILE_SYM_PATH_B
         execute_command(copy_command)
-    sym_path_b = Collector.collect_symbolic_path(FILE_KLEE_LOG_B, Definitions.VALUE_PATH_B)
+    sym_path_b = Collector.collect_symbolic_path(FILE_KLEE_LOG_B, project_path_b)
 
 
 def generate_sympath_target():
