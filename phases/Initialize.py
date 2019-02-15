@@ -24,17 +24,17 @@ def set_env_value():
 
 
 def load_values():
-    Values.Project_A = Project.Project(Values.VALUE_PATH_A, "Pa", Values.VALUE_EXPLOIT_A)
-    Values.Project_B = Project.Project(Values.VALUE_PATH_B, "Pb")
-    Values.Project_C = Project.Project(Values.VALUE_PATH_C, "Pc", Values.VALUE_EXPLOIT_C)
-    Values.Project_D = Project.Project(Values.VALUE_PATH_C + "-patch", "Pd")
+    Values.Project_A = Project.Project(Values.PATH_A, "Pa", Values.EXPLOIT_A)
+    Values.Project_B = Project.Project(Values.PATH_B, "Pb")
+    Values.Project_C = Project.Project(Values.PATH_C, "Pc", Values.EXPLOIT_C)
+    Values.Project_D = Project.Project(Values.PATH_C + "-patch", "Pd")
     load_standard_list()
 
 
 def create_patch_dir():
-    patch_dir = Values.VALUE_PATH_C + "-patch"
+    patch_dir = Values.PATH_C + "-patch"
     if not os.path.isdir(patch_dir):
-        create_command = "cp -rf " + Values.VALUE_PATH_C + " " + Values.VALUE_PATH_C + "-patch"
+        create_command = "cp -rf " + Values.PATH_C + " " + Values.PATH_C + "-patch"
         execute_command(create_command)
 
 
@@ -78,29 +78,29 @@ def read_conf():
 
     for configuration in configuration_list:
         if Definitions.CONF_EXPLOIT_A in configuration:
-            Values.VALUE_EXPLOIT_A = configuration.replace(Definitions.CONF_EXPLOIT_A, '')
+            Values.EXPLOIT_A = configuration.replace(Definitions.CONF_EXPLOIT_A, '')
         elif Definitions.CONF_EXPLOIT_C in configuration:
-            Values.VALUE_EXPLOIT_C = configuration.replace(Definitions.CONF_EXPLOIT_C, '')
+            Values.EXPLOIT_C = configuration.replace(Definitions.CONF_EXPLOIT_C, '')
         elif Definitions.CONF_PATH_POC in configuration:
-            Values.VALUE_PATH_POC = configuration.replace(Definitions.CONF_PATH_POC, '')
+            Values.PATH_POC = configuration.replace(Definitions.CONF_PATH_POC, '')
         elif Definitions.CONF_PATH_A in configuration:
-            Values.VALUE_PATH_A = configuration.replace(Definitions.CONF_PATH_A, '')
+            Values.PATH_A = configuration.replace(Definitions.CONF_PATH_A, '')
         elif Definitions.CONF_PATH_B in configuration:
-            Values.VALUE_PATH_B = configuration.replace(Definitions.CONF_PATH_B, '')
+            Values.PATH_B = configuration.replace(Definitions.CONF_PATH_B, '')
         elif Definitions.CONF_PATH_C in configuration:
-            Values.VALUE_PATH_C = configuration.replace(Definitions.CONF_PATH_C, '')
+            Values.PATH_C = configuration.replace(Definitions.CONF_PATH_C, '')
         elif Definitions.CONF_EXPLOIT_PREPARE in configuration:
-            Values.VALUE_EXPLOIT_PREPARE = configuration.replace(Definitions.CONF_EXPLOIT_PREPARE, '')
+            Values.EXPLOIT_PREPARE = configuration.replace(Definitions.CONF_EXPLOIT_PREPARE, '')
         elif Definitions.CONF_FLAGS_A in configuration:
-            Values.VALUE_BUILD_FLAGS_A = configuration.replace(Definitions.CONF_FLAGS_A, '')
+            Values.BUILD_FLAGS_A = configuration.replace(Definitions.CONF_FLAGS_A, '')
         elif Definitions.CONF_FLAGS_C in configuration:
-            Values.VALUE_BUILD_FLAGS_C = configuration.replace(Definitions.CONF_FLAGS_C, '')
+            Values.BUILD_FLAGS_C = configuration.replace(Definitions.CONF_FLAGS_C, '')
         elif Definitions.CONF_BUILD_COMMAND_A in configuration:
-            Values.VALUE_BUILD_COMMAND_A = configuration.replace(Definitions.CONF_BUILD_COMMAND_A, '')
+            Values.BUILD_COMMAND_A = configuration.replace(Definitions.CONF_BUILD_COMMAND_A, '')
         elif Definitions.CONF_BUILD_COMMAND_C in configuration:
-            Values.VALUE_BUILD_COMMAND_C = configuration.replace(Definitions.CONF_BUILD_COMMAND_C, '')
+            Values.BUILD_COMMAND_C = configuration.replace(Definitions.CONF_BUILD_COMMAND_C, '')
         elif Definitions.CONF_ASAN_FLAG in configuration:
-            Values.VALUE_ASAN_FLAG = configuration.replace(Definitions.CONF_ASAN_FLAG, '')
+            Values.ASAN_FLAG = configuration.replace(Definitions.CONF_ASAN_FLAG, '')
 
 
 def initialize():

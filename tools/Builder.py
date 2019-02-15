@@ -67,44 +67,44 @@ def build_all():
     if not Definitions.VALUE_BUILD_COMMAND_A:
         build_project(Values.Project_A.path)
     else:
-        build_project(Values.Project_A.path, Values.VALUE_BUILD_COMMAND_A)
+        build_project(Values.Project_A.path, Values.BUILD_COMMAND_A)
 
     Emitter.normal("\t" + Values.Project_B.path)
     if not Definitions.VALUE_BUILD_COMMAND_A:
         build_project(Values.Project_B.path)
     else:
-        build_project(Values.Project_B.path, Values.VALUE_BUILD_COMMAND_A)
+        build_project(Values.Project_B.path, Values.BUILD_COMMAND_A)
 
     Emitter.normal("\t" + Values.Project_C.path)
     if not Definitions.VALUE_BUILD_COMMAND_C:
         build_project(Values.Project_C.path)
     else:
-        build_project(Values.Project_C.path, Values.VALUE_BUILD_COMMAND_C)
+        build_project(Values.Project_C.path, Values.BUILD_COMMAND_C)
 
     Emitter.normal("\t" + Values.Project_D.path)
-    if not Values.VALUE_BUILD_COMMAND_C:
+    if not Values.BUILD_COMMAND_C:
         build_project(Values.Project_D.path)
     else:
-        build_project(Values.Project_D.path, Values.VALUE_BUILD_COMMAND_C)
+        build_project(Values.Project_D.path, Values.BUILD_COMMAND_C)
 
 
 def config_all(is_llvm=False):
     Emitter.normal("configuring projects")
 
     Emitter.normal("\t" + Values.Project_A.path)
-    if not Values.VALUE_BUILD_COMMAND_A:
+    if not Values.BUILD_COMMAND_A:
         config_project(Values.Project_A.path, is_llvm)
 
     Emitter.normal("\t" + Values.Project_B.path)
-    if not Values.VALUE_BUILD_COMMAND_A:
+    if not Values.BUILD_COMMAND_A:
         config_project(Values.Project_B.path, is_llvm)
 
     Emitter.normal("\t" + Values.Project_C.path)
-    if not Values.VALUE_BUILD_COMMAND_C:
+    if not Values.BUILD_COMMAND_C:
         config_project(Values.Project_C.path, is_llvm)
 
     Emitter.normal("\t" + Values.Project_D.path)
-    if not Values.VALUE_BUILD_COMMAND_C:
+    if not Values.BUILD_COMMAND_C:
         config_project(Values.Project_D.path, is_llvm)
 
 
@@ -127,10 +127,10 @@ def build_verify():
     CXX_FLAGS = "'-g -O0 -static -DNDEBUG -ftrapv'"
     C_FLAGS = "'-g -O0 -static -DNDEBUG -ftrapv'"
     Emitter.normal("\t" + Values.Project_D.path)
-    if not Values.VALUE_BUILD_COMMAND_C:
+    if not Values.BUILD_COMMAND_C:
         build_project(Values.Project_D.path)
     else:
-        build_project(Values.Project_D.path, Values.VALUE_BUILD_COMMAND_C)
+        build_project(Values.Project_D.path, Values.BUILD_COMMAND_C)
 
 
 def build_asan():
@@ -142,8 +142,8 @@ def build_asan():
     CXX_FLAGS = "'-g -O0 -static'"
     C_FLAGS = "'-g -O0 -static'"
     config_all()
-    CXX_FLAGS = "'-g -O0 -static -DNDEBUG -fsanitize=" + Values.VALUE_ASAN_FLAG + "'"
-    C_FLAGS = "'-g -O0 -static -DNDEBUG -fsanitize=" + Values.VALUE_ASAN_FLAG + "'"
+    CXX_FLAGS = "'-g -O0 -static -DNDEBUG -fsanitize=" + Values.ASAN_FLAG + "'"
+    C_FLAGS = "'-g -O0 -static -DNDEBUG -fsanitize=" + Values.ASAN_FLAG + "'"
     build_all()
 
 

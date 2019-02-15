@@ -26,18 +26,18 @@ TRACE_LIST = dict()
 
 
 # ------------------ Configuration Values ---------------
-VALUE_PATH_A = ""
-VALUE_PATH_B = ""
-VALUE_PATH_C = ""
-VALUE_EXPLOIT_A = ""
-VALUE_EXPLOIT_C = ""
-VALUE_BUILD_FLAGS_A = ""
-VALUE_BUILD_FLAGS_C = ""
-VALUE_BUILD_COMMAND_A = ""
-VALUE_BUILD_COMMAND_C = ""
-VALUE_PATH_POC = ""
-VALUE_EXPLOIT_PREPARE = ""
-VALUE_ASAN_FLAG = ""
+PATH_A = ""
+PATH_B = ""
+PATH_C = ""
+EXPLOIT_A = ""
+EXPLOIT_C = ""
+BUILD_FLAGS_A = ""
+BUILD_FLAGS_C = ""
+BUILD_COMMAND_A = ""
+BUILD_COMMAND_C = ""
+PATH_POC = ""
+EXPLOIT_PREPARE = ""
+ASAN_FLAG = ""
 
 
 header_file_list_to_patch = []
