@@ -17,6 +17,7 @@ import Generator
 import Builder
 import Weaver
 import collections
+import Extractor
 import Differ
 import Collector
 import z3
@@ -26,55 +27,6 @@ KLEE_SYMBOLIC_ENGINE = "klee "
 SYMBOLIC_ARGUMENTS = "--no-exit-on-error --libc=uclibc --posix-runtime --external-calls=all --only-replay-seeds --seed-out=$KTEST"
 TOOL_KLEE_INSTRUMENTATION = "/home/ridwan/workspace/llvm/llvm-7/build/bin/gizmo"
 FILE_TEMP_INSTRUMENTED = Common.DIRECTORY_OUTPUT + "/temp-instrumented"
-
-
-def instrument_code_for_klee(source_path, start_line, end_line, only_in_range):
-    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal("\t\tinstrumenting source code")
-    if not only_in_range:
-        syntax_format_command = "clang-tidy " + source_path + " -fix -checks=\"readability-braces-around-statements\""
-        ret_code = execute_command(syntax_format_command)
-        if int(ret_code) != 0:
-            error_exit("SYNTAX FORMAT ERROR IN INSTRUMENTATION")
-    variable_list = generate_available_variable_list(source_path, start_line, end_line, only_in_range)
-    insert_code = dict()
-    instrument_code = ""
-    for variable, line_number in variable_list:
-        if line_number in insert_code.keys():
-            insert_code[line_number] += "klee_print_expr(\"[var-expr] " + variable + "\", " + variable + ");\n"
-        else:
-            insert_code[line_number] = "klee_print_expr(\"[var-expr] " + variable + "\", " + variable + ");\n"
-
-    sorted_insert_code = collections.OrderedDict(sorted(insert_code.items(), reverse=True))
-    # print(sorted_insert_code)
-    #
-    # insert_line = 0
-    # if Common.Project_B.path in source_path:
-    #     insert_line = int(start_line) - 1
-    # else:
-    #     insert_line = int(end_line) - 1
-
-    if os.path.exists(source_path):
-        with open(source_path, 'r') as source_file:
-            content = source_file.readlines()
-            for insert_line in sorted_insert_code:
-                instrument_code = sorted_insert_code[insert_line]
-                if insert_line == sorted_insert_code.keys()[0]:
-                    instrument_code += "exit(1);\n"
-                existing_line = content[insert_line-1]
-                content[insert_line-1] = existing_line + instrument_code
-
-    with open(source_path, 'w') as source_file:
-        source_file.writelines(content)
-
-    ret_code = 1
-    while ret_code != 0:
-        syntax_fix_command = "clang-tidy --fix-errors " + source_path
-        execute_command(syntax_fix_command)
-        syntax_check_command = "clang-tidy " + source_path
-        ret_code = int(execute_command(syntax_check_command))
-
-
 
 
 def generate_symbolic_expressions(source_path, start_line, end_line, output_log, only_in_range=True):
@@ -117,19 +69,6 @@ def get_model_from_solver(str_formula):
     if not hasattr(model, '__dict__'):
         return None
     return model.__dict__['z3_model']
-
-
-def extract_keys_from_model(model):
-    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    byte_list = list()
-    k_list = ""
-    for dec in model:
-        if hasattr(model[dec], "num_entries"):
-            k_list = model[dec].as_list()
-    for pair in k_list:
-        if type(pair) == list:
-            byte_list.append(int(str(pair[0])))
-    return byte_list
 
 
 def create_z3_code(var_expr, var_name, bit_size):
@@ -197,7 +136,7 @@ def get_input_bytes_used(sym_expr):
     return input_byte_list
 
 
-def generate_mapping(var_map_a, var_map_b):
+def map_variable(var_map_a, var_map_b):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.normal("\t\tgenerating variable map")
     var_map = dict()
@@ -224,7 +163,7 @@ def generate_mapping(var_map_a, var_map_b):
     return var_map
 
 
-def get_ast_mapping(source_a, source_b):
+def map_ast_from_source(source_a, source_b):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Generator.generate_ast_script(source_a, source_b, True)
     mapping = dict()

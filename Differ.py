@@ -198,7 +198,7 @@ def collect_ast_diff():
             ast_script = get_ast_script(source_path_a, source_path_b)
             ast_map_a = Generator.get_ast_json(source_path_a)
             ast_map_b = Generator.get_ast_json(source_path_b)
-            mapping_ba = Mapper.get_ast_mapping(source_path_a, source_path_b)
+            mapping_ba = Mapper.map_ast_from_source(source_path_a, source_path_b)
         Output.normal("\tline number:" + line_number)
         diff_loc_info = diff_info[diff_loc]
         operation = diff_loc_info['operation']

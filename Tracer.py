@@ -10,6 +10,7 @@ from Utilities import execute_command, error_exit, extract_bitcode
 import Output
 import Common
 import Logger
+import Extractor
 
 
 SYMBOLIC_ENGINE = "klee --posix-runtime --libc=uclibc --print-trace --print-stack "
@@ -90,57 +91,6 @@ def run_exploit(exploit, project_path, poc_path, output_file_path):
     return int(process.returncode), output
 
 
-def extract_stack_info(trace_file_path):
-    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal("\textracting stack information")
-    stack_map = dict()
-    if os.path.exists(trace_file_path):
-        with open(trace_file_path, 'r') as trace_file:
-            is_stack = False
-            for read_line in trace_file:
-                if is_stack and '#' in read_line:
-                    if " at " in read_line:
-                        read_line, source_path = str(read_line).split(" at ")
-                        source_path, line_number = source_path.split(":")
-                        function_name = str(read_line.split(" in ")[1]).split(" (")[0]
-                        if source_path not in stack_map.keys():
-                            stack_map[source_path] = dict()
-                        stack_map[source_path][function_name] = line_number
-                if "Stack:" in read_line:
-                    is_stack = True
-                    continue
-    return stack_map
-
-
-def extract_crash_point(trace_file_path):
-    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal("\textracting crash point")
-    crash_location = ""
-    if os.path.exists(trace_file_path):
-        with open(trace_file_path, 'r') as trace_file:
-            for read_line in trace_file:
-                if "KLEE: ERROR:" in read_line:
-                    read_line = read_line.replace("KLEE: ERROR: ", "")
-                    crash_location = read_line.split(": ")[0]
-                    break
-    return crash_location
-
-
-def extract_suspicious_points(trace_log):
-    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal("\textracting crash point")
-    suspect_list = list()
-    if os.path.exists(trace_log):
-        with open(trace_log, 'r') as trace_file:
-            for read_line in trace_file:
-                if "runtime error:" in read_line:
-                    crash_location = read_line.split(": runtime error: ")[0]
-                    crash_location = ":".join(crash_location.split(":")[:-1])
-                    if crash_location not in suspect_list:
-                        suspect_list.append(crash_location)
-    return suspect_list
-
-
 def trace_exploit(exploit_command, binary_path, binary_name, log_path):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.normal("\tgenerating trace for exploit")
@@ -179,10 +129,10 @@ def generate_trace_donor():
     if not Common.NO_SYM_TRACE_GEN:
         binary_path, binary_name = extract_bitcode(Common.VALUE_PATH_A + Common.VALUE_EXPLOIT_A.split(" ")[0])
         trace_exploit(" ".join(Common.VALUE_EXPLOIT_A.split(" ")[1:]), binary_path, binary_name, FILE_TRACE_LOG_A)
-    crash_location_a = extract_crash_point(FILE_TRACE_LOG_A)
-    stack_a = extract_stack_info(FILE_TRACE_LOG_A)
+    crash_location_a = Extractor.extract_crash_point(FILE_TRACE_LOG_A)
+    stack_a = Extractor.extract_stack_info(FILE_TRACE_LOG_A)
     if crash_location_a == "":
-        donor_suspect_line_list = extract_suspicious_points(FILE_EXPLOIT_OUTPUT_A)
+        donor_suspect_line_list = Extractor.extract_suspicious_points(FILE_EXPLOIT_OUTPUT_A)
     list_trace_a = collect_trace(FILE_TRACE_LOG_A, Common.VALUE_PATH_A, donor_suspect_line_list)
     # print(list_trace_a[-1])
     Output.normal(Common.VALUE_PATH_B)
@@ -231,10 +181,10 @@ def generate_trace_target():
     if not Common.NO_SYM_TRACE_GEN:
         binary_path, binary_name = extract_bitcode(Common.VALUE_PATH_C + Common.VALUE_EXPLOIT_C.split(" ")[0])
         trace_exploit(" ".join(Common.VALUE_EXPLOIT_C.split(" ")[1:]), binary_path, binary_name, FILE_TRACE_LOG_C)
-    crash_location_c = extract_crash_point(FILE_TRACE_LOG_C)
-    stack_c = extract_stack_info(FILE_TRACE_LOG_C)
+    crash_location_c = Extractor.extract_crash_point(FILE_TRACE_LOG_C)
+    stack_c = Extractor.extract_stack_info(FILE_TRACE_LOG_C)
     if crash_location_c == "":
-        target_suspect_line_list = extract_suspicious_points(FILE_EXPLOIT_OUTPUT_C)
+        target_suspect_line_list = Extractor.extract_suspicious_points(FILE_EXPLOIT_OUTPUT_C)
     list_trace_c = collect_trace(FILE_TRACE_LOG_C, Common.VALUE_PATH_C, target_suspect_line_list)
     # print(list_trace_c[-1])
 
