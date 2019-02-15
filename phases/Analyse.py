@@ -6,10 +6,10 @@ import sys
 
 sys.path.append('./ast/')
 import time
-from common.Utilities import execute_command, error_exit, get_file_extension_list
+from common.Utilities import error_exit
 from common import Definitions
 import Generator
-from tools import Mapper, Logger, Filter, Emitter
+from tools import Mapper, Logger, Filter, Emitter, Differ
 
 FILE_EXCLUDED_EXTENSIONS = ""
 FILE_EXCLUDED_EXTENSIONS_A = ""
@@ -23,119 +23,6 @@ FILE_AST_DIFF_ERROR = ""
 
 diff_info = dict()
 
-
-def find_diff_files():
-    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Emitter.normal("finding changed files...")
-    global FILE_DIFF_H
-    extensions = get_file_extension_list(Definitions.Project_A.path, FILE_EXCLUDED_EXTENSIONS_A)
-    extensions = extensions.union(get_file_extension_list(Definitions.Project_B.path, FILE_EXCLUDED_EXTENSIONS_B))
-    with open(FILE_EXCLUDED_EXTENSIONS, 'w') as exclusions:
-        for pattern in extensions:
-            exclusions.write(pattern + "\n")
-    # TODO: Include cases where a file is added or removed
-    diff_command = "diff -ENZBbwqr " + Definitions.Project_A.path + " " + Definitions.Project_B.path + " -X " \
-                   + FILE_EXCLUDED_EXTENSIONS + "> " + FILE_DIFF_ALL + ";"
-    diff_command += "cat " + FILE_DIFF_ALL + "| grep -P '\.c and ' > " + FILE_DIFF_C + ";"
-    diff_command += "cat " + FILE_DIFF_ALL + "| grep -P '\.h and ' > " + FILE_DIFF_H
-    # print(diff_command)
-    execute_command(diff_command)
-
-
-def extract_h_file_list():
-    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Emitter.normal("\textracting changed header files...")
-    file_list = list()
-    with open(FILE_DIFF_H, 'r') as diff_file:
-        diff_line = diff_file.readline().strip()
-        while diff_line:
-            diff_line = diff_line.split(" ")
-            file_a = diff_line[1]
-            file_b = diff_line[3]
-            Generator.parseAST(file_a, Definitions.Project_A, is_deckard=True, is_header=True)
-            file_list.append(file_a.split("/")[-1])
-            diff_line = diff_file.readline().strip()
-    if len(file_list) > 0:
-        Emitter.normal("\t\theader files:")
-        for h_file in file_list:
-            Emitter.normal("\t\t\t" + h_file)
-
-
-def extract_diff_info():
-    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Emitter.normal("\tcollecting diff info...")
-    with open(FILE_DIFF_C, 'r') as diff_file:
-        diff_line = diff_file.readline().strip()
-        while diff_line:
-            diff_line = diff_line.split(" ")
-            file_a = diff_line[1]
-            file_b = diff_line[3]
-            output_file = Definitions.FILE_TEMP_DIFF
-            diff_command = "diff -ENBZbwr " + file_a + " " + file_b + " > " + output_file
-            execute_command(diff_command)
-            pertinent_lines_a = []
-            pertinent_lines_b = []
-            with open(output_file, 'r') as temp_diff_file:
-                file_line = temp_diff_file.readline().strip()
-                while file_line:
-                    operation = ""
-                    # We only want lines starting with a line number
-                    if 48 <= ord(file_line[0]) <= 57:
-                        # add
-                        if 'a' in file_line:
-                            line_info = file_line.split('a')
-                            operation = "insert"
-                        # delete
-                        elif 'd' in file_line:
-                            line_info = file_line.split('d')
-                            operation = "delete"
-                        # change (delete + add)
-                        elif 'c' in file_line:
-                            line_info = file_line.split('c')
-                            operation = "modify"
-
-                        # range for file_a
-                        line_a = line_info[0].split(',')
-                        start_a = int(line_a[0])
-                        end_a = int(line_a[-1])
-
-                        # range for file_b
-                        line_b = line_info[1].split(',')
-                        start_b = int(line_b[0])
-                        end_b = int(line_b[-1])
-
-                        diff_loc = file_a + ":" + str(start_a)
-                        diff_info[diff_loc] = dict()
-                        diff_info[diff_loc]['operation'] = operation
-
-                        if operation == 'insert':
-                            diff_info[diff_loc]['new-lines'] = (start_b, end_b)
-                        elif operation == "delete":
-                            diff_info[diff_loc]['remove-lines'] = (start_a, end_a)
-                        elif operation == "modify":
-                            diff_info[diff_loc]['old-lines'] = (start_a, end_a)
-                            diff_info[diff_loc]['new-lines'] = (start_b, end_b)
-                    file_line = temp_diff_file.readline().strip()
-            diff_line = diff_file.readline().strip()
-
-
-def extract_c_file_list():
-    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Emitter.normal("\textracting changed c/cpp files...")
-    file_list = list()
-    with open(FILE_DIFF_C, 'r') as diff_file:
-        diff_line = diff_file.readline().strip()
-        while diff_line:
-            diff_line = diff_line.split(" ")
-            file_a = diff_line[1]
-            file_b = diff_line[3]
-            file_list.append(file_a.split("/")[-1])
-            diff_line = diff_file.readline().strip()
-    if len(file_list) > 0:
-        Emitter.normal("\t\tsource files:")
-        for source_file in file_list:
-            Emitter.normal("\t\t\t" + source_file)
-    return file_list
 
 
 def safe_exec(function_def, title, *args):
@@ -167,15 +54,18 @@ def get_ast_script(source_a, source_b):
         return script_lines
 
 
-def collect_source_diff():
+def analyse_source_diff():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    find_diff_files()
+
+    Differ.diff_files()
+
+
     extract_h_file_list()
     extract_c_file_list()
     extract_diff_info()
 
 
-def collect_ast_diff():
+def analyse_ast_diff():
     global diff_info
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     source_path_a = ""
@@ -228,18 +118,12 @@ def set_values():
     global FILE_DIFF_C, FILE_DIFF_H, FILE_DIFF_ALL
     global FILE_AST_SCRIPT, FILE_AST_DIFF_ERROR
     global FILE_EXCLUDED_EXTENSIONS, FILE_EXCLUDED_EXTENSIONS_A, FILE_EXCLUDED_EXTENSIONS_B
-    FILE_EXCLUDED_EXTENSIONS = Definitions.DIRECTORY_OUTPUT + "/excluded-extensions"
-    FILE_EXCLUDED_EXTENSIONS_A = Definitions.DIRECTORY_OUTPUT + "/excluded-extensions-a"
-    FILE_EXCLUDED_EXTENSIONS_B = Definitions.DIRECTORY_OUTPUT + "/excluded-extensions-b"
-    FILE_DIFF_C = Definitions.DIRECTORY_OUTPUT + "/diff_C"
-    FILE_DIFF_H = Definitions.DIRECTORY_OUTPUT + "/diff_H"
-    FILE_DIFF_ALL = Definitions.DIRECTORY_OUTPUT + "/diff_all"
+
 
 
 def diff():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Emitter.title("Analysing diff")
+    Emitter.title("Analysing changes")
     set_values()
-    safe_exec(collect_source_diff, "collecting source diff")
-    safe_exec(collect_ast_diff, "collecting ast diff")
-    print(diff_info)
+    safe_exec(analyse_source_diff, "analysing source diff")
+    safe_exec(analyse_ast_diff, "analysing ast diff")

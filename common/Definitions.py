@@ -2,27 +2,6 @@
 # -*- coding: utf-8 -*-
 import os
 
-Project_A = None
-Project_B = None
-Project_C = None
-Project_D = None
-
-DEBUG = False
-NO_BUILD = False
-NO_SYM_TRACE_GEN = False
-
-STANDARD_FUNCTION_LIST = list()
-STANDARD_MACRO_LIST = list()
-
-PROJECT_A_FUNCTION_LIST = ""
-PROJECT_B_FUNCTION_LIST = ""
-PROJECT_C_FUNCTION_LIST = ""
-DIFF_FUNCTION_LIST = ""
-DIFF_LINE_LIST = dict()
-DIVERGENT_POINT_LIST = list()
-FUNCTION_MAP = ""
-CRASH_LINE_LIST = dict()
-TRACE_LIST = dict()
 
 # ------------------- Directories --------------------
 
@@ -52,6 +31,17 @@ FILE_STANDARD_MACRO_LIST = DIRECTORY_DATA + "/standard-macro-list"
 FILE_AST_SCRIPT = DIRECTORY_TMP + "/ast-script"
 FILE_TEMP_DIFF = DIRECTORY_TMP + "/temp_diff"
 FILE_AST_DIFF_ERROR = DIRECTORY_TMP + "/errors_ast_diff"
+FILE_PARTIAL_PATCH = DIRECTORY_TMP + "/gen-patch"
+
+
+FILE_EXCLUDED_EXTENSIONS = DIRECTORY_TMP + "/excluded-extensions"
+FILE_EXCLUDED_EXTENSIONS_A = DIRECTORY_TMP + "/excluded-extensions-a"
+FILE_EXCLUDED_EXTENSIONS_B = DIRECTORY_TMP + "/excluded-extensions-b"
+FILE_DIFF_C = DIRECTORY_TMP + "/diff_C"
+FILE_DIFF_H = DIRECTORY_TMP + "/diff_H"
+FILE_DIFF_ALL = DIRECTORY_TMP + "/diff_all"
+
+
 
 # ------------------- Configuration --------------------
 
@@ -114,13 +104,3 @@ DIFF_COMMAND = "crochet-diff "
 DIFF_SIZE = "1000"
 SYNTAX_CHECK_COMMAND = "clang-check "
 STYLE_FORMAT_COMMAND = "clang-format -style=LLVM "
-
-
-header_file_list_to_patch = []
-c_file_list_to_patch = []
-
-generated_script_for_header_files = dict()
-generated_script_for_c_files = dict()
-
-translated_script_for_files = dict()
-variable_map = dict()

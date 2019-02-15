@@ -7,9 +7,6 @@ from tools import Logger, Emitter
 import Definitions
 
 
-FILE_PARTIAL_DIFF = Definitions.DIRECTORY_TMP + "/gen-patch"
-
-
 def execute_command(command, show_output=True):
     # Print executed command and execute it in console
     Emitter.command(command)
@@ -100,9 +97,10 @@ def reset_git(source_directory):
 def show_partial_diff(source_path_a, source_path_b):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Emitter.normal("\t\tTransplanted Code:")
-    diff_command = "diff -ENZBbwr " + source_path_a + " " + source_path_b + " > " + FILE_PARTIAL_DIFF
+    output_file = Definitions.FILE_PARTIAL_PATCH
+    diff_command = "diff -ENZBbwr " + source_path_a + " " + source_path_b + " > " + output_file
     execute_command(diff_command)
-    with open(FILE_PARTIAL_DIFF, 'r') as diff_file:
+    with open(output_file, 'r') as diff_file:
         diff_line = diff_file.readline().strip()
         while diff_line:
             Emitter.normal("\t\t\t" + diff_line)

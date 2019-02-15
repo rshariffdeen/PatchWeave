@@ -8,8 +8,7 @@ import sys
 from common.Utilities import execute_command
 from entities import Project
 from common import Definitions
-from tools import Emitter, Builder
-from phases import Trace
+from tools import Emitter
 
 
 def load_standard_list():
