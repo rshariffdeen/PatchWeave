@@ -224,8 +224,6 @@ def collect_ast_diff():
                                                            info_b,
                                                            mapping_ba
                                                            )
-        print(diff_loc)
-        print(filtered_ast_script)
         diff_info[diff_loc]['ast-script'] = filtered_ast_script
 
 

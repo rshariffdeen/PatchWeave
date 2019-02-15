@@ -114,3 +114,18 @@ def convert_binary_to_llvm(binary_path):
     # print(extract_command)
     execute_command(extract_command)
     return binary_directory, binary_name
+
+
+def convert_node_to_str(ast_node):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    node_str = ""
+    node_type = str(ast_node['type'])
+    if node_type in ["DeclStmt", "DeclRefExpr", "VarDecl"]:
+        node_str = str(ast_node['value'])
+    if str(ast_node['type']) == "BinaryOperator":
+        operator = str(ast_node['value'])
+        right_operand = convert_node_to_str(ast_node['children'][1])
+        left_operand = convert_node_to_str(ast_node['children'][0])
+        return left_operand + " " + operator + " " + right_operand
+    return node_str
+

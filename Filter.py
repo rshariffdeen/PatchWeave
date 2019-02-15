@@ -9,6 +9,52 @@ import Output
 import Extractor
 
 
+def filter_trace_list_by_loc(trace_list, estimate_loc):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    Output.normal("\tfiltering trace based on estimation point")
+    filtered_trace_list = list()
+    # print(trace_list)
+    # print(estimate_loc)
+    for n in range(len(trace_list) - 1, 0, -1):
+        filtered_trace_list.append(trace_list[n])
+        if estimate_loc == trace_list[n]:
+            break
+    filtered_trace_list.reverse()
+    # print(filtered_trace_list)
+    return filtered_trace_list
+
+
+def filter_function_list_using_trace(source_function_map, trace_list):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    Output.normal("\t\textracting function list from trace ...")
+    trace_function_info = dict()
+    source_line_map = Extractor.extract_source_lines_from_trace(trace_list)
+    for source_path in source_line_map:
+        function_list = source_function_map[source_path]
+        trace_line_list = source_line_map[source_path]
+        for line_number in trace_line_list:
+            for function_name, begin_line, finish_line in function_list:
+                if line_number in range(begin_line, finish_line):
+                    function_id = source_path + ":" + function_name
+                    if function_id not in trace_function_info.keys():
+                        trace_function_info[function_id] = dict()
+                        trace_function_info[function_id]['start'] = begin_line
+                        trace_function_info[function_id]['end'] = finish_line
+                        trace_function_info[function_id]['last'] = int(line_number)
+                        trace_function_info[function_id]['begin'] = int(line_number)
+                        trace_function_info[function_id]['lines'] = list()
+                        trace_function_info[function_id]['lines'].append(line_number)
+                    else:
+                        if line_number not in trace_function_info[function_id]['lines']:
+                            trace_function_info[function_id]['lines'].append(line_number)
+                        if trace_function_info[function_id]['last'] < line_number:
+                            trace_function_info[function_id]['last'] = line_number
+                        if trace_function_info[function_id]['begin'] > line_number:
+                            trace_function_info[function_id]['begin'] = line_number
+                    break
+    return trace_function_info
+
+
 def merge_ast_script(ast_script, ast_node_a, ast_node_b, mapping_ba):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.normal("\t\tmerging AST script")
@@ -76,23 +122,11 @@ def filter_ast_script(ast_script, info_a, info_b, mapping_ba):
             node_type_b = node_b['type']
             node_line_start = int(node_b['start line'])
             node_line_end = int(node_b['end line']) + 1
-            # if node_line_start in skip_lines:
-            #     continue
             node_line_numbers = set(range(node_line_start, node_line_end))
-            # print(node_line_numbers)
+
             intersection = line_numbers_b.intersection(node_line_numbers)
             if intersection:
-                if node_type_b in ["IfStmt"]:
-                    body_node = node_b['children'][1]
-                    filtered_ast_script.append(script_line)
-                    # count = 0
-                    # for child_node in body_node['children']:
-                    #     if int(child_node['start line']) not in skip_lines:
-                    #         count = count + 1
-                    # if count != 0:
-                    #     filtered_ast_script.append(script_line)
-                else:
-                    filtered_ast_script.append(script_line)
+                filtered_ast_script.append(script_line)
         elif "Delete" in script_line:
             node_id_a = int((script_line.split("(")[1]).split(")")[0])
             node_a = Finder.search_ast_node_by_id(ast_node_a, node_id_a)

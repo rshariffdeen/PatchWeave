@@ -381,3 +381,17 @@ def extract_reference_node_list(ast_node):
                 child_ref_list = extract_reference_node_list(child_node)
                 ref_node_list = ref_node_list + child_ref_list
     return ref_node_list
+
+
+def extract_source_lines_from_trace(trace_list):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    Output.normal("\t\t\textracting source lines executed ...")
+    unique_trace_list = list(set(trace_list))
+    source_line_map = dict()
+    for trace_line in unique_trace_list:
+        source_path, line_number = str(trace_line).split(":")
+        if source_path not in source_line_map.keys():
+            source_line_map[source_path] = list()
+        source_line_map[source_path].append(int(line_number))
+    return source_line_map
+
