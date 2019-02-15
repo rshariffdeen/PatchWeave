@@ -587,9 +587,13 @@ def transplant_code(diff_info, diff_loc):
     global mapping_ba, var_expr_map_a, var_expr_map_b, var_expr_map_c
     global ast_map_a, ast_map_b, ast_map_c
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    operation = diff_info['operation']
+    ast_script = diff_info['ast-script']
+    print(diff_info)
+    print(ast_script)
     byte_list = compute_common_bytes(diff_loc)
     estimate_loc = estimate_divergent_point(byte_list)
-    operation = diff_info['operation']
+
     source_path_a, line_number_a = diff_loc.split(":")
     source_path_b = str(source_path_a).replace(Common.VALUE_PATH_A, Common.VALUE_PATH_B)
     ast_script = Differ.get_ast_script(source_path_a, source_path_b)

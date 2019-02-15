@@ -79,11 +79,13 @@ def filter_ast_script(ast_script, info_a, info_b, mapping_ba):
             # if node_line_start in skip_lines:
             #     continue
             node_line_numbers = set(range(node_line_start, node_line_end))
+            # print(node_line_numbers)
             intersection = line_numbers_b.intersection(node_line_numbers)
             if intersection:
                 if node_type_b in ["IfStmt"]:
                     body_node = node_b['children'][1]
-                    count = 0
+                    filtered_ast_script.append(script_line)
+                    # count = 0
                     # for child_node in body_node['children']:
                     #     if int(child_node['start line']) not in skip_lines:
                     #         count = count + 1
@@ -109,6 +111,7 @@ def filter_ast_script(ast_script, info_a, info_b, mapping_ba):
             intersection = line_numbers_a.intersection(node_line_numbers)
             if intersection:
                 filtered_ast_script.append(script_line)
+    # print(filtered_ast_script)
     return filtered_ast_script
 
 
