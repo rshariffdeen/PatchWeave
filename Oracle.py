@@ -65,3 +65,17 @@ def is_function_important(source_path, function_call_node, sym_path_list):
         if loc_id in sym_path_list:
             return True
     return False
+
+
+def is_declaration_line(source_file, line_number):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    ast_tree = Generator.get_ast_json(source_file)
+    function_node = Finder.search_function_node_by_loc(ast_tree,
+                                                       int(line_number),
+                                                       source_file)
+    if function_node is None:
+        return False
+    dec_line_list = Extractor.extract_declaration_line_list(function_node)
+    if line_number in dec_line_list:
+        return True
+    return False

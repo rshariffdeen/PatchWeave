@@ -3,56 +3,18 @@
 
 
 import sys
-import os
-sys.path.append('./ast/')
 import time
-from Utilities import execute_command, error_exit, get_code
+from Utilities import error_exit, get_code
 import Output
 import Common
-import Generator
-import Vector
 import Logger
 import Differ
-import Concolic
 import Tracer
-import Weaver
-import Filter
+import Extractor
+import Oracle
 
 
-
-def get_declaration_lines(ast_node):
-    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    line_list = list()
-    child_count = len(ast_node['children'])
-    node_start_line = int(ast_node['start line'])
-    node_end_line = int(ast_node['end line'])
-    start_column = int(ast_node['start column'])
-    end_column = int(ast_node['end column'])
-    node_type = ast_node['type']
-
-    if node_type in ["VarDecl"]:
-        line_list.append(node_start_line)
-        return line_list
-
-    if child_count:
-        for child_node in ast_node['children']:
-            line_list = line_list + list(set(get_declaration_lines(child_node)))
-    return list(set(line_list))
-
-
-def is_declaration_line(source_file, line_number):
-    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    ast_tree = Generator.get_ast_json(source_file)
-    function_node = Weaver.get_fun_node(ast_tree, int(line_number), source_file)
-    if function_node is None:
-        return False
-    dec_line_list = get_declaration_lines(function_node)
-    if line_number in dec_line_list:
-        return True
-    return False
-
-
-def filter_from_trace():
+def slice_code_from_trace():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.normal("slicing unrelated diff based on trace")
     for diff_loc in Differ.diff_info:
@@ -66,7 +28,7 @@ def filter_from_trace():
             for line_number in line_numbers:
                 loc_id = source_file + ":" + str(line_number)
                 if loc_id not in Tracer.list_trace_b:
-                    if is_declaration_line(source_file, line_number):
+                    if Oracle.is_declaration_line(source_file, line_number):
                         continue
                     statement = get_code(source_file, line_number)
 
@@ -75,7 +37,7 @@ def filter_from_trace():
         diff_info['skip-lines'] = skip_lines
 
 
-def remove_skipped_diff_locs():
+def slice_skipped_diff_locs():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     filtered_diff_info = dict()
     for diff_loc in Differ.diff_info:
@@ -90,7 +52,7 @@ def remove_skipped_diff_locs():
     Differ.diff_info = filtered_diff_info
 
 
-def filter_function_calls():
+def slice_function_calls():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.normal("slicing unrelated function calls")
     for diff_loc in Differ.diff_info:
@@ -99,23 +61,26 @@ def filter_function_calls():
         diff_info = Differ.diff_info[diff_loc]
         skip_lines = diff_info['skip-lines']
         if 'new-lines' in diff_info.keys():
-            function_call_list = get_function_call_lines(source_file, start_line)
+            function_call_list = Extractor.extract_function_call_lines(source_file,
+                                                                       start_line)
             start_line, end_line = diff_info['new-lines']
             line_numbers = set(range(int(start_line), int(end_line) + 1))
             for line_number in line_numbers:
                 loc_id = source_file + ":" + str(line_number)
                 if line_number in function_call_list.keys():
-                    if not is_function_important(source_file, function_call_list[line_number]):
+                    if not Oracle.is_function_important(source_file,
+                                                        function_call_list[line_number]
+                                                        ):
                         skip_lines.append(line_number)
         diff_info['skip-lines'] = skip_lines
 
 
 def slice_diff():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    filter_from_trace()
-    remove_skipped_diff_locs()
-    filter_function_calls()
-    remove_skipped_diff_locs()
+    slice_code_from_trace()
+    slice_skipped_diff_locs()
+    slice_function_calls()
+    slice_skipped_diff_locs()
 
 
 def safe_exec(function_def, title, *args):

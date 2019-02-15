@@ -273,61 +273,10 @@ def extract_keys_from_model(model):
     return byte_list
 
 
-def extract_stack_info(trace_file_path):
-    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal("\textracting stack information")
-    stack_map = dict()
-    if os.path.exists(trace_file_path):
-        with open(trace_file_path, 'r') as trace_file:
-            is_stack = False
-            for read_line in trace_file:
-                if is_stack and '#' in read_line:
-                    if " at " in read_line:
-                        read_line, source_path = str(read_line).split(" at ")
-                        source_path, line_number = source_path.split(":")
-                        function_name = str(read_line.split(" in ")[1]).split(" (")[0]
-                        if source_path not in stack_map.keys():
-                            stack_map[source_path] = dict()
-                        stack_map[source_path][function_name] = line_number
-                if "Stack:" in read_line:
-                    is_stack = True
-                    continue
-    return stack_map
-
-
-def extract_crash_point(trace_file_path):
-    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal("\textracting crash point")
-    crash_location = ""
-    if os.path.exists(trace_file_path):
-        with open(trace_file_path, 'r') as trace_file:
-            for read_line in trace_file:
-                if "KLEE: ERROR:" in read_line:
-                    read_line = read_line.replace("KLEE: ERROR: ", "")
-                    crash_location = read_line.split(": ")[0]
-                    break
-    return crash_location
-
-
-def extract_suspicious_points(trace_log):
-    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal("\textracting crash point")
-    suspect_list = list()
-    if os.path.exists(trace_log):
-        with open(trace_log, 'r') as trace_file:
-            for read_line in trace_file:
-                if "runtime error:" in read_line:
-                    crash_location = read_line.split(": runtime error: ")[0]
-                    crash_location = ":".join(crash_location.split(":")[:-1])
-                    if crash_location not in suspect_list:
-                        suspect_list.append(crash_location)
-    return suspect_list
-
-
-def extract_divergent_point(list_trace_a, list_trace_b, path_a, path_b):
+def extract_divergent_point_list(list_trace_a, list_trace_b, path_a, path_b):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.normal("\textracting divergent point(s)")
-    global divergent_location_list
+    divergent_location_list = list()
     length_a = len(list_trace_a)
     length_b = len(list_trace_b)
     print(length_a, length_b)
@@ -351,4 +300,24 @@ def extract_divergent_point(list_trace_a, list_trace_b, path_a, path_b):
                 print(trace_line_a, trace_line_b)
                 divergent_location_list.append(source_loc)
                 found_diff = True
-    print(divergent_location_list)
+    return divergent_location_list
+
+
+def extract_declaration_line_list(ast_node):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    line_list = list()
+    child_count = len(ast_node['children'])
+    node_start_line = int(ast_node['start line'])
+    node_end_line = int(ast_node['end line'])
+    start_column = int(ast_node['start column'])
+    end_column = int(ast_node['end column'])
+    node_type = ast_node['type']
+
+    if node_type in ["VarDecl"]:
+        line_list.append(node_start_line)
+        return line_list
+
+    if child_count:
+        for child_node in ast_node['children']:
+            line_list = line_list + list(set(extract_declaration_line_list(child_node)))
+    return list(set(line_list))

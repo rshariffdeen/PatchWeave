@@ -248,29 +248,6 @@ def insert_patch(patch_code, source_path, line_number):
         source_file.writelines(content)
 
 
-def get_fun_node(ast_node, line_number, source_path):
-    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    file_name = source_path.split("/")[-1]
-    for child_node in ast_node['children']:
-        child_node_type = child_node['type']
-        if child_node_type == "FunctionDecl":
-            if "file" in child_node.keys():
-                function_source = child_node['file']
-                if file_name not in function_source:
-                    continue
-            child_node_start_line = int(child_node['start line'])
-            child_node_end_line = int(child_node['end line'])
-            if line_number in range(child_node_start_line, child_node_end_line + 1):
-                return child_node
-
-    for child_node in ast_node['children']:
-        if child_node_type == "Macro":
-            child_node_start_line = int(child_node['start line'])
-            child_node_end_line = int(child_node['end line'])
-            if line_number in range(child_node_start_line, child_node_end_line + 1):
-                return child_node
-    return None
-
 
 def get_ast_node_by_id(ast_node, find_id):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
