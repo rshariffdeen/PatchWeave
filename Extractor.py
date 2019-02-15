@@ -84,14 +84,31 @@ def extract_child_id_list(ast_node):
     return id_list
 
 
-def extract_function_call_lines(source_file, line_number):
+def extract_call_node_list(ast_node):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    call_expr_list = list()
+    node_type = str(ast_node["type"])
+    if node_type == "CallExpr":
+        call_expr_list.append(ast_node)
+    else:
+        if len(ast_node['children']) > 0:
+            for child_node in ast_node['children']:
+                child_call_list = extract_call_node_list(child_node)
+                call_expr_list = call_expr_list + child_call_list
+    return call_expr_list
+
+
+def extract_function_call_list(source_file, line_number):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     line_list = dict()
     ast_tree = Generator.get_ast_json(source_file)
-    function_node = Weaver.get_fun_node(ast_tree, int(line_number), source_file)
+    function_node = Finder.search_function_node_by_loc(ast_tree,
+                                                       int(line_number),
+                                                       source_file)
     if function_node is None:
         return line_list
-    call_node_list = Weaver.extract_function_calls(function_node)
+    call_node_list = extract_call_node_list(function_node)
+
     for call_node in call_node_list:
         line_list[call_node['start line']] = call_node
     return line_list

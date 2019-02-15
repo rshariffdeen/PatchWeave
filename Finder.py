@@ -70,14 +70,14 @@ def search_ast_node_by_id(ast_node, find_id):
 
 def search_function_node_by_name(ast_node, function_name):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    function_id = -1
+    function_node = None
     for child_node in ast_node['children']:
         child_node_type = child_node['type']
         if child_node_type == "FunctionDecl":
             child_node_identifier = child_node['identifier']
             if child_node_identifier == function_name:
-                function_id = int(child_node['id'])
-    return function_id
+                function_node = child_node
+    return child_node
 
 
 def search_function_node_by_loc(ast_node, line_number, source_path):

@@ -335,20 +335,6 @@ def show_final_patch(source_path_a, source_path_b, source_path_c, source_path_d)
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
 
 
-def extract_function_calls(ast_node):
-    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    call_expr_list = list()
-    node_type = str(ast_node["type"])
-    if node_type == "CallExpr":
-        call_expr_list.append(ast_node)
-    else:
-        if len(ast_node['children']) > 0:
-            for child_node in ast_node['children']:
-                child_call_list = extract_function_calls(child_node)
-                call_expr_list = call_expr_list + child_call_list
-    return call_expr_list
-
-
 def extract_reference_node_list(ast_node):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     ref_node_list = list()

@@ -12,6 +12,7 @@ import Differ
 import Tracer
 import Extractor
 import Oracle
+import Concolic
 
 
 def slice_code_from_trace():
@@ -61,15 +62,16 @@ def slice_function_calls():
         diff_info = Differ.diff_info[diff_loc]
         skip_lines = diff_info['skip-lines']
         if 'new-lines' in diff_info.keys():
-            function_call_list = Extractor.extract_function_call_lines(source_file,
+            function_call_node_list = Extractor.extract_function_call_list(source_file,
                                                                        start_line)
             start_line, end_line = diff_info['new-lines']
             line_numbers = set(range(int(start_line), int(end_line) + 1))
             for line_number in line_numbers:
                 loc_id = source_file + ":" + str(line_number)
-                if line_number in function_call_list.keys():
+                if line_number in function_call_node_list.keys():
                     if not Oracle.is_function_important(source_file,
-                                                        function_call_list[line_number]
+                                                        function_call_node_list[line_number],
+                                                        Concolic.sym_path_b.keys()
                                                         ):
                         skip_lines.append(line_number)
         diff_info['skip-lines'] = skip_lines
