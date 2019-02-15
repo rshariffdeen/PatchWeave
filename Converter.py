@@ -10,6 +10,7 @@ import Logger
 import Common
 
 SYMBOLIC_CONVERTER = "gen-bout"
+BINARY_CONVERTER = "extract-bc"
 
 
 def convert_cast_expr(ast_node, only_string=False):
@@ -94,7 +95,7 @@ def convert_member_expr(ast_node, only_string=False):
     return var_name, var_list
 
 
-def convert_poc(file_path):
+def convert_poc_to_ktest(file_path):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     concrete_file = open(Common.VALUE_PATH_POC, 'rb')
     bit_size = os.fstat(concrete_file.fileno()).st_size
@@ -104,3 +105,12 @@ def convert_poc(file_path):
     execute_command(move_command)
     return bit_size
 
+
+def convert_binary_to_llvm(binary_path):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    binary_name = str(binary_path).split("/")[-1]
+    binary_directory = "/".join(str(binary_path).split("/")[:-1])
+    extract_command = BINARY_CONVERTER + " " + binary_path
+    # print(extract_command)
+    execute_command(extract_command)
+    return binary_directory, binary_name

@@ -2,21 +2,15 @@
 # -*- coding: utf-8 -*-
 
 
-import sys, os
+import sys
 sys.path.append('./ast/')
 import time
-from Utilities import execute_command, error_exit, extract_bitcode
+from Utilities import error_exit
 import Output
 import Common
 import Logger
-import Differ
 import Builder
-from six.moves import cStringIO
-from pysmt.smtlib.parser import SmtLibParser
-from pysmt.shortcuts import get_model
-import Generator
 import Tracer
-import Mapper
 
 
 def verify_compilation():

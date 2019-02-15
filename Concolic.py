@@ -5,7 +5,7 @@
 import sys, os
 sys.path.append('./ast/')
 import time
-from Utilities import execute_command, error_exit, extract_bitcode
+from Utilities import execute_command, error_exit
 import Output
 import Common
 import Logger
@@ -33,15 +33,16 @@ sym_path_c = dict()
 estimate_loc_map = dict()
 
 
-def generate_trace_donor():
+def generate_sympath_donor():
     global sym_path_a, sym_path_b
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.normal(Common.VALUE_PATH_A)
     if not Common.NO_SYM_TRACE_GEN:
-        binary_path, binary_name = extract_bitcode(Common.VALUE_PATH_A + Common.VALUE_EXPLOIT_A.split(" ")[0])
+        binary_path = Common.VALUE_PATH_A + Common.VALUE_EXPLOIT_A.split(" ")[0]
+        binary_dir, binary_name = Converter.convert_binary_to_llvm(binary_path)
         binary_args = " ".join(Common.VALUE_EXPLOIT_A.split(" ")[1:])
         sym_file_path = KleeExecutor.generate_path_condition(binary_args,
-                                                             binary_path,
+                                                             binary_dir,
                                                              binary_name,
                                                              VALUE_BIT_SIZE,
                                                              FILE_SYMBOLIC_POC,
@@ -52,10 +53,11 @@ def generate_trace_donor():
 
     Output.normal(Common.VALUE_PATH_B)
     if not Common.NO_SYM_TRACE_GEN:
-        binary_path, binary_name = extract_bitcode(Common.VALUE_PATH_B + Common.VALUE_EXPLOIT_A.split(" ")[0])
+        binary_path = Common.VALUE_PATH_B + Common.VALUE_EXPLOIT_A.split(" ")[0]
+        binary_dir, binary_name = Converter.convert_binary_to_llvm(binary_path)
         binary_args = " ".join(Common.VALUE_EXPLOIT_A.split(" ")[1:])
         sym_file_path = KleeExecutor.generate_path_condition(binary_args,
-                                                             binary_path,
+                                                             binary_dir,
                                                              binary_name,
                                                              VALUE_BIT_SIZE,
                                                              FILE_SYMBOLIC_POC,
@@ -65,15 +67,16 @@ def generate_trace_donor():
     sym_path_b = Collector.collect_symbolic_path(FILE_KLEE_LOG_B, Common.VALUE_PATH_B)
 
 
-def generate_trace_target():
+def generate_sympath_target():
     global sym_path_c
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.normal(Common.VALUE_PATH_C)
     if not Common.NO_SYM_TRACE_GEN:
-        binary_path, binary_name = extract_bitcode(Common.VALUE_PATH_C + Common.VALUE_EXPLOIT_C.split(" ")[0])
+        binary_path = Common.VALUE_PATH_C + Common.VALUE_EXPLOIT_C.split(" ")[0]
+        binary_dir, binary_name = Converter.convert_binary_to_llvm(binary_path)
         binary_args = " ".join(Common.VALUE_EXPLOIT_C.split(" ")[1:])
         sym_file_path = KleeExecutor.generate_path_condition(binary_args,
-                                                             binary_path,
+                                                             binary_dir,
                                                              binary_name,
                                                              VALUE_BIT_SIZE,
                                                              FILE_SYMBOLIC_POC,
@@ -114,12 +117,12 @@ def set_values():
     FILE_SYM_PATH_B = Common.DIRECTORY_OUTPUT + "/sym-path-b"
     FILE_SYM_PATH_C = Common.DIRECTORY_OUTPUT + "/sym-path-c"
     FILE_SYMBOLIC_POC = Common.DIRECTORY_OUTPUT + "/symbolic.ktest"
-    VALUE_BIT_SIZE = Converter.convert_poc(FILE_SYMBOLIC_POC)
+    VALUE_BIT_SIZE = Converter.convert_poc_to_ktest(FILE_SYMBOLIC_POC)
 
 
 def execute():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.title("Concolic execution traces")
     set_values()
-    safe_exec(generate_trace_donor, "generating symbolic trace information from donor program")
-    safe_exec(generate_trace_target, "generating symbolic trace information from target program")
+    safe_exec(generate_sympath_donor, "generating symbolic trace information from donor program")
+    safe_exec(generate_sympath_target, "generating symbolic trace information from target program")

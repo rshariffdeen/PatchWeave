@@ -6,11 +6,11 @@ import sys, os
 import subprocess
 sys.path.append('./ast/')
 import time
-from Utilities import error_exit, extract_bitcode
+from Utilities import error_exit
 import Output
 import Common
 import Logger
-import Extractor
+import Converter
 import KleeExecutor
 import Collector
 
@@ -96,27 +96,29 @@ def generate_trace_donor():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.normal(Common.VALUE_PATH_A)
     if not Common.NO_SYM_TRACE_GEN:
-        binary_path, binary_name = extract_bitcode(Common.VALUE_PATH_A + Common.VALUE_EXPLOIT_A.split(" ")[0])
+        binary_path = Common.VALUE_PATH_A + Common.VALUE_EXPLOIT_A.split(" ")[0]
+        binary_dir, binary_name = Converter.convert_binary_to_llvm(binary_path)
         exploit_command = " ".join(Common.VALUE_EXPLOIT_A.split(" ")[1:])
         KleeExecutor.generate_trace(exploit_command,
-                                    binary_path,
+                                    binary_dir,
                                     binary_name,
                                     Common.VALUE_PATH_POC,
                                     FILE_TRACE_LOG_A)
-    crash_location_a = Extractor.extract_crash_point(FILE_TRACE_LOG_A)
-    stack_a = Extractor.extract_stack_info(FILE_TRACE_LOG_A)
+    crash_location_a = Collector.collect_crash_point(FILE_TRACE_LOG_A)
+    stack_a = Collector.collect_stack_info(FILE_TRACE_LOG_A)
     if crash_location_a == "":
-        donor_suspect_line_list = Extractor.extract_suspicious_points(FILE_EXPLOIT_OUTPUT_A)
+        donor_suspect_line_list = Collector.collect_suspicious_points(FILE_EXPLOIT_OUTPUT_A)
     list_trace_a = Collector.collect_trace(FILE_TRACE_LOG_A,
                                            Common.VALUE_PATH_A,
                                            donor_suspect_line_list)
     # print(list_trace_a[-1])
     Output.normal(Common.VALUE_PATH_B)
     if not Common.NO_SYM_TRACE_GEN:
-        binary_path, binary_name = extract_bitcode(Common.VALUE_PATH_B + Common.VALUE_EXPLOIT_A.split(" ")[0])
+        binary_path = Common.VALUE_PATH_B + Common.VALUE_EXPLOIT_A.split(" ")[0]
+        binary_dir, binary_name = Converter.convert_binary_to_llvm(binary_path)
         exploit_command = " ".join(Common.VALUE_EXPLOIT_A.split(" ")[1:])
         KleeExecutor.generate_trace(exploit_command,
-                                    binary_path,
+                                    binary_dir,
                                     binary_name,
                                     Common.VALUE_PATH_POC,
                                     FILE_TRACE_LOG_B)
@@ -131,17 +133,18 @@ def generate_trace_target():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.normal(Common.VALUE_PATH_C)
     if not Common.NO_SYM_TRACE_GEN:
-        binary_path, binary_name = extract_bitcode(Common.VALUE_PATH_C + Common.VALUE_EXPLOIT_C.split(" ")[0])
+        binary_path = Common.VALUE_PATH_C + Common.VALUE_EXPLOIT_C.split(" ")[0]
+        binary_dir, binary_name = Converter.convert_binary_to_llvm(binary_path)
         exploit_command = " ".join(Common.VALUE_EXPLOIT_C.split(" ")[1:])
         KleeExecutor.generate_trace(exploit_command,
-                                    binary_path,
+                                    binary_dir,
                                     binary_name,
                                     Common.VALUE_PATH_POC,
                                     FILE_TRACE_LOG_C)
-    crash_location_c = Extractor.extract_crash_point(FILE_TRACE_LOG_C)
-    stack_c = Extractor.extract_stack_info(FILE_TRACE_LOG_C)
+    crash_location_c = Collector.collect_crash_point(FILE_TRACE_LOG_C)
+    stack_c = Collector.collect_stack_info(FILE_TRACE_LOG_C)
     if crash_location_c == "":
-        target_suspect_line_list = Extractor.extract_suspicious_points(FILE_EXPLOIT_OUTPUT_C)
+        target_suspect_line_list = Collector.collect_suspicious_points(FILE_EXPLOIT_OUTPUT_C)
     list_trace_c = Collector.collect_trace(FILE_TRACE_LOG_C,
                                            Common.VALUE_PATH_C,
                                            target_suspect_line_list)

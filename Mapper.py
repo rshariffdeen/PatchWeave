@@ -5,7 +5,7 @@
 import sys, os
 sys.path.append('./ast/')
 import time
-from Utilities import execute_command, error_exit, backup_file, restore_file, extract_bitcode, reset_git, is_intersect
+from Utilities import execute_command, error_exit, backup_file, restore_file, reset_git
 from six.moves import cStringIO
 from pysmt.smtlib.parser import SmtLibParser
 from pysmt.shortcuts import get_model
@@ -15,9 +15,6 @@ import Logger
 import Concolic
 import Generator
 import Builder
-import Weaver
-import collections
-import Extractor
 import Differ
 import Collector
 import z3
