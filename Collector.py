@@ -47,3 +47,21 @@ def collect_symbolic_path(file_path, project_path):
                         path_condition = ""
     return constraints
 
+
+def collect_trace(file_path, project_path, suspicious_loc_list):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    Output.normal("\tcollecting trace")
+    list_trace = list()
+    if os.path.exists(file_path):
+        with open(file_path, 'r') as trace_file:
+            for line in trace_file:
+                if '[trace]' in line:
+                    if project_path in line:
+                        trace_line = str(line.replace("[trace]", '')).split(" - ")[0]
+                        trace_line = trace_line.strip()
+                        if (not list_trace) or (list_trace[-1] != trace_line):
+                            list_trace.append(trace_line)
+                        if any(loc in line for loc in suspicious_loc_list):
+                            break
+    return list_trace
+

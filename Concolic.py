@@ -10,12 +10,9 @@ import Output
 import Common
 import Logger
 import Converter
+import KleeExecutor
 import Collector
 
-
-SYMBOLIC_ENGINE = "klee "
-SYMBOLIC_ARGUMENTS_FOR_PATH = "-print-path  -write-smt2s  --libc=uclibc --posix-runtime --external-calls=all --only-replay-seeds --seed-out=$KTEST"
-SYMBOLIC_ARGUMENTS_FOR_EXPR = "-no-exit-on-error --resolve-path --libc=uclibc --posix-runtime --external-calls=all --only-replay-seeds --seed-out=$KTEST"
 
 VALUE_BIT_SIZE = 0
 VALUE_BINARY_PATH_A = ""
@@ -36,44 +33,19 @@ sym_path_c = dict()
 estimate_loc_map = dict()
 
 
-def generate_path_condition(binary_arguments, binary_path, binary_name, log_path):
-    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal("\tgenerating symbolic trace for path conditions")
-    trace_command = "cd " + binary_path + ";"
-    sym_args = SYMBOLIC_ARGUMENTS_FOR_PATH
-    trace_command += SYMBOLIC_ENGINE + sym_args.replace("$KTEST", FILE_SYMBOLIC_POC) + " " + binary_name + ".bc "\
-                     + binary_arguments.replace("$POC", "A") + " --sym-files 1 " + str(VALUE_BIT_SIZE) + "  > " + log_path + \
-                    " 2>&1"
-    # print(trace_command)
-    execute_command(trace_command)
-    sym_file_path = binary_path + "/klee-last/test000001.smt2 "
-    return sym_file_path
-
-
-def generate_var_expressions(binary_arguments, binary_path, binary_name, log_path, indent=False):
-    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    if indent:
-        Output.normal("\t\tgenerating symbolic expressions")
-    else:
-        Output.normal("\t\t\tgenerating symbolic expressions")
-    trace_command = "cd " + binary_path + ";"
-    sym_args = SYMBOLIC_ARGUMENTS_FOR_EXPR
-    trace_command += SYMBOLIC_ENGINE + sym_args.replace("$KTEST", FILE_SYMBOLIC_POC) + " " + binary_name + ".bc "\
-                     + binary_arguments.replace("$POC", "A") + " --sym-files 1 " + str(VALUE_BIT_SIZE) + "  > " + log_path + \
-                    " 2>&1"
-    # print(trace_command)
-    ret_code = execute_command(trace_command)
-    if int(ret_code) != 0:
-        error_exit("CONCOLIC EXECUTION FAILED with code " + ret_code)
-
-
 def generate_trace_donor():
     global sym_path_a, sym_path_b
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Output.normal(Common.VALUE_PATH_A)
     if not Common.NO_SYM_TRACE_GEN:
         binary_path, binary_name = extract_bitcode(Common.VALUE_PATH_A + Common.VALUE_EXPLOIT_A.split(" ")[0])
-        sym_file_path = generate_path_condition(" ".join(Common.VALUE_EXPLOIT_A.split(" ")[1:]), binary_path, binary_name, FILE_KLEE_LOG_A)
+        binary_args = " ".join(Common.VALUE_EXPLOIT_A.split(" ")[1:])
+        sym_file_path = KleeExecutor.generate_path_condition(binary_args,
+                                                             binary_path,
+                                                             binary_name,
+                                                             VALUE_BIT_SIZE,
+                                                             FILE_SYMBOLIC_POC,
+                                                             FILE_KLEE_LOG_A)
         copy_command = "cp " + sym_file_path + " " + FILE_SYM_PATH_A
         execute_command(copy_command)
     sym_path_a = Collector.collect_symbolic_path(FILE_KLEE_LOG_A, Common.VALUE_PATH_A)
@@ -81,7 +53,13 @@ def generate_trace_donor():
     Output.normal(Common.VALUE_PATH_B)
     if not Common.NO_SYM_TRACE_GEN:
         binary_path, binary_name = extract_bitcode(Common.VALUE_PATH_B + Common.VALUE_EXPLOIT_A.split(" ")[0])
-        sym_file_path = generate_path_condition(" ".join(Common.VALUE_EXPLOIT_A.split(" ")[1:]), binary_path, binary_name, FILE_KLEE_LOG_B)
+        binary_args = " ".join(Common.VALUE_EXPLOIT_A.split(" ")[1:])
+        sym_file_path = KleeExecutor.generate_path_condition(binary_args,
+                                                             binary_path,
+                                                             binary_name,
+                                                             VALUE_BIT_SIZE,
+                                                             FILE_SYMBOLIC_POC,
+                                                             FILE_KLEE_LOG_B)
         copy_command = "cp " + sym_file_path + " " + FILE_SYM_PATH_B
         execute_command(copy_command)
     sym_path_b = Collector.collect_symbolic_path(FILE_KLEE_LOG_B, Common.VALUE_PATH_B)
@@ -93,7 +71,13 @@ def generate_trace_target():
     Output.normal(Common.VALUE_PATH_C)
     if not Common.NO_SYM_TRACE_GEN:
         binary_path, binary_name = extract_bitcode(Common.VALUE_PATH_C + Common.VALUE_EXPLOIT_C.split(" ")[0])
-        sym_file_path = generate_path_condition(" ".join(Common.VALUE_EXPLOIT_C.split(" ")[1:]), binary_path, binary_name, FILE_KLEE_LOG_C)
+        binary_args = " ".join(Common.VALUE_EXPLOIT_C.split(" ")[1:])
+        sym_file_path = KleeExecutor.generate_path_condition(binary_args,
+                                                             binary_path,
+                                                             binary_name,
+                                                             VALUE_BIT_SIZE,
+                                                             FILE_SYMBOLIC_POC,
+                                                             FILE_KLEE_LOG_C)
         copy_command = "cp " + sym_file_path + " " + FILE_SYM_PATH_C
         execute_command(copy_command)
     sym_path_c = Collector.collect_symbolic_path(FILE_KLEE_LOG_C, Common.VALUE_PATH_C)

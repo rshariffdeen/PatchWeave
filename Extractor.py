@@ -323,3 +323,32 @@ def extract_suspicious_points(trace_log):
                         suspect_list.append(crash_location)
     return suspect_list
 
+
+def extract_divergent_point(list_trace_a, list_trace_b, path_a, path_b):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    Output.normal("\textracting divergent point(s)")
+    global divergent_location_list
+    length_a = len(list_trace_a)
+    length_b = len(list_trace_b)
+    print(length_a, length_b)
+    source_loc = ""
+    gap = 0
+    for i in range(0, length_a):
+        trace_line_a = str(list_trace_a[i]).replace(path_a, "")
+        found_diff = False
+        if gap >= length_b - i:
+            gap = 0;
+        for j in range(i + gap, length_b):
+            trace_line_b = str(list_trace_b[j]).replace(path_b, "")
+            if trace_line_a == trace_line_b:
+                break;
+            elif found_diff:
+                gap += 1;
+            else:
+                source_loc = list_trace_a[i]
+                print("\t\tdivergent Point:\n\t\t " + source_loc)
+                print(i, j, gap)
+                print(trace_line_a, trace_line_b)
+                divergent_location_list.append(source_loc)
+                found_diff = True
+    print(divergent_location_list)
