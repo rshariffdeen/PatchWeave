@@ -4,13 +4,13 @@
 
 import sys
 import os
-import Output
+import Emitter
 import Logger
 
 
 def collect_symbolic_expressions(trace_file_path):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal("\t\tcollecting symbolic expressions")
+    Emitter.normal("\t\tcollecting symbolic expressions")
     var_expr_map = dict()
     if os.path.exists(trace_file_path):
         with open(trace_file_path, 'r') as trace_file:
@@ -24,7 +24,7 @@ def collect_symbolic_expressions(trace_file_path):
 
 def collect_symbolic_path(file_path, project_path):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal("\tcollecting symbolic path conditions")
+    Emitter.normal("\tcollecting symbolic path conditions")
     constraints = dict()
     if os.path.exists(file_path):
         source_path = ""
@@ -50,7 +50,7 @@ def collect_symbolic_path(file_path, project_path):
 
 def collect_trace(file_path, project_path, suspicious_loc_list):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal("\tcollecting trace")
+    Emitter.normal("\tcollecting trace")
     list_trace = list()
     if os.path.exists(file_path):
         with open(file_path, 'r') as trace_file:
@@ -68,7 +68,7 @@ def collect_trace(file_path, project_path, suspicious_loc_list):
 
 def collect_suspicious_points(trace_log):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal("\textracting crash point")
+    Emitter.normal("\textracting crash point")
     suspect_list = list()
     if os.path.exists(trace_log):
         with open(trace_log, 'r') as trace_file:
@@ -83,7 +83,7 @@ def collect_suspicious_points(trace_log):
 
 def collect_crash_point(trace_file_path):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal("\textracting crash point")
+    Emitter.normal("\textracting crash point")
     crash_location = ""
     if os.path.exists(trace_file_path):
         with open(trace_file_path, 'r') as trace_file:
@@ -97,7 +97,7 @@ def collect_crash_point(trace_file_path):
 
 def collect_stack_info(trace_file_path):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal("\textracting stack information")
+    Emitter.normal("\textracting stack information")
     stack_map = dict()
     if os.path.exists(trace_file_path):
         with open(trace_file_path, 'r') as trace_file:

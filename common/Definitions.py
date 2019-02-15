@@ -49,6 +49,10 @@ FILE_CONFIGURATION = ""
 FILE_STANDARD_FUNCTION_LIST = DIRECTORY_DATA + "/standard-function-list"
 FILE_STANDARD_MACRO_LIST = DIRECTORY_DATA + "/standard-macro-list"
 
+FILE_AST_SCRIPT = DIRECTORY_TMP + "/ast-script"
+FILE_TEMP_DIFF = DIRECTORY_TMP + "/temp_diff"
+FILE_AST_DIFF_ERROR = DIRECTORY_TMP + "/errors_ast_diff"
+
 # ------------------- Configuration --------------------
 
 CONF_PATH_A = "path_a:"

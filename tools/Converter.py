@@ -5,9 +5,9 @@
 import sys
 import os
 sys.path.append('./ast/')
-from common.Tools import error_exit, execute_command
+from common.Utilities import error_exit, execute_command
 import Logger
-from common import Vault
+from common import Definitions
 
 SYMBOLIC_CONVERTER = "gen-bout"
 BINARY_CONVERTER = "extract-bc"
@@ -97,9 +97,9 @@ def convert_member_expr(ast_node, only_string=False):
 
 def convert_poc_to_ktest(file_path):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    concrete_file = open(Vault.VALUE_PATH_POC, 'rb')
+    concrete_file = open(Definitions.VALUE_PATH_POC, 'rb')
     bit_size = os.fstat(concrete_file.fileno()).st_size
-    convert_command = SYMBOLIC_CONVERTER + " --sym-file " + Vault.VALUE_PATH_POC
+    convert_command = SYMBOLIC_CONVERTER + " --sym-file " + Definitions.VALUE_PATH_POC
     execute_command(convert_command)
     move_command = "mv file.bout " + file_path
     execute_command(move_command)

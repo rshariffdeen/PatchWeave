@@ -4,13 +4,13 @@
 
 import sys
 import Finder
-import Output
-from utilities import Extractor, Logger
+import Emitter
+from tools import Extractor, Logger
 
 
 def filter_trace_list_by_loc(trace_list, estimate_loc):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal("\tfiltering trace based on estimation point")
+    Emitter.normal("\tfiltering trace based on estimation point")
     filtered_trace_list = list()
     # print(trace_list)
     # print(estimate_loc)
@@ -25,7 +25,7 @@ def filter_trace_list_by_loc(trace_list, estimate_loc):
 
 def filter_function_list_using_trace(source_function_map, trace_list):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal("\t\textracting function list from trace ...")
+    Emitter.normal("\t\textracting function list from trace ...")
     trace_function_info = dict()
     source_line_map = Extractor.extract_source_lines_from_trace(trace_list)
     for source_path in source_line_map:
@@ -56,7 +56,7 @@ def filter_function_list_using_trace(source_function_map, trace_list):
 
 def merge_ast_script(ast_script, ast_node_a, ast_node_b, mapping_ba):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal("\t\tmerging AST script")
+    Emitter.normal("\t\tmerging AST script")
     merged_ast_script = list()
     inserted_node_list = list()
     deleted_node_list = list()
@@ -104,7 +104,7 @@ def merge_ast_script(ast_script, ast_node_a, ast_node_b, mapping_ba):
 
 def filter_ast_script(ast_script, info_a, info_b, mapping_ba):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal("\t\tfiltering AST script")
+    Emitter.normal("\t\tfiltering AST script")
     source_path_a, line_range_a, ast_node_a = info_a
     source_path_b, line_range_b, ast_node_b = info_b
     filtered_ast_script = list()
@@ -150,7 +150,7 @@ def filter_ast_script(ast_script, info_a, info_b, mapping_ba):
 
 def filter_ast_script_by_line(ast_script, info_a, info_b, mapping_ba, skip_lines):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal("\t\tfiltering AST script")
+    Emitter.normal("\t\tfiltering AST script")
     source_path_a, line_range_a, ast_node_a = info_a
     source_path_b, line_range_b, ast_node_b = info_b
     filtered_ast_script = list()

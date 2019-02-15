@@ -4,17 +4,17 @@
 
 import sys, os
 sys.path.append('./ast/')
-from common.Tools import execute_command, error_exit, show_partial_diff
-import Output
-from common import Vault
+from common.Utilities import execute_command, error_exit, show_partial_diff
+import Emitter
+from common import Definitions
 import Generator
-from phases import Tracer, Concolic
-from utilities import Mapper, Logger
+from phases import Trace, Concolic
+from tools import Mapper, Logger
 
 
 def get_function_map(source_list):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal("\t\tcollecting function list from source files ...")
+    Emitter.normal("\t\tcollecting function list from source files ...")
     source_function_map = dict()
     for source_path in source_list:
         if source_path in source_function_map.keys():
@@ -30,7 +30,7 @@ def get_function_map(source_list):
 
 def get_source_lines_from_trace(trace_list):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal("\t\t\textracting source lines executed ...")
+    Emitter.normal("\t\t\textracting source lines executed ...")
     unique_trace_list = list(set(trace_list))
     source_line_map = dict()
     for trace_line in unique_trace_list:
@@ -43,7 +43,7 @@ def get_source_lines_from_trace(trace_list):
 
 def extract_trace_function_list(source_function_map, trace_list):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal("\t\textracting function list from trace ...")
+    Emitter.normal("\t\textracting function list from trace ...")
     trace_function_info = dict()
     source_line_map = get_source_lines_from_trace(trace_list)
     for source_path in source_line_map:
@@ -74,7 +74,7 @@ def extract_trace_function_list(source_function_map, trace_list):
 
 def filter_trace_list(trace_list, estimate_loc):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal("\tfiltering trace based on estimation point")
+    Emitter.normal("\tfiltering trace based on estimation point")
     filtered_trace_list = list()
     # print(trace_list)
     # print(estimate_loc)
@@ -89,8 +89,8 @@ def filter_trace_list(trace_list, estimate_loc):
 
 def generate_candidate_function_list(estimate_loc, var_expr_map):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal("\tgenerating candidate functions")
-    filtered_trace_list = filter_trace_list(Tracer.list_trace_c, estimate_loc)
+    Emitter.normal("\tgenerating candidate functions")
+    filtered_trace_list = filter_trace_list(Trace.list_trace_c, estimate_loc)
     source_list_c = extract_source_list(filtered_trace_list)
     source_function_map = get_function_map(source_list_c)
     trace_function_list = extract_trace_function_list(source_function_map, filtered_trace_list)
@@ -120,7 +120,7 @@ def generate_candidate_function_list(estimate_loc, var_expr_map):
 
 def estimate_divergent_point(byte_list):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal("\tfinding similar location in recipient")
+    Emitter.normal("\tfinding similar location in recipient")
     length = len(Concolic.sym_path_c.keys()) - 1
     count_common = len(byte_list)
     candidate_list = list()
@@ -132,10 +132,10 @@ def estimate_divergent_point(byte_list):
         count = len(list(set(byte_list).intersection(bytes_temp)))
         if count == count_common:
             candidate_list.append(key)
-    length = len(Tracer.list_trace_c) - 1
+    length = len(Trace.list_trace_c) - 1
     grab_nearest = False
     for n in range(length, 0, -1):
-        path = Tracer.list_trace_c[n]
+        path = Trace.list_trace_c[n]
         path = os.path.abspath(path)
         if grab_nearest:
             if ".c" in path:
@@ -153,20 +153,20 @@ def estimate_divergent_point(byte_list):
 
 def get_sym_path(source_location):
     sym_path = ""
-    if Vault.VALUE_PATH_A in source_location:
-        for path in Tracer.list_trace_a:
+    if Definitions.VALUE_PATH_A in source_location:
+        for path in Trace.list_trace_a:
             if path in Concolic.sym_path_a.keys():
                 sym_path = Concolic.sym_path_a[path]
             if path == source_location:
                 break
-    elif Vault.VALUE_PATH_B in source_location:
-        for path in Tracer.list_trace_b:
+    elif Definitions.VALUE_PATH_B in source_location:
+        for path in Trace.list_trace_b:
             if path in Concolic.sym_path_b.keys():
                 sym_path = Concolic.sym_path_b[path]
             if path == source_location:
                 break
-    elif Vault.VALUE_PATH_C in source_location:
-        for path in Tracer.list_trace_c:
+    elif Definitions.VALUE_PATH_C in source_location:
+        for path in Trace.list_trace_c:
             if path in Concolic.sym_path_c.keys():
                 sym_path = Concolic.sym_path_c[path]
             if path == source_location:
@@ -176,7 +176,7 @@ def get_sym_path(source_location):
 
 def compute_common_bytes(div_source_loc):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal("\tanalysing common bytes in symbolic paths")
+    Emitter.normal("\tanalysing common bytes in symbolic paths")
     div_sympath = get_sym_path(div_source_loc)
     common_byte_list = list()
     if Concolic.sym_path_c:
@@ -279,7 +279,7 @@ def output_ast_script(ast_script):
 def execute_ast_transformation(source_path_b, source_path_d):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     global modified_source_list
-    Output.normal("\t\texecuting AST transformation")
+    Emitter.normal("\t\texecuting AST transformation")
     parameters = " -map=" + FILE_VAR_MAP + " -script=" + FILE_AST_SCRIPT
     parameters += " -source=" + source_path_b + " -target=" + source_path_d
     parameters += " -skip-list=" + FILE_SKIP_LIST
@@ -344,7 +344,7 @@ def extract_decl_list(ast_node):
 
 def identify_missing_functions(ast_node, source_path_b, source_path_d, skip_list):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal("\t\tidentifying missing function calls")
+    Emitter.normal("\t\tidentifying missing function calls")
     global missing_function_list
     call_list = extract_function_calls(ast_node)
     for call_expr in call_list:
@@ -388,7 +388,7 @@ def identify_missing_headers(function_node, target_file):
 def identify_missing_definitions(function_node):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     global missing_function_list
-    Output.normal("\tidentifying missing definitions")
+    Emitter.normal("\tidentifying missing definitions")
     missing_definition_list = list()
     ref_list = extract_reference_node_list(function_node)
     dec_list = extract_decl_list(function_node)
@@ -402,11 +402,11 @@ def identify_missing_definitions(function_node):
                 if identifier not in dec_list:
                     missing_definition_list.append(identifier)
             elif ref_type == "FunctionDecl":
-                if identifier in Vault.STANDARD_FUNCTION_LIST:
+                if identifier in Definitions.STANDARD_FUNCTION_LIST:
                     continue
                 if identifier not in missing_function_list:
                     print(identifier)
-                    print(Vault.STANDARD_FUNCTION_LIST)
+                    print(Definitions.STANDARD_FUNCTION_LIST)
                     error_exit("FOUND NEW DEPENDENT FUNCTION")
     return list(set(missing_definition_list))
 
@@ -414,7 +414,7 @@ def identify_missing_definitions(function_node):
 def identify_missing_macros(function_node, source_file, target_file):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     global missing_function_list, missing_macro_list
-    Output.normal("\tidentifying missing macros")
+    Emitter.normal("\tidentifying missing macros")
     ref_list = extract_reference_node_list(function_node)
     dec_list = extract_decl_list(function_node)
     function_identifier = function_node['identifier']
@@ -425,12 +425,12 @@ def identify_missing_macros(function_node, source_file, target_file):
             node_child_count = len(ref_node['children'])
             if function_identifier in identifier or "(" in identifier:
                 continue
-            if identifier in Vault.STANDARD_MACRO_LIST:
+            if identifier in Definitions.STANDARD_MACRO_LIST:
                 continue
             if node_child_count:
                 for child_node in ref_node['children']:
                     identifier = str(child_node['value'])
-                    if identifier in Vault.STANDARD_MACRO_LIST:
+                    if identifier in Definitions.STANDARD_MACRO_LIST:
                         continue
                     if identifier not in dec_list:
                         if identifier not in missing_macro_list.keys():
@@ -479,7 +479,7 @@ def identify_insertion_points(estimated_loc, var_expr_map):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     insertion_point_list = list()
     function_list = generate_candidate_function_list(estimated_loc, var_expr_map)
-    stack_info = Tracer.stack_c
+    stack_info = Trace.stack_c
 
     for function_id in function_list:
         source_path, function_name = function_id.split(":")

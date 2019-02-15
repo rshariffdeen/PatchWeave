@@ -3,17 +3,17 @@
 import os
 import sys
 import subprocess
-from utilities import Logger, Output
-import Vault
+from tools import Logger, Emitter
+import Definitions
 
 
-FILE_PARTIAL_DIFF = Vault.DIRECTORY_TMP + "/gen-patch"
+FILE_PARTIAL_DIFF = Definitions.DIRECTORY_TMP + "/gen-patch"
 
 
 def execute_command(command, show_output=True):
     # Print executed command and execute it in console
-    Output.command(command)
-    command = "{ " + command + " ;} 2> " + Vault.FILE_ERROR_LOG
+    Emitter.command(command)
+    command = "{ " + command + " ;} 2> " + Definitions.FILE_ERROR_LOG
     if not show_output:
         command += " > /dev/null"
     # print(command)
@@ -24,24 +24,24 @@ def execute_command(command, show_output=True):
 
 
 def create_directories():
-    if not os.path.isdir(Vault.DIRECTORY_LOG):
-        os.makedirs(Vault.DIRECTORY_LOG)
+    if not os.path.isdir(Definitions.DIRECTORY_LOG):
+        os.makedirs(Definitions.DIRECTORY_LOG)
 
-    if not os.path.isdir(Vault.DIRECTORY_OUTPUT_BASE):
-        os.makedirs(Vault.DIRECTORY_OUTPUT_BASE)
+    if not os.path.isdir(Definitions.DIRECTORY_OUTPUT_BASE):
+        os.makedirs(Definitions.DIRECTORY_OUTPUT_BASE)
 
-    if not os.path.isdir(Vault.DIRECTORY_BACKUP):
-        os.makedirs(Vault.DIRECTORY_BACKUP)
+    if not os.path.isdir(Definitions.DIRECTORY_BACKUP):
+        os.makedirs(Definitions.DIRECTORY_BACKUP)
 
-    if not os.path.isdir(Vault.DIRECTORY_TMP):
-        os.makedirs(Vault.DIRECTORY_TMP)
+    if not os.path.isdir(Definitions.DIRECTORY_TMP):
+        os.makedirs(Definitions.DIRECTORY_TMP)
 
 
 def error_exit(*args):
     print("\n")
     for i in args:
         Logger.error(i)
-        Output.error(i)
+        Emitter.error(i)
     raise Exception("Error. Exiting...")
 
 
@@ -55,9 +55,9 @@ def find_files(src_path, extension, output):
 def clean_files():
     # Remove other residual files stored in ./output/
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.information("Removing other residual files...")
+    Emitter.information("Removing other residual files...")
     if os.path.isdir("output"):
-        clean_command = "rm -rf " + Vault.DIRECTORY_OUTPUT
+        clean_command = "rm -rf " + Definitions.DIRECTORY_OUTPUT
         execute_command(clean_command)
 
 
@@ -81,13 +81,13 @@ def get_file_extension_list(src_path, output_file_name):
 
 def backup_file(file_path, backup_name):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    backup_command = "cp " + file_path + " " + Vault.DIRECTORY_BACKUP + "/" + backup_name
+    backup_command = "cp " + file_path + " " + Definitions.DIRECTORY_BACKUP + "/" + backup_name
     execute_command(backup_command)
 
 
 def restore_file(file_path, backup_name):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    restore_command = "cp " + Vault.DIRECTORY_BACKUP + "/" + backup_name + " " + file_path
+    restore_command = "cp " + Definitions.DIRECTORY_BACKUP + "/" + backup_name + " " + file_path
     execute_command(restore_command)
 
 
@@ -99,13 +99,13 @@ def reset_git(source_directory):
 
 def show_partial_diff(source_path_a, source_path_b):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal("\t\tTransplanted Code:")
+    Emitter.normal("\t\tTransplanted Code:")
     diff_command = "diff -ENZBbwr " + source_path_a + " " + source_path_b + " > " + FILE_PARTIAL_DIFF
     execute_command(diff_command)
     with open(FILE_PARTIAL_DIFF, 'r') as diff_file:
         diff_line = diff_file.readline().strip()
         while diff_line:
-            Output.normal("\t\t\t" + diff_line)
+            Emitter.normal("\t\t\t" + diff_line)
             diff_line = diff_file.readline().strip()
 
 

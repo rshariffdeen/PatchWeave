@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 
-from utilities import Logger, Output
+from tools import Logger, Emitter
 import sys
-from common.Tools import execute_command, error_exit
+from common.Utilities import execute_command, error_exit
 import os
 
 
 class Vector:
-    deckard_path = "tools/Deckard/src/main/cvecgen_fail "
-    deckard_path_2 = "tools/Deckard/src/main/cvecgen "
+    deckard_path = "third-party/Deckard/src/main/cvecgen_fail "
+    deckard_path_2 = "third-party/Deckard/src/main/cvecgen "
     #deckard_vecs = dict()
     vid = 0
     
@@ -41,7 +41,7 @@ class Vector:
         else:
             current = "\t\t" + self.function_name + " " + str(self.start_line) + "-" + \
                         str(self.end_line)
-            Output.normal(current)
+            Emitter.normal(current)
             start_line = self.start_line
             end_line = self.end_line
             with open(self.file_path, 'r') as source_file:
@@ -49,7 +49,7 @@ class Vector:
                 max_line = len(ls)
                 if int(end_line) > max_line:
                     # TODO: This shouldn't happen!
-                    Output.error(current)
+                    Emitter.error(current)
                     error_exit("Deckard failed. The following file not generated:", self.vector_path)
                     return None
             self.start_line = start_line
@@ -83,8 +83,8 @@ class Vector:
                 error_exit(e, "Error with Deckard vector generation. Exiting...")
         
         if not os.path.isfile(self.vector_path):
-            Output.warning("Deckard fail. The vector file was not generated:")
-            Output.warning(self.vector_path + "\n")
+            Emitter.warning("Deckard fail. The vector file was not generated:")
+            Emitter.warning(self.vector_path + "\n")
             with open('output/reproduce_errors', 'a') as file:
                     file.write(command + "\n" + c1 + "\n")
             return None

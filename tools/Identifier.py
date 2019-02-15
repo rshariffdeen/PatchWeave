@@ -5,22 +5,22 @@
 import sys
 import os
 sys.path.append('./ast/')
-from common.Tools import error_exit
-import Output
-from common import Vault
+from common.Utilities import error_exit
+import Emitter
+from common import Definitions
 import Logger
 import Generator
 import Extractor
 import Finder
 import KleeExecutor
 import Filter
-from utilities import Collector
+from tools import Collector
 import Mapper
 
 
 def identify_missing_functions(ast_map, ast_node, source_path_b, source_path_d, skip_list):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal("\t\tidentifying missing function calls")
+    Emitter.normal("\t\tidentifying missing function calls")
     missing_function_list = dict()
     call_list = Extractor.extract_function_call_list(ast_node)
     for call_expr in call_list:
@@ -65,7 +65,7 @@ def identify_missing_headers(function_node, target_file):
 def identify_missing_definitions(function_node):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     global missing_function_list
-    Output.normal("\tidentifying missing definitions")
+    Emitter.normal("\tidentifying missing definitions")
     missing_definition_list = list()
     ref_list = Extractor.extract_reference_node_list(function_node)
     dec_list = Extractor.extract_decl_list(function_node)
@@ -79,11 +79,11 @@ def identify_missing_definitions(function_node):
                 if identifier not in dec_list:
                     missing_definition_list.append(identifier)
             elif ref_type == "FunctionDecl":
-                if identifier in Vault.STANDARD_FUNCTION_LIST:
+                if identifier in Definitions.STANDARD_FUNCTION_LIST:
                     continue
                 if identifier not in missing_function_list:
                     print(identifier)
-                    print(Vault.STANDARD_FUNCTION_LIST)
+                    print(Definitions.STANDARD_FUNCTION_LIST)
                     error_exit("FOUND NEW DEPENDENT FUNCTION")
     return list(set(missing_definition_list))
 
@@ -91,7 +91,7 @@ def identify_missing_definitions(function_node):
 def identify_missing_macros(function_node, source_file, target_file):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     global missing_function_list, missing_macro_list
-    Output.normal("\tidentifying missing macros")
+    Emitter.normal("\tidentifying missing macros")
     ref_list = Extractor.extract_reference_node_list(function_node)
     dec_list = Extractor.extract_decl_list(function_node)
     function_identifier = function_node['identifier']
@@ -102,12 +102,12 @@ def identify_missing_macros(function_node, source_file, target_file):
             node_child_count = len(ref_node['children'])
             if function_identifier in identifier or "(" in identifier:
                 continue
-            if identifier in Vault.STANDARD_MACRO_LIST:
+            if identifier in Definitions.STANDARD_MACRO_LIST:
                 continue
             if node_child_count:
                 for child_node in ref_node['children']:
                     identifier = str(child_node['value'])
-                    if identifier in Vault.STANDARD_MACRO_LIST:
+                    if identifier in Definitions.STANDARD_MACRO_LIST:
                         continue
                     if identifier not in dec_list:
                         if identifier not in missing_macro_list.keys():
@@ -173,7 +173,7 @@ def identify_insertion_points(estimated_loc, var_expr_map, stack_info):
 
 def generate_candidate_function_list(estimate_loc, var_expr_map, trace_list):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal("\tgenerating candidate functions")
+    Emitter.normal("\tgenerating candidate functions")
     filtered_trace_list = Filter.filter_trace_list_by_loc(trace_list, estimate_loc)
     source_list_c = Extractor.extract_source_list(filtered_trace_list)
     source_function_map = identify_functions_in_source(source_list_c)
@@ -213,7 +213,7 @@ def generate_candidate_function_list(estimate_loc, var_expr_map, trace_list):
 
 def identify_functions_in_source(source_list):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal("\t\tcollecting function list from source files ...")
+    Emitter.normal("\t\tcollecting function list from source files ...")
     source_function_map = dict()
     for source_path in source_list:
         if source_path in source_function_map.keys():
@@ -228,7 +228,7 @@ def identify_functions_in_source(source_list):
 
 def identify_divergent_point(byte_list, sym_path, trace_list):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal("\tfinding similar location in recipient")
+    Emitter.normal("\tfinding similar location in recipient")
     length = len(sym_path) - 1
     count_common = len(byte_list)
     candidate_list = list()

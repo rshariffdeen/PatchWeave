@@ -4,9 +4,9 @@
 
 import os
 import sys
-from common.Tools import execute_command, error_exit
-from common import Vault
-from utilities import Logger, Output
+from common.Utilities import execute_command, error_exit
+from common import Definitions
+from tools import Logger, Emitter
 
 CC = "clang"
 CXX = "clang++"
@@ -43,7 +43,7 @@ def config_project(project_path, is_llvm):
     config_command = dir_command + config_command
     ret_code = execute_command(config_command)
     if int(ret_code) != 0:
-        Output.error(config_command)
+        Emitter.error(config_command)
         error_exit("CONFIGURATION FAILED!!\nExit Code: " + str(ret_code))
 
 
@@ -51,66 +51,66 @@ def build_project(project_path, build_command=None):
     dir_command = "cd " + project_path + ";"
     if build_command is None:
         build_command = "bear make CFLAGS=" + C_FLAGS + " "
-        build_command += "CXXFLAGS=" + CXX_FLAGS + " > " + Vault.FILE_MAKE_LOG
+        build_command += "CXXFLAGS=" + CXX_FLAGS + " > " + Definitions.FILE_MAKE_LOG
     build_command = dir_command + build_command
     # print(build_command)
     ret_code = execute_command(build_command)
     if int(ret_code) != 0:
-        Output.error(build_command)
+        Emitter.error(build_command)
         error_exit("BUILD FAILED!!\nExit Code: " + str(ret_code))
 
 
 def build_all():
-    Output.normal("building")
+    Emitter.normal("building")
 
-    Output.normal("\t" + Vault.Project_A.path)
-    if not Vault.VALUE_BUILD_COMMAND_A:
-        build_project(Vault.Project_A.path)
+    Emitter.normal("\t" + Definitions.Project_A.path)
+    if not Definitions.VALUE_BUILD_COMMAND_A:
+        build_project(Definitions.Project_A.path)
     else:
-        build_project(Vault.Project_A.path, Vault.VALUE_BUILD_COMMAND_A)
+        build_project(Definitions.Project_A.path, Definitions.VALUE_BUILD_COMMAND_A)
 
-    Output.normal("\t" + Vault.Project_B.path)
-    if not Vault.VALUE_BUILD_COMMAND_A:
-        build_project(Vault.Project_B.path)
+    Emitter.normal("\t" + Definitions.Project_B.path)
+    if not Definitions.VALUE_BUILD_COMMAND_A:
+        build_project(Definitions.Project_B.path)
     else:
-        build_project(Vault.Project_B.path, Vault.VALUE_BUILD_COMMAND_A)
+        build_project(Definitions.Project_B.path, Definitions.VALUE_BUILD_COMMAND_A)
 
-    Output.normal("\t" + Vault.Project_C.path)
-    if not Vault.VALUE_BUILD_COMMAND_C:
-        build_project(Vault.Project_C.path)
+    Emitter.normal("\t" + Definitions.Project_C.path)
+    if not Definitions.VALUE_BUILD_COMMAND_C:
+        build_project(Definitions.Project_C.path)
     else:
-        build_project(Vault.Project_C.path, Vault.VALUE_BUILD_COMMAND_C)
+        build_project(Definitions.Project_C.path, Definitions.VALUE_BUILD_COMMAND_C)
 
-    Output.normal("\t" + Vault.Project_D.path)
-    if not Vault.VALUE_BUILD_COMMAND_C:
-        build_project(Vault.Project_D.path)
+    Emitter.normal("\t" + Definitions.Project_D.path)
+    if not Definitions.VALUE_BUILD_COMMAND_C:
+        build_project(Definitions.Project_D.path)
     else:
-        build_project(Vault.Project_D.path, Vault.VALUE_BUILD_COMMAND_C)
+        build_project(Definitions.Project_D.path, Definitions.VALUE_BUILD_COMMAND_C)
 
 
 def config_all(is_llvm=False):
-    Output.normal("configuring projects")
+    Emitter.normal("configuring projects")
 
-    Output.normal("\t" + Vault.Project_A.path)
-    if not Vault.VALUE_BUILD_COMMAND_A:
-        config_project(Vault.Project_A.path, is_llvm)
+    Emitter.normal("\t" + Definitions.Project_A.path)
+    if not Definitions.VALUE_BUILD_COMMAND_A:
+        config_project(Definitions.Project_A.path, is_llvm)
 
-    Output.normal("\t" + Vault.Project_B.path)
-    if not Vault.VALUE_BUILD_COMMAND_A:
-        config_project(Vault.Project_B.path, is_llvm)
+    Emitter.normal("\t" + Definitions.Project_B.path)
+    if not Definitions.VALUE_BUILD_COMMAND_A:
+        config_project(Definitions.Project_B.path, is_llvm)
 
-    Output.normal("\t" + Vault.Project_C.path)
-    if not Vault.VALUE_BUILD_COMMAND_C:
-        config_project(Vault.Project_C.path, is_llvm)
+    Emitter.normal("\t" + Definitions.Project_C.path)
+    if not Definitions.VALUE_BUILD_COMMAND_C:
+        config_project(Definitions.Project_C.path, is_llvm)
 
-    Output.normal("\t" + Vault.Project_D.path)
-    if not Vault.VALUE_BUILD_COMMAND_C:
-        config_project(Vault.Project_D.path, is_llvm)
+    Emitter.normal("\t" + Definitions.Project_D.path)
+    if not Definitions.VALUE_BUILD_COMMAND_C:
+        config_project(Definitions.Project_D.path, is_llvm)
 
 
 def build_normal():
     global CC, CXX, CXX_FLAGS, C_FLAGS, LD_FLAGS
-    Output.sub_title("building projects")
+    Emitter.sub_title("building projects")
     CC = "clang"
     CXX = "clang++"
     CXX_FLAGS = "'-g -O0 -static'"
@@ -123,33 +123,33 @@ def build_normal():
 
 def build_verify():
     global CC, CXX, CXX_FLAGS, C_FLAGS, LD_FLAGS
-    Output.sub_title("building projects")
+    Emitter.sub_title("building projects")
     CXX_FLAGS = "'-g -O0 -static -DNDEBUG -ftrapv'"
     C_FLAGS = "'-g -O0 -static -DNDEBUG -ftrapv'"
-    Output.normal("\t" + Vault.Project_D.path)
-    if not Vault.VALUE_BUILD_COMMAND_C:
-        build_project(Vault.Project_D.path)
+    Emitter.normal("\t" + Definitions.Project_D.path)
+    if not Definitions.VALUE_BUILD_COMMAND_C:
+        build_project(Definitions.Project_D.path)
     else:
-        build_project(Vault.Project_D.path, Vault.VALUE_BUILD_COMMAND_C)
+        build_project(Definitions.Project_D.path, Definitions.VALUE_BUILD_COMMAND_C)
 
 
 def build_asan():
     global CC, CXX, CXX_FLAGS, C_FLAGS, LD_FLAGS
-    Output.sub_title("building projects with asan")
+    Emitter.sub_title("building projects with asan")
     clean_all()
     CC = "clang"
     CXX = "clang++"
     CXX_FLAGS = "'-g -O0 -static'"
     C_FLAGS = "'-g -O0 -static'"
     config_all()
-    CXX_FLAGS = "'-g -O0 -static -DNDEBUG -fsanitize=" + Vault.VALUE_ASAN_FLAG + "'"
-    C_FLAGS = "'-g -O0 -static -DNDEBUG -fsanitize=" + Vault.VALUE_ASAN_FLAG + "'"
+    CXX_FLAGS = "'-g -O0 -static -DNDEBUG -fsanitize=" + Definitions.VALUE_ASAN_FLAG + "'"
+    C_FLAGS = "'-g -O0 -static -DNDEBUG -fsanitize=" + Definitions.VALUE_ASAN_FLAG + "'"
     build_all()
 
 
 def build_llvm():
     global CC, CXX, CXX_FLAGS, C_FLAGS, LD_FLAGS
-    Output.sub_title("building projects with wllvm")
+    Emitter.sub_title("building projects with wllvm")
     clean_all()
     os.environ["LLVM_COMPILER"] = "clang"
     CC = "wllvm"
@@ -183,27 +183,27 @@ def soft_restore_project(project_path):
 
 
 def restore_all():
-    Output.normal("restoring projects")
-    Output.normal("\t" + Vault.Project_A.path)
-    restore_project(Vault.Project_A.path)
-    Output.normal("\t" + Vault.Project_B.path)
-    restore_project(Vault.Project_B.path)
-    Output.normal("\t" + Vault.Project_C.path)
-    restore_project(Vault.Project_C.path)
-    Output.normal("\t" + Vault.Project_D.path)
-    restore_project(Vault.Project_D.path)
+    Emitter.normal("restoring projects")
+    Emitter.normal("\t" + Definitions.Project_A.path)
+    restore_project(Definitions.Project_A.path)
+    Emitter.normal("\t" + Definitions.Project_B.path)
+    restore_project(Definitions.Project_B.path)
+    Emitter.normal("\t" + Definitions.Project_C.path)
+    restore_project(Definitions.Project_C.path)
+    Emitter.normal("\t" + Definitions.Project_D.path)
+    restore_project(Definitions.Project_D.path)
 
 
 def soft_restore_all():
-    Output.normal("restoring(soft) projects")
-    Output.normal("\t" + Vault.Project_A.path)
-    soft_restore_project(Vault.Project_A.path)
-    Output.normal("\t" + Vault.Project_B.path)
-    soft_restore_project(Vault.Project_B.path)
-    Output.normal("\t" + Vault.Project_C.path)
-    soft_restore_project(Vault.Project_C.path)
-    Output.normal("\t" + Vault.Project_D.path)
-    soft_restore_project(Vault.Project_D.path)
+    Emitter.normal("restoring(soft) projects")
+    Emitter.normal("\t" + Definitions.Project_A.path)
+    soft_restore_project(Definitions.Project_A.path)
+    Emitter.normal("\t" + Definitions.Project_B.path)
+    soft_restore_project(Definitions.Project_B.path)
+    Emitter.normal("\t" + Definitions.Project_C.path)
+    soft_restore_project(Definitions.Project_C.path)
+    Emitter.normal("\t" + Definitions.Project_D.path)
+    soft_restore_project(Definitions.Project_D.path)
 
 
 def clean_project(project_path):
@@ -213,28 +213,28 @@ def clean_project(project_path):
 
 def clean_all():
     restore_all()
-    Output.normal("cleaning projects")
-    Output.normal("\t" + Vault.Project_A.path)
-    clean_project(Vault.Project_A.path)
+    Emitter.normal("cleaning projects")
+    Emitter.normal("\t" + Definitions.Project_A.path)
+    clean_project(Definitions.Project_A.path)
 
-    Output.normal("\t" + Vault.Project_B.path)
-    clean_project(Vault.Project_B.path)
+    Emitter.normal("\t" + Definitions.Project_B.path)
+    clean_project(Definitions.Project_B.path)
 
-    Output.normal("\t" + Vault.Project_C.path)
-    clean_project(Vault.Project_C.path)
+    Emitter.normal("\t" + Definitions.Project_C.path)
+    clean_project(Definitions.Project_C.path)
 
-    Output.normal("\t" + Vault.Project_D.path)
-    clean_project(Vault.Project_D.path)
+    Emitter.normal("\t" + Definitions.Project_D.path)
+    clean_project(Definitions.Project_D.path)
 
 
 def build_instrumented_code(source_directory):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal("\t\tbuilding instrumented code")
+    Emitter.normal("\t\tbuilding instrumented code")
     CXX_FLAGS = "'-g -O0 -static -DNDEBUG -ftrapv'"
     C_FLAGS = "'-g -O0 -static -ftrapv -L/home/rshariffdeen/workspace/klee/build-rshariffdeen/lib -lkleeRuntest'"
     build_command = "cd " + source_directory + ";"
     build_command += "make CFLAGS=" + C_FLAGS + " "
-    build_command += "CXXFLAGS=" + CXX_FLAGS + " > " + Vault.FILE_MAKE_LOG
+    build_command += "CXXFLAGS=" + CXX_FLAGS + " > " + Definitions.FILE_MAKE_LOG
     # print(build_command)
     ret_code = execute_command(build_command)
     if int(ret_code) == 2:
@@ -246,5 +246,5 @@ def build_instrumented_code(source_directory):
             ret_code = execute_command(build_command)
 
     if int(ret_code) != 0:
-        Output.error(build_command)
+        Emitter.error(build_command)
         error_exit("BUILD FAILED!!\nExit Code: " + str(ret_code))

@@ -6,10 +6,10 @@ import sys
 
 sys.path.append('./ast/')
 import time
-from common.Tools import execute_command, error_exit, get_file_extension_list
-from common import Vault
+from common.Utilities import execute_command, error_exit, get_file_extension_list
+from common import Definitions
 import Generator
-from utilities import Mapper, Logger, Filter, Output
+from tools import Mapper, Logger, Filter, Emitter
 
 FILE_EXCLUDED_EXTENSIONS = ""
 FILE_EXCLUDED_EXTENSIONS_A = ""
@@ -17,7 +17,6 @@ FILE_EXCLUDED_EXTENSIONS_B = ""
 FILE_DIFF_C = ""
 FILE_DIFF_H = ""
 FILE_DIFF_ALL = ""
-FILE_TEMP_DIFF = ""
 FILE_AST_SCRIPT = ""
 FILE_AST_DIFF_ERROR = ""
 
@@ -27,24 +26,25 @@ diff_info = dict()
 
 def find_diff_files():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal("finding changed files...")
+    Emitter.normal("finding changed files...")
     global FILE_DIFF_H
-    extensions = get_file_extension_list(Vault.Project_A.path, FILE_EXCLUDED_EXTENSIONS_A)
-    extensions = extensions.union(get_file_extension_list(Vault.Project_B.path, FILE_EXCLUDED_EXTENSIONS_B))
+    extensions = get_file_extension_list(Definitions.Project_A.path, FILE_EXCLUDED_EXTENSIONS_A)
+    extensions = extensions.union(get_file_extension_list(Definitions.Project_B.path, FILE_EXCLUDED_EXTENSIONS_B))
     with open(FILE_EXCLUDED_EXTENSIONS, 'w') as exclusions:
         for pattern in extensions:
             exclusions.write(pattern + "\n")
     # TODO: Include cases where a file is added or removed
-    diff_command = "diff -ENZBbwqr " + Vault.Project_A.path + " " + Vault.Project_B.path + " -X " \
+    diff_command = "diff -ENZBbwqr " + Definitions.Project_A.path + " " + Definitions.Project_B.path + " -X " \
                    + FILE_EXCLUDED_EXTENSIONS + "> " + FILE_DIFF_ALL + ";"
     diff_command += "cat " + FILE_DIFF_ALL + "| grep -P '\.c and ' > " + FILE_DIFF_C + ";"
     diff_command += "cat " + FILE_DIFF_ALL + "| grep -P '\.h and ' > " + FILE_DIFF_H
+    # print(diff_command)
     execute_command(diff_command)
 
 
 def extract_h_file_list():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal("\textracting changed header files...")
+    Emitter.normal("\textracting changed header files...")
     file_list = list()
     with open(FILE_DIFF_H, 'r') as diff_file:
         diff_line = diff_file.readline().strip()
@@ -52,29 +52,30 @@ def extract_h_file_list():
             diff_line = diff_line.split(" ")
             file_a = diff_line[1]
             file_b = diff_line[3]
-            Generator.parseAST(file_a, Vault.Project_A, is_deckard=True, is_header=True)
+            Generator.parseAST(file_a, Definitions.Project_A, is_deckard=True, is_header=True)
             file_list.append(file_a.split("/")[-1])
             diff_line = diff_file.readline().strip()
     if len(file_list) > 0:
-        Output.normal("\t\theader files:")
+        Emitter.normal("\t\theader files:")
         for h_file in file_list:
-            Output.normal("\t\t\t" + h_file)
+            Emitter.normal("\t\t\t" + h_file)
 
 
 def extract_diff_info():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal("\tcollecting diff info...")
+    Emitter.normal("\tcollecting diff info...")
     with open(FILE_DIFF_C, 'r') as diff_file:
         diff_line = diff_file.readline().strip()
         while diff_line:
             diff_line = diff_line.split(" ")
             file_a = diff_line[1]
             file_b = diff_line[3]
-            diff_command = "diff -ENBZbwr " + file_a + " " + file_b + " > " + FILE_TEMP_DIFF
+            output_file = Definitions.FILE_TEMP_DIFF
+            diff_command = "diff -ENBZbwr " + file_a + " " + file_b + " > " + output_file
             execute_command(diff_command)
             pertinent_lines_a = []
             pertinent_lines_b = []
-            with open(FILE_TEMP_DIFF, 'r') as temp_diff_file:
+            with open(output_file, 'r') as temp_diff_file:
                 file_line = temp_diff_file.readline().strip()
                 while file_line:
                     operation = ""
@@ -120,7 +121,7 @@ def extract_diff_info():
 
 def extract_c_file_list():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal("\textracting changed c/cpp files...")
+    Emitter.normal("\textracting changed c/cpp files...")
     file_list = list()
     with open(FILE_DIFF_C, 'r') as diff_file:
         diff_line = diff_file.readline().strip()
@@ -131,16 +132,16 @@ def extract_c_file_list():
             file_list.append(file_a.split("/")[-1])
             diff_line = diff_file.readline().strip()
     if len(file_list) > 0:
-        Output.normal("\t\tsource files:")
+        Emitter.normal("\t\tsource files:")
         for source_file in file_list:
-            Output.normal("\t\t\t" + source_file)
+            Emitter.normal("\t\t\t" + source_file)
     return file_list
 
 
 def safe_exec(function_def, title, *args):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     start_time = time.time()
-    Output.sub_title(title)
+    Emitter.sub_title(title)
     description = title[0].lower() + title[1:]
     try:
         Logger.information("running " + str(function_def))
@@ -149,17 +150,17 @@ def safe_exec(function_def, title, *args):
         else:
             result = function_def(*args)
         duration = str(time.time() - start_time)
-        Output.success("\n\tSuccessful " + description + ", after " + duration + " seconds.")
+        Emitter.success("\n\tSuccessful " + description + ", after " + duration + " seconds.")
     except Exception as exception:
         duration = str(time.time() - start_time)
-        Output.error("Crash during " + description + ", after " + duration + " seconds.")
+        Emitter.error("Crash during " + description + ", after " + duration + " seconds.")
         error_exit(exception, "Unexpected error during " + description + ".")
     return result
 
 
 def get_ast_script(source_a, source_b):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal("\tgenerating AST script")
+    Emitter.normal("\tgenerating AST script")
     Generator.generate_ast_script(source_a, source_b)
     with open(FILE_AST_SCRIPT, "r") as script_file:
         script_lines = script_file.readlines()
@@ -187,15 +188,15 @@ def collect_ast_diff():
     for diff_loc in diff_info.keys():
         source_path, line_number = diff_loc.split(":")
         if source_path != source_path_a:
-            Output.sub_sub_title(source_path)
+            Emitter.sub_sub_title(source_path)
             source_path_a = source_path
             line_number_a = line_number
-            source_path_b = str(source_path_a).replace(Vault.VALUE_PATH_A, Vault.VALUE_PATH_B)
+            source_path_b = str(source_path_a).replace(Definitions.VALUE_PATH_A, Definitions.VALUE_PATH_B)
             ast_script = get_ast_script(source_path_a, source_path_b)
             ast_map_a = Generator.get_ast_json(source_path_a)
             ast_map_b = Generator.get_ast_json(source_path_b)
             mapping_ba = Mapper.map_ast_from_source(source_path_a, source_path_b)
-        Output.normal("\tline number:" + line_number)
+        Emitter.normal("\tline number:" + line_number)
         diff_loc_info = diff_info[diff_loc]
         operation = diff_loc_info['operation']
         filtered_ast_script = list()
@@ -225,22 +226,19 @@ def collect_ast_diff():
 
 def set_values():
     global FILE_DIFF_C, FILE_DIFF_H, FILE_DIFF_ALL
-    global FILE_TEMP_DIFF, FILE_AST_SCRIPT, FILE_AST_DIFF_ERROR
+    global FILE_AST_SCRIPT, FILE_AST_DIFF_ERROR
     global FILE_EXCLUDED_EXTENSIONS, FILE_EXCLUDED_EXTENSIONS_A, FILE_EXCLUDED_EXTENSIONS_B
-    FILE_EXCLUDED_EXTENSIONS = Vault.DIRECTORY_OUTPUT + "/excluded-extensions"
-    FILE_EXCLUDED_EXTENSIONS_A = Vault.DIRECTORY_OUTPUT + "/excluded-extensions-a"
-    FILE_EXCLUDED_EXTENSIONS_B = Vault.DIRECTORY_OUTPUT + "/excluded-extensions-b"
-    FILE_DIFF_C = Vault.DIRECTORY_OUTPUT + "/diff_C"
-    FILE_DIFF_H = Vault.DIRECTORY_OUTPUT + "/diff_H"
-    FILE_DIFF_ALL = Vault.DIRECTORY_OUTPUT + "/diff_all"
-    FILE_TEMP_DIFF = Vault.DIRECTORY_OUTPUT + "/temp_diff"
-    FILE_AST_SCRIPT = Vault.DIRECTORY_OUTPUT + "/ast-script"
-    FILE_AST_DIFF_ERROR = Vault.DIRECTORY_OUTPUT + "/errors_ast_diff"
+    FILE_EXCLUDED_EXTENSIONS = Definitions.DIRECTORY_OUTPUT + "/excluded-extensions"
+    FILE_EXCLUDED_EXTENSIONS_A = Definitions.DIRECTORY_OUTPUT + "/excluded-extensions-a"
+    FILE_EXCLUDED_EXTENSIONS_B = Definitions.DIRECTORY_OUTPUT + "/excluded-extensions-b"
+    FILE_DIFF_C = Definitions.DIRECTORY_OUTPUT + "/diff_C"
+    FILE_DIFF_H = Definitions.DIRECTORY_OUTPUT + "/diff_H"
+    FILE_DIFF_ALL = Definitions.DIRECTORY_OUTPUT + "/diff_all"
 
 
 def diff():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.title("Analysing diff")
+    Emitter.title("Analysing diff")
     set_values()
     safe_exec(collect_source_diff, "collecting source diff")
     safe_exec(collect_ast_diff, "collecting ast diff")

@@ -4,12 +4,11 @@
 
 import sys, os
 sys.path.append('./ast/')
-from common.Tools import execute_command, error_exit, show_partial_diff, backup_file
-import Output
-from common import Vault
-from utilities import Logger
+from common.Utilities import execute_command, error_exit, show_partial_diff, backup_file
+import Emitter
+from common import Definitions
+from tools import Logger
 import Generator
-from phases import Weaver
 
 FILE_SYNTAX_ERRORS = ""
 FILENAME_BACKUP = "backup-syntax-fix"
@@ -60,7 +59,7 @@ def replace_code(patch_code, source_path, line_number):
 
 def fix_return_type(source_file, source_location):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal("\t\tfixing return type")
+    Emitter.normal("\t\tfixing return type")
     line_number = int(source_location.split(":")[1])
     ast_map = Generator.get_ast_json(source_file)
     function_node = Weaver.get_fun_node(ast_map, int(line_number), source_file)
@@ -75,7 +74,7 @@ def fix_return_type(source_file, source_location):
         new_statement = "return;\n"
         backup_file(source_file, FILENAME_BACKUP)
         replace_code(new_statement, source_file, start_line)
-        backup_file_path = Vault.DIRECTORY_BACKUP + "/" + FILENAME_BACKUP
+        backup_file_path = Definitions.DIRECTORY_BACKUP + "/" + FILENAME_BACKUP
         show_partial_diff(backup_file_path, source_file)
     else:
         error_exit("NEW RETURN TYPE!")
@@ -84,7 +83,7 @@ def fix_return_type(source_file, source_location):
 
 def fix_syntax_errors(source_file):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal("\tfixing syntax errors")
+    Emitter.normal("\tfixing syntax errors")
     with open(FILE_SYNTAX_ERRORS, 'r') as error_log:
         read_line = error_log.readline()
         source_location = read_line.split(": ")[0]
@@ -96,23 +95,23 @@ def fix_syntax_errors(source_file):
 def check_syntax_errors():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     for source_file in Weaver.modified_source_list:
-        Output.normal(source_file)
+        Emitter.normal(source_file)
         check_command = "clang-check -analyze " + source_file + " > " + FILE_SYNTAX_ERRORS
         check_command += " 2>&1"
         ret_code = int(execute_command(check_command))
         if ret_code != 0:
             fix_syntax_errors(source_file)
         else:
-            Output.normal("\tno syntax errors")
+            Emitter.normal("\tno syntax errors")
 
 
 def set_values():
     global FILE_SYNTAX_ERRORS
-    FILE_SYNTAX_ERRORS = Vault.DIRECTORY_OUTPUT + "/syntax-errors"
+    FILE_SYNTAX_ERRORS = Definitions.DIRECTORY_OUTPUT + "/syntax-errors"
 
 
 def check():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.sub_title("checking syntax errors")
+    Emitter.sub_title("checking syntax errors")
     set_values()
     check_syntax_errors()

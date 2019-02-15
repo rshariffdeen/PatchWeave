@@ -3,8 +3,8 @@
 
 
 import sys
-from common.Tools import execute_command, error_exit
-import Output
+from common.Utilities import execute_command, error_exit
+import Emitter
 import Logger
 
 
@@ -17,7 +17,7 @@ SYMBOLIC_ARGUMENTS_FOR_TRACE = "--posix-runtime --libc=uclibc --print-trace --pr
 
 def generate_path_condition(binary_arguments, binary_path, binary_name, bit_size, poc_path, log_path):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal("\tgenerating symbolic trace for path conditions")
+    Emitter.normal("\tgenerating symbolic trace for path conditions")
     trace_command = "cd " + binary_path + ";"
     sym_args = SYMBOLIC_ARGUMENTS_FOR_PATH
     trace_command += SYMBOLIC_ENGINE + sym_args.replace("$KTEST", poc_path) + " " + binary_name + ".bc "\
@@ -32,9 +32,9 @@ def generate_path_condition(binary_arguments, binary_path, binary_name, bit_size
 def generate_var_expressions(binary_arguments, binary_path, binary_name, bit_size, poc_path, log_path, indent=False):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     if indent:
-        Output.normal("\t\tgenerating symbolic expressions")
+        Emitter.normal("\t\tgenerating symbolic expressions")
     else:
-        Output.normal("\t\t\tgenerating symbolic expressions")
+        Emitter.normal("\t\t\tgenerating symbolic expressions")
     trace_command = "cd " + binary_path + ";"
     sym_args = SYMBOLIC_ARGUMENTS_FOR_EXPR
     trace_command += SYMBOLIC_ENGINE + sym_args.replace("$KTEST", poc_path) + " " + binary_name + ".bc "\
@@ -48,7 +48,7 @@ def generate_var_expressions(binary_arguments, binary_path, binary_name, bit_siz
 
 def generate_trace(exploit_command, binary_path, binary_name, poc_path, log_path):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal("\tgenerating trace for exploit")
+    Emitter.normal("\tgenerating trace for exploit")
     trace_command = "cd " + binary_path + ";"
     trace_command += SYMBOLIC_ENGINE + SYMBOLIC_ARGUMENTS_FOR_TRACE + " " + binary_name + ".bc "\
                      + exploit_command.replace("$POC", poc_path) + "  > " + log_path + \

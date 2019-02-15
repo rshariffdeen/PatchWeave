@@ -5,40 +5,42 @@
 import sys
 
 sys.path.append('./ast/')
-from common.Tools import error_exit, backup_file, restore_file, reset_git
+from common.Utilities import error_exit, backup_file, restore_file, reset_git
 from six.moves import cStringIO
 from pysmt.smtlib.parser import SmtLibParser
 from pysmt.shortcuts import get_model
-import Output
-from common import Vault
+import Emitter
+from common import Definitions
 import Logger
 import Generator
-from phases import Builder
+from tools import Builder
 
 KLEE_SYMBOLIC_ENGINE = "klee "
 SYMBOLIC_ARGUMENTS = "--no-exit-on-error --libc=uclibc --posix-runtime --external-calls=all --only-replay-seeds --seed-out=$KTEST"
 TOOL_KLEE_INSTRUMENTATION = "/home/ridwan/workspace/llvm/llvm-7/build/bin/gizmo"
-FILE_TEMP_INSTRUMENTED = Vault.DIRECTORY_OUTPUT + "/temp-instrumented"
+
+FILE_TEMP_INSTRUMENTED = Definitions.DIRECTORY_TMP + "/temp-instrumented"
+
 
 
 def generate_symbolic_expressions(source_path, start_line, end_line, output_log, only_in_range=True):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal("\tgenerating symbolic expressions")
+    Emitter.normal("\tgenerating symbolic expressions")
     source_file_name = str(source_path).split("/")[-1]
     source_directory = "/".join(str(source_path).split("/")[:-1])
 
-    if Vault.Project_A.path in source_path:
-        binary_path = Vault.Project_A.path + Vault.VALUE_EXPLOIT_A.split(" ")[0]
-        binary_args = " ".join(Vault.VALUE_EXPLOIT_A.split(" ")[1:])
-    elif Vault.Project_B.path in source_path:
-        binary_path = Vault.Project_B.path + Vault.VALUE_EXPLOIT_A.split(" ")[0]
-        binary_args = " ".join(Vault.VALUE_EXPLOIT_A.split(" ")[1:])
-    elif Vault.Project_C.path in source_path:
-        binary_path = Vault.Project_C.path + Vault.VALUE_EXPLOIT_C.split(" ")[0]
-        binary_args = " ".join(Vault.VALUE_EXPLOIT_C.split(" ")[1:])
+    if Definitions.Project_A.path in source_path:
+        binary_path = Definitions.Project_A.path + Definitions.VALUE_EXPLOIT_A.split(" ")[0]
+        binary_args = " ".join(Definitions.VALUE_EXPLOIT_A.split(" ")[1:])
+    elif Definitions.Project_B.path in source_path:
+        binary_path = Definitions.Project_B.path + Definitions.VALUE_EXPLOIT_A.split(" ")[0]
+        binary_args = " ".join(Definitions.VALUE_EXPLOIT_A.split(" ")[1:])
+    elif Definitions.Project_C.path in source_path:
+        binary_path = Definitions.Project_C.path + Definitions.VALUE_EXPLOIT_C.split(" ")[0]
+        binary_args = " ".join(Definitions.VALUE_EXPLOIT_C.split(" ")[1:])
     else:
-        binary_path = Vault.Project_D.path + Vault.VALUE_EXPLOIT_C.split(" ")[0]
-        binary_args = " ".join(Vault.VALUE_EXPLOIT_C.split(" ")[1:])
+        binary_path = Definitions.Project_D.path + Definitions.VALUE_EXPLOIT_C.split(" ")[0]
+        binary_args = " ".join(Definitions.VALUE_EXPLOIT_C.split(" ")[1:])
 
     binary_name = str(binary_path).split("/")[-1]
     binary_directory = "/".join(str(binary_path).split("/")[:-1])
@@ -130,7 +132,7 @@ def get_input_bytes_used(sym_expr):
 
 def map_variable(var_map_a, var_map_b):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal("\t\tgenerating variable map")
+    Emitter.normal("\t\tgenerating variable map")
     var_map = dict()
     for var_a in var_map_a:
         # print(var_a)
@@ -157,9 +159,9 @@ def map_variable(var_map_a, var_map_b):
 
 def map_ast_from_source(source_a, source_b):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Generator.generate_ast_script(source_a, source_b, True)
+    Generator.generate_ast_script(source_a, source_b, FILE_AST_SCRIPT, True)
     mapping = dict()
-    with open(Differ.FILE_AST_SCRIPT, "r") as script_file:
+    with open(FILE_AST_SCRIPT, "r") as script_file:
         script_lines = script_file.readlines()
         for script_line in script_lines:
             if "Match" in script_line:

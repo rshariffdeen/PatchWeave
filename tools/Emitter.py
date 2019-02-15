@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import sys
-from common import Vault
-from utilities import Logger
+from common import Definitions
+from tools import Logger
 
 GREY = '\t\x1b[1;30m'
 RED = '\t\x1b[1;31m'
@@ -42,7 +42,7 @@ def sub_sub_title(sub_title):
 
 
 def command(message):
-    if Vault.DEBUG:
+    if Definitions.DEBUG:
         message = "running command\n\t" + message
         write(message, ROSE)
     Logger.command(message)
@@ -54,7 +54,7 @@ def normal(message, jump_line=True):
 
 
 def information(message, jump_line=True):
-    if Vault.DEBUG:
+    if Definitions.DEBUG:
         write(message, GREY, jump_line)
     Logger.information(message)
 
@@ -85,7 +85,7 @@ def program_output(output_message):
 
 
 def warning(message):
-    if Vault.DEBUG:
+    if Definitions.DEBUG:
         write(message, YELLOW)
     Logger.warning(message)
 
@@ -98,20 +98,20 @@ def start():
 def end(time_info):
     Logger.end(time_info)
     statistics("\nRun time statistics:\n-----------------------\n")
-    statistics("Initialization: " + time_info[Vault.KEY_DURATION_INITIALIZATION] + " seconds")
-    statistics("Build: " + time_info[Vault.KEY_DURATION_BUILD] + " seconds")
-    statistics("Diff Analysis: " + time_info[Vault.KEY_DURATION_DIFF_ANALYSIS] + " seconds")
-    statistics("Trace Analysis: " + time_info[Vault.KEY_DURATION_TRACE_ANALYSIS] + " seconds")
-    statistics("Symbolic Trace Analysis: " + time_info[Vault.KEY_DURATION_SYMBOLIC_TRACE_ANALYSIS] + " seconds")
-    statistics("Slicing: " + time_info[Vault.KEY_DURATION_SLICE] + " seconds")
-    statistics("Transplantation: " + time_info[Vault.KEY_DURATION_TRANSPLANTATION] + " seconds")
-    statistics("Verification: " + time_info[Vault.KEY_DURATION_VERIFICATION] + " seconds")
-    success("\nPatchWeave finished successfully after " + time_info[Vault.KEY_DURATION_TOTAL] + " seconds\n")
+    statistics("Initialization: " + time_info[Definitions.KEY_DURATION_INITIALIZATION] + " seconds")
+    statistics("Build: " + time_info[Definitions.KEY_DURATION_BUILD] + " seconds")
+    statistics("Diff Analysis: " + time_info[Definitions.KEY_DURATION_DIFF_ANALYSIS] + " seconds")
+    statistics("Trace Analysis: " + time_info[Definitions.KEY_DURATION_TRACE_ANALYSIS] + " seconds")
+    statistics("Symbolic Trace Analysis: " + time_info[Definitions.KEY_DURATION_SYMBOLIC_TRACE_ANALYSIS] + " seconds")
+    statistics("Slicing: " + time_info[Definitions.KEY_DURATION_SLICE] + " seconds")
+    statistics("Transplantation: " + time_info[Definitions.KEY_DURATION_TRANSPLANTATION] + " seconds")
+    statistics("Verification: " + time_info[Definitions.KEY_DURATION_VERIFICATION] + " seconds")
+    success("\nPatchWeave finished successfully after " + time_info[Definitions.KEY_DURATION_TOTAL] + " seconds\n")
 
 
 def help():
-    print("Usage: python patchweave [OPTIONS] " + Vault.ARG_CONF_FILE + "$FILE_PATH")
+    print("Usage: python patchweave [OPTIONS] " + Definitions.ARG_CONF_FILE + "$FILE_PATH")
     print("Options are:")
-    print("\t" + Vault.ARG_DEBUG + "\t| " + "enable debugging information")
-    print("\t" + Vault.ARG_NO_BUILD + "\t| " + "disable project build")
-    print("\t" + Vault.ARG_NO_SYM_TRACE_GEN + "\t| " + "disable symbolic trace generation")
+    print("\t" + Definitions.ARG_DEBUG + "\t| " + "enable debugging information")
+    print("\t" + Definitions.ARG_NO_BUILD + "\t| " + "disable project build")
+    print("\t" + Definitions.ARG_NO_SYM_TRACE_GEN + "\t| " + "disable symbolic trace generation")

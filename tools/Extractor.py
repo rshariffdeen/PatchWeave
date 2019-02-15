@@ -5,16 +5,16 @@
 import sys
 import os
 sys.path.append('./ast/')
-from common.Tools import error_exit, get_file_list, is_intersect, execute_command
-import Output
+from common.Utilities import error_exit, get_file_list, is_intersect, execute_command
+import Emitter
 import Logger
 import Generator
-from common import Vault
-from utilities import Converter
+from common import Definitions
+from tools import Converter
 import Finder
 
 
-FILE_MACRO_DEF = Vault.DIRECTORY_TMP + "/macro-def"
+FILE_MACRO_DEF = Definitions.DIRECTORY_TMP + "/macro-def"
 
 
 def extract_variable_name(source_path, start_pos, end_pos):
@@ -35,7 +35,7 @@ def extract_variable_name(source_path, start_pos, end_pos):
 
 def extract_source_list(trace_list):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal("\t\tcollecting source file list from trace ...")
+    Emitter.normal("\t\tcollecting source file list from trace ...")
     source_list = list()
     for trace_line in trace_list:
         source_path, line_number = str(trace_line).split(":")
@@ -227,7 +227,7 @@ def extract_var_ref_list(ast_node, start_line, end_line, only_in_range):
 def extract_variable_list(source_path, start_line, end_line, only_in_range):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     # print(source_path, start_line, end_line)
-    Output.normal("\t\t\tgenerating variable(available) list")
+    Emitter.normal("\t\t\tgenerating variable(available) list")
     variable_list = list()
     ast_map = Generator.get_ast_json(source_path)
     func_node = Finder.search_function_node_by_loc(ast_map, int(end_line), source_path)
@@ -295,7 +295,7 @@ def extract_keys_from_model(model):
 
 def extract_divergent_point_list(list_trace_a, list_trace_b, path_a, path_b):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal("\textracting divergent point(s)")
+    Emitter.normal("\textracting divergent point(s)")
     divergent_location_list = list()
     length_a = len(list_trace_a)
     length_b = len(list_trace_b)
@@ -345,7 +345,7 @@ def extract_declaration_line_list(ast_node):
 
 def extract_macro_definitions(source_path, output_file):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal("\textracting macro definitions from\n\t\t" + str(source_path))
+    Emitter.normal("\textracting macro definitions from\n\t\t" + str(source_path))
     extract_command = "clang -E -dM " + source_path + " > " + FILE_MACRO_DEF
     execute_command(extract_command)
     with open(FILE_MACRO_DEF, "r") as macro_file:
@@ -384,7 +384,7 @@ def extract_reference_node_list(ast_node):
 
 def extract_source_lines_from_trace(trace_list):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal("\t\t\textracting source lines executed ...")
+    Emitter.normal("\t\t\textracting source lines executed ...")
     unique_trace_list = list(set(trace_list))
     source_line_map = dict()
     for trace_line in unique_trace_list:

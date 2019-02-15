@@ -4,16 +4,16 @@
 
 import sys
 import os
-from common.Tools import execute_command, error_exit
-import Output
+from common.Utilities import execute_command, error_exit
+import Emitter
 import Logger
 import collections
-from utilities import Extractor
+from tools import Extractor
 
 
 def instrument_klee_var_expr(source_path, start_line, end_line, only_in_range):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal("\t\tinstrumenting source code")
+    Emitter.normal("\t\tinstrumenting source code")
     if not only_in_range:
         syntax_format_command = "clang-tidy " + source_path + " -fix -checks=\"readability-braces-around-statements\""
         ret_code = execute_command(syntax_format_command)

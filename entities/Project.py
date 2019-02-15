@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 
 import os
-from utilities import Output
+from tools import Emitter
 
 
 class Project:
     def __init__(self, path, name, exploit=''):
-        Output.information("creating project for " + path)
+        Emitter.information("creating project for " + path)
         if not (os.path.isdir(path)):
-            Output.error(path + " is not an appropriate directory path.")
+            Emitter.error(path + " is not an appropriate directory path.")
             exit()
         if path[-1] != "/":
             path += "/"

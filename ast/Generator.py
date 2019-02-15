@@ -2,15 +2,15 @@
 
 ''' Main vector generation functions '''
 
-from common.Tools import error_exit, execute_command, backup_file, restore_file
+from common.Utilities import error_exit, execute_command, backup_file, restore_file
 import Vector
 import AST
-from utilities import Logger, Output
+from tools import Logger, Emitter
 import sys
-from common import Vault
+from common import Definitions
 import json
 import os
-from phases import Differ
+from phases import Analyse
 
 APP_FORMAT_LLVM = "clang-format -style=LLVM "
 APP_AST_DIFF = "crochet-diff"
@@ -41,7 +41,7 @@ def ast_dump(file_path, output_path, is_header=False):
         dump_command += " --"
     dump_command += " 2> output/errors_AST_dump > " + output_path
     a = execute_command(dump_command)
-    Output.warning(a[0])
+    Emitter.warning(a[0])
 
 
 def get_ast_json(file_path):
@@ -66,16 +66,16 @@ def convert_to_llvm(file_path):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     try:
         backup_name = "last.c"
-        convert_file_path = Vault.DIRECTORY_OUTPUT + "/temp_llvm.c"
+        convert_file_path = Definitions.DIRECTORY_OUTPUT + "/temp_llvm.c"
         backup_file(file_path, backup_name)
-        format_command = APP_FORMAT_LLVM + file_path + "> " + convert_file_path + " 2>" + Vault.FILE_ERROR_LOG
+        format_command = APP_FORMAT_LLVM + file_path + "> " + convert_file_path + " 2>" + Definitions.FILE_ERROR_LOG
         replace_command = format_command + ";" + "cp " + convert_file_path + " " + file_path
         execute_command(replace_command)
     except Exception as exception:
-        Output.warning(exception)
-        Output.warning("error in llvm_format with file:")
-        Output.warning(file_path)
-        Output.warning("restoring and skipping")
+        Emitter.warning(exception)
+        Emitter.warning("error in llvm_format with file:")
+        Emitter.warning(file_path)
+        Emitter.warning("restoring and skipping")
         restore_file(file_path, backup_name)
 
 
@@ -90,7 +90,7 @@ def parse_ast(file_path, use_deckard=True):
         ast = generate_json(file_path)
     except Exception as exception:
         print(exception)
-        Output.warning("Failed parsing AST for file:\n\t" + file_path)
+        Emitter.warning("Failed parsing AST for file:\n\t" + file_path)
         return function_lines, dict_file
 
     start_line = 0
@@ -150,10 +150,10 @@ def generate_ast_script(source_a, source_b, dump_matches=False):
     generate_command += source_a + " " + source_b
     if source_a[-1] == "h":
         generate_command += " --"
-    generate_command += " 2> " + Differ.FILE_AST_DIFF_ERROR
+    generate_command += " 2> " + Definitions.FILE_AST_DIFF_ERROR
     if dump_matches:
         generate_command += " | grep -P '^Match ' | grep -P '^Match '"
-    generate_command += " > " + Differ.FILE_AST_SCRIPT
+    generate_command += " > " + Definitions.FILE_AST_SCRIPT
 
     try:
         # print(generate_command)
@@ -164,7 +164,7 @@ def generate_ast_script(source_a, source_b, dump_matches=False):
                         
 def get_function_name_list(project, source_file, pertinent_lines):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Output.normal("\t\t" + project.path + ":")
+    Emitter.normal("\t\t" + project.path + ":")
     try:
         function_list, definition_list = parse_ast(source_file, False)
     except Exception as e:
@@ -178,8 +178,8 @@ def get_function_name_list(project, source_file, pertinent_lines):
 
                 if function_name not in project.functions[source_file]:
                     project.functions[source_file][function_name] = Vector.Vector(source_file, function_name, begin_line, finish_line, False)
-                    Output.normal("\t\t\t" + function_name + " in " + source_file.replace(project.path, project.name + "/"))
-                    Output.normal("\t\t\t" + function_name + " " + str(begin_line) + "-" + str(finish_line), False)
+                    Emitter.normal("\t\t\t" + function_name + " in " + source_file.replace(project.path, project.name + "/"))
+                    Emitter.normal("\t\t\t" + function_name + " " + str(begin_line) + "-" + str(finish_line), False)
                 break
 
     # get_vars(project, source_file, definition_list)

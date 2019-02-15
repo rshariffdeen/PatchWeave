@@ -3,7 +3,7 @@
 
 
 import sys
-from utilities import Oracle, Logger
+from tools import Oracle, Logger
 
 
 def search_matching_node(ast_node, search_node, var_map):
