@@ -29,14 +29,13 @@ sym_path_c = dict()
 estimate_loc_map = dict()
 
 
-def generate_sympath_donor():
+def sym_trace_donor():
     global sym_path_a, sym_path_b
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
 
     project_path_a = Values.PATH_A
     project_path_b = Values.PATH_B
     exploit_a = Values.EXPLOIT_A
-    exploit_command = " ".join(exploit_a.split(" ")[1:])
     poc_path = Values.PATH_POC
     Emitter.normal(project_path_a)
 
@@ -70,14 +69,17 @@ def generate_sympath_donor():
     sym_path_b = Collector.collect_symbolic_path(FILE_KLEE_LOG_B, project_path_b)
 
 
-def generate_sympath_target():
+def sym_trace_target():
     global sym_path_c
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Emitter.normal(Definitions.VALUE_PATH_C)
-    if not Definitions.NO_SYM_TRACE_GEN:
-        binary_path = Definitions.VALUE_PATH_C + Definitions.VALUE_EXPLOIT_C.split(" ")[0]
+    project_path_c = Values.PATH_C
+    exploit_c = Values.EXPLOIT_C
+    poc_path = Values.PATH_POC
+    Emitter.normal(project_path_c)
+    if not Values.NO_SYM_TRACE_GEN:
+        binary_path = project_path_c + exploit_c.split(" ")[0]
         binary_dir, binary_name = Converter.convert_binary_to_llvm(binary_path)
-        binary_args = " ".join(Definitions.VALUE_EXPLOIT_C.split(" ")[1:])
+        binary_args = " ".join(exploit_c.split(" ")[1:])
         sym_file_path = KleeExecutor.generate_path_condition(binary_args,
                                                              binary_dir,
                                                              binary_name,
@@ -86,7 +88,7 @@ def generate_sympath_target():
                                                              FILE_KLEE_LOG_C)
         copy_command = "cp " + sym_file_path + " " + FILE_SYM_PATH_C
         execute_command(copy_command)
-    sym_path_c = Collector.collect_symbolic_path(FILE_KLEE_LOG_C, Definitions.VALUE_PATH_C)
+    sym_path_c = Collector.collect_symbolic_path(FILE_KLEE_LOG_C, project_path_c)
 
 
 def safe_exec(function_def, title, *args):
@@ -120,12 +122,12 @@ def set_values():
     FILE_SYM_PATH_B = Definitions.DIRECTORY_OUTPUT + "/sym-path-b"
     FILE_SYM_PATH_C = Definitions.DIRECTORY_OUTPUT + "/sym-path-c"
     FILE_SYMBOLIC_POC = Definitions.DIRECTORY_OUTPUT + "/symbolic.ktest"
-    VALUE_BIT_SIZE = Converter.convert_poc_to_ktest(FILE_SYMBOLIC_POC)
+    VALUE_BIT_SIZE = Converter.convert_poc_to_ktest(Values.PATH_POC, FILE_SYMBOLIC_POC)
 
 
 def execute():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Emitter.title("Concolic execution traces")
     set_values()
-    safe_exec(generate_sympath_donor, "generating symbolic trace information from donor program")
-    safe_exec(generate_sympath_target, "generating symbolic trace information from target program")
+    safe_exec(sym_trace_donor, "generating symbolic trace information from donor program")
+    safe_exec(sym_trace_target, "generating symbolic trace information from target program")
