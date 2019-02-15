@@ -5,13 +5,17 @@
 import sys
 import os
 sys.path.append('./ast/')
-from Utilities import error_exit, get_file_list, is_intersect
+from Utilities import error_exit, get_file_list, is_intersect, execute_command
 import Output
 import Logger
 import Generator
+import Common
 import Weaver
 import Converter
 import Finder
+
+
+FILE_MACRO_DEF = Common.DIRECTORY_TMP + "/macro-def"
 
 
 def extract_variable_name(source_path, start_pos, end_pos):
@@ -338,3 +342,42 @@ def extract_declaration_line_list(ast_node):
         for child_node in ast_node['children']:
             line_list = line_list + list(set(extract_declaration_line_list(child_node)))
     return list(set(line_list))
+
+
+def extract_macro_definitions(source_path, output_file):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    Output.normal("\textracting macro definitions from\n\t\t" + str(source_path))
+    extract_command = "clang -E -dM " + source_path + " > " + FILE_MACRO_DEF
+    execute_command(extract_command)
+    with open(FILE_MACRO_DEF, "r") as macro_file:
+        macro_def_list = macro_file.readlines()
+        return macro_def_list
+
+
+def extract_decl_list(ast_node):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    dec_list = list()
+    node_type = str(ast_node["type"])
+    if node_type in ["FunctionDecl", "VarDecl", "ParmVarDecl"]:
+        identifier = str(ast_node['identifier'])
+        dec_list.append(identifier)
+
+    if len(ast_node['children']) > 0:
+        for child_node in ast_node['children']:
+            child_dec_list = extract_decl_list(child_node)
+            dec_list = dec_list + child_dec_list
+    return list(set(dec_list))
+
+
+def extract_reference_node_list(ast_node):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    ref_node_list = list()
+    node_type = str(ast_node["type"])
+    if node_type in ["Macro", "DeclRefExpr"]:
+        ref_node_list.append(ast_node)
+    else:
+        if len(ast_node['children']) > 0:
+            for child_node in ast_node['children']:
+                child_ref_list = extract_reference_node_list(child_node)
+                ref_node_list = ref_node_list + child_ref_list
+    return ref_node_list
