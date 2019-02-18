@@ -11,7 +11,7 @@ import Logger
 from ast import ASTGenerator
 from common import Definitions
 import Converter
-import Solver
+import Generator
 import Finder
 
 
@@ -296,7 +296,7 @@ def extract_keys_from_model(model):
 
 def extract_input_bytes_used(sym_expr):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    model_a = Solver.get_model(sym_expr)
+    model_a = Generator.generate_model(sym_expr)
     # print(model_a)
     input_byte_list = list()
     if model_a is not None:
@@ -316,7 +316,7 @@ def extract_input_bytes_used(sym_expr):
     return input_byte_list
 
 
-def compute_common_bytes(bytes_a, bytes_c):
+def extract_common_bytes(bytes_a, bytes_c):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Emitter.normal("\tanalysing common bytes in symbolic paths")
     common_byte_list = list(set(bytes_a).intersection(bytes_c))

@@ -13,7 +13,6 @@ import Logger
 import Extractor
 import Finder
 import Generator
-import Mapper
 
 
 def identify_missing_functions(ast_map, ast_node, source_path_b, source_path_d, skip_list):
@@ -173,17 +172,17 @@ def identify_insertion_points(estimated_loc, var_expr_map, trace_list, var_expr_
     return insertion_point_list
 
 
-def identify_divergent_point(byte_list, sym_path, trace_list):
+def identify_divergent_point(byte_list, sym_path_list, trace_list):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Emitter.normal("\tfinding similar location in recipient")
-    length = len(sym_path) - 1
+    length = len(sym_path_list) - 1
     count_common = len(byte_list)
     candidate_list = list()
     estimated_loc = ""
     for n in range(length, 0, -1):
-        key = sym_path[n]
-        sym_path = sym_path[key]
-        bytes_temp = Mapper.get_input_bytes_used(sym_path)
+        key = sym_path_list.keys()[n]
+        sym_path = sym_path_list[key]
+        bytes_temp = Extractor.extract_input_bytes_used(sym_path)
         count = len(list(set(byte_list).intersection(bytes_temp)))
         if count == count_common:
             candidate_list.append(key)

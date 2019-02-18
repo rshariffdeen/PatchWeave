@@ -29,15 +29,15 @@ def generate_path_condition(binary_arguments, binary_path, binary_name, bit_size
     return sym_file_path
 
 
-def generate_var_expressions(binary_arguments, binary_path, binary_name, bit_size, poc_path, log_path, indent=False):
+def generate_var_expressions(binary_arguments, binary_dir, binary_name, bit_size, sym_poc_path, log_path, indent=False):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     if indent:
         Emitter.normal("\t\tgenerating symbolic expressions")
     else:
         Emitter.normal("\t\t\tgenerating symbolic expressions")
-    trace_command = "cd " + binary_path + ";"
+    trace_command = "cd " + binary_dir + ";"
     sym_args = SYMBOLIC_ARGUMENTS_FOR_EXPR
-    trace_command += SYMBOLIC_ENGINE + sym_args.replace("$KTEST", poc_path) + " " + binary_name + ".bc "\
+    trace_command += SYMBOLIC_ENGINE + sym_args.replace("$KTEST", sym_poc_path) + " " + binary_name + ".bc "\
                      + binary_arguments.replace("$POC", "A") + " --sym-files 1 " + str(bit_size) + "  > " + log_path + \
                     " 2>&1"
     # print(trace_command)

@@ -11,7 +11,7 @@ import Concolic
 from ast import ASTGenerator
 import Analyse
 import Trace
-from tools import Mapper, Identifier, KleeExecutor, Logger, Solver, Fixer, Emitter, Writer, Weaver
+from tools import Mapper, Identifier, Extractor, Logger, Solver, Fixer, Emitter, Writer, Weaver
 
 function_list_a = list()
 function_list_b = list()
@@ -92,6 +92,8 @@ def transplant_code():
     global ast_map_a, ast_map_b, ast_map_c
     path_a = Values.PATH_A
     path_b = Values.PATH_B
+    sym_poc_path = Concolic.FILE_SYMBOLIC_POC
+    bit_size = Concolic.VALUE_BIT_SIZE
     log_file_info = FILE_VAR_EXPR_LOG_A, FILE_VAR_EXPR_LOG_B, FILE_VAR_EXPR_LOG_C
     file_info = FILE_SKIP_LIST, log_file_info
     trace_list = Trace.list_trace_c
@@ -100,14 +102,20 @@ def transplant_code():
         diff_loc_info = Analyse.diff_info[diff_loc]
         div_sym_path_cond = get_sym_path_cond(diff_loc)
         last_sym_path_cond = Concolic.sym_path_c[Concolic.sym_path_c.keys()[-1]]
-        bytes_a = Mapper.get_input_bytes_used(div_sym_path_cond)
-        bytes_c = Mapper.get_input_bytes_used(last_sym_path_cond)
-        byte_list = Solver.compute_common_bytes(bytes_a, bytes_c)
-        estimate_loc = Identifier.identify_divergent_point(byte_list)
+        bytes_a = Extractor.extract_input_bytes_used(div_sym_path_cond)
+        bytes_c = Extractor.extract_input_bytes_used(last_sym_path_cond)
+        byte_list = Extractor.extract_common_bytes(bytes_a, bytes_c)
+        estimate_loc = Identifier.identify_divergent_point(byte_list,
+                                                           Concolic.sym_path_c,
+                                                           Trace.list_trace_c
+                                                           )
+
         Weaver.weave_code(diff_loc,
                           diff_loc_info,
                           path_a,
                           path_b,
+                          bit_size,
+                          sym_poc_path,
                           file_info,
                           trace_list,
                           estimate_loc

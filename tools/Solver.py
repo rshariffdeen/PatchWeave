@@ -7,10 +7,6 @@ from phases import Trace, Concolic
 import Logger
 import Mapper
 import Emitter
-from six.moves import cStringIO
-from pysmt.smtlib.parser import SmtLibParser
-from pysmt.shortcuts import get_model
-
 
 
 def estimate_divergent_point(byte_list):
@@ -44,17 +40,6 @@ def estimate_divergent_point(byte_list):
                     estimated_loc = path
                     break
     return estimated_loc
-
-
-def get_model(str_formula):
-    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    parser = SmtLibParser()
-    script = parser.get_script(cStringIO(str_formula))
-    formula = script.get_last_formula()
-    model = get_model(formula, solver_name="z3")
-    if not hasattr(model, '__dict__'):
-        return None
-    return model.__dict__['z3_model']
 
 
 def translate_patch(patch_code, var_map):

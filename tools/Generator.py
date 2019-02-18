@@ -8,6 +8,7 @@ from ast import ASTGenerator
 from six.moves import cStringIO
 from pysmt.smtlib.parser import SmtLibParser
 from common.Utilities import backup_file, restore_file, reset_git
+from pysmt.shortcuts import get_model
 import Logger
 import Emitter
 import Instrumentor
@@ -22,6 +23,7 @@ import Converter
 
 
 def generate_symbolic_expressions(source_path, start_line, end_line,
+                                  bit_size, sym_poc_path,
                                   output_log, only_in_range=True):
 
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
@@ -45,15 +47,26 @@ def generate_symbolic_expressions(source_path, start_line, end_line,
     binary_name = str(binary_path).split("/")[-1]
     binary_directory = "/".join(str(binary_path).split("/")[:-1])
     backup_file(binary_path, "original-bitcode")
-    Instrumentor.instrument_klee_var_expr(source_path, start_line, end_line, only_in_range)
+    Instrumentor.instrument_klee_var_expr(source_path,
+                                          start_line,
+                                          end_line,
+                                          only_in_range)
     Builder.build_instrumented_code(source_directory)
     Converter.convert_binary_to_llvm(binary_path)
-    KleeExecutor.generate_var_expressions(binary_args, binary_directory, binary_name, output_log)
+
+    KleeExecutor.generate_var_expressions(binary_args,
+                                          binary_directory,
+                                          binary_name,
+                                          bit_size,
+                                          sym_poc_path,
+                                          output_log)
     restore_file("original-bitcode", binary_path)
     reset_git(source_directory)
 
 
-def generate_candidate_function_list(estimate_loc, var_expr_map, trace_list, var_expr_log):
+def generate_candidate_function_list(estimate_loc, var_expr_map,
+                                     bit_size, poc_path,
+                                     trace_list, var_expr_log):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Emitter.normal("\tgenerating candidate functions")
     filtered_trace_list = Filter.filter_trace_list_by_loc(trace_list, estimate_loc)
@@ -75,6 +88,8 @@ def generate_candidate_function_list(estimate_loc, var_expr_map, trace_list, var
         generate_symbolic_expressions(source_path,
                                       last_line,
                                       last_line,
+                                      bit_size,
+                                      poc_path,
                                       var_expr_log,
                                       False)
 
@@ -134,3 +149,12 @@ def generate_z3_code(var_expr, var_name):
     return code
 
 
+def generate_model(str_formula):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    parser = SmtLibParser()
+    script = parser.get_script(cStringIO(str_formula))
+    formula = script.get_last_formula()
+    model = get_model(formula, solver_name="z3")
+    if not hasattr(model, '__dict__'):
+        return None
+    return model.__dict__['z3_model']

@@ -159,7 +159,9 @@ def weave_functions():
         show_partial_diff(backup_file_path, source_path_d)
 
 
-def weave_code(diff_loc, diff_loc_info, path_a, path_b, file_info, trace_list, estimate_loc):
+def weave_code(diff_loc, diff_loc_info, path_a, path_b,
+               bit_size, sym_poc_path,
+               file_info, trace_list, estimate_loc):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     skip_list_file, log_file_info = file_info
     var_log_a, var_log_b, var_log_c  = log_file_info
@@ -174,9 +176,12 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, file_info, trace_list, e
         Writer.write_skip_list(skip_line_list, skip_list_file)
         line_range_b = (start_line_b, end_line_b)
         line_range_a = (-1, -1)
+
         Generator.generate_symbolic_expressions(source_path_b,
                                                 start_line_b,
                                                 end_line_b,
+                                                bit_size,
+                                                sym_poc_path,
                                                 var_log_b)
 
         var_expr_map_b = Collector.collect_symbolic_expressions(var_log_b)
