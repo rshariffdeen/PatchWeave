@@ -27,7 +27,7 @@ def generate_symbolic_expressions(source_path, start_line, end_line,
                                   output_log, only_in_range=True):
 
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Emitter.normal("\tgenerating symbolic expressions")
+    Emitter.normal("\t\tgenerating symbolic expressions for variables")
     source_file_name = str(source_path).split("/")[-1]
     source_directory = "/".join(str(source_path).split("/")[:-1])
 
@@ -68,15 +68,17 @@ def generate_candidate_function_list(estimate_loc, var_expr_map,
                                      bit_size, sym_poc_path,
                                      trace_list, var_expr_log):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Emitter.normal("\tgenerating candidate functions")
+    Emitter.sub_sub_title("generating candidate insertion function list")
+    Emitter.normal("\t\tgenerating candidate function list")
     filtered_trace_list = Filter.filter_trace_list_by_loc(trace_list, estimate_loc)
     source_list_c = Extractor.extract_source_list(filtered_trace_list)
     source_function_map = Mapper.map_source_function(source_list_c)
     trace_function_list = Filter.filter_function_list_using_trace(source_function_map,
                                                                   filtered_trace_list)
-    print(trace_function_list)
+    # print(trace_function_list)
     candidate_function_list = dict()
     for function_id in trace_function_list:
+        Emitter.special("\t" + function_id)
         source_path, function_name = str(function_id).split(":")
         function_info = trace_function_list[function_id]
         begin_line = function_info['begin']

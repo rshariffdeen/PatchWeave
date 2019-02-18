@@ -25,6 +25,7 @@ def estimate_divergent_point(path_cond_a, path_cond_b):
                                                        Concolic.sym_path_c,
                                                        Trace.list_trace_c
                                                        )
+    Emitter.special("\testimated divergent point:" + estimate_loc)
     return estimate_loc
 
 

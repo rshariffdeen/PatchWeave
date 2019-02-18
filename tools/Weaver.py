@@ -5,15 +5,14 @@
 import sys, os
 sys.path.append('./ast/')
 from common.Utilities import execute_command, backup_file, show_partial_diff, get_code
-from common import Definitions
+from common import Definitions, Values
 import phases.Concolic
 from ast import ASTGenerator
-from phases import Analyse, Trace
+from phases import Trace
 import Mapper
 import Identifier
 import Generator
 import Logger
-import Solver
 import Collector
 import Emitter
 import Writer
@@ -177,12 +176,14 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b,
         line_range_b = (start_line_b, end_line_b)
         line_range_a = (-1, -1)
 
+        Emitter.sub_sub_title("computing symbolic expressions for Donor")
         Generator.generate_symbolic_expressions(source_path_b,
                                                 start_line_b,
                                                 end_line_b,
                                                 bit_size,
                                                 sym_poc_path,
-                                                var_log_b)
+                                                var_log_b
+                                                )
 
         var_expr_map_b = Collector.collect_symbolic_expressions(var_log_b)
         # print(var_expr_map_b)
@@ -193,8 +194,7 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b,
                                                                   trace_list,
                                                                   var_log_c
                                                                   )
-        print(insertion_loc_list)
-        exit(-1)
+
         ast_script_c = list()
         for insertion_loc in insertion_loc_list:
             Emitter.normal("\t\t" + insertion_loc)

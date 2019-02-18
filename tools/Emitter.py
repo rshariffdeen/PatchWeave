@@ -9,21 +9,22 @@ RED = '\t\x1b[1;31m'
 GREEN = '\x1b[1;32m'
 YELLOW = '\t\x1b[1;33m'
 BLUE = '\t\x1b[1;34m'
-ROSE = '\n\t\x1b[1;35m'
+ROSE = '\t\x1b[1;35m'
 CYAN = '\x1b[1;36m'
 WHITE = '\t\x1b[1;37m'
 
 
 def write(print_message, print_color, new_line=True):
-    r = "\033[K" + print_color + str(print_message) + '\x1b[0m'
-    sys.stdout.write(r)
-    if new_line:
-        r = "\n"
-        sys.stdout.write("\n")
-    else:
-        r = "\033[K\r"
+    if not Values.silence_emitter:
+        r = "\033[K" + print_color + str(print_message) + '\x1b[0m'
         sys.stdout.write(r)
-    sys.stdout.flush()
+        if new_line:
+            r = "\n"
+            sys.stdout.write("\n")
+        else:
+            r = "\033[K\r"
+            sys.stdout.write(r)
+        sys.stdout.flush()
 
 
 def title(title):

@@ -11,7 +11,7 @@ import Logger
 
 def filter_trace_list_by_loc(trace_list, estimate_loc):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Emitter.normal("\tfiltering trace based on estimation point")
+    Emitter.normal("\t\t\tfiltering trace based on estimation point")
     filtered_trace_list = list()
     # print(trace_list)
     # print(estimate_loc)
@@ -26,7 +26,7 @@ def filter_trace_list_by_loc(trace_list, estimate_loc):
 
 def filter_function_list_using_trace(source_function_map, trace_list):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Emitter.normal("\t\textracting function list from trace ...")
+    Emitter.normal("\t\t\textracting function list from trace ...")
     trace_function_info = dict()
     source_line_map = Extractor.extract_source_lines_from_trace(trace_list)
     for source_path in source_line_map:

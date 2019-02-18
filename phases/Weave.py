@@ -103,7 +103,6 @@ def transplant_code():
         div_sym_path_cond = get_sym_path_cond(diff_loc)
         last_sym_path_cond = Concolic.sym_path_c[Concolic.sym_path_c.keys()[-1]]
         estimate_loc = Solver.estimate_divergent_point(div_sym_path_cond, last_sym_path_cond)
-        Emitter.special("\t\testimated divergent point:" + estimate_loc)
         Weaver.weave_code(diff_loc,
                           diff_loc_info,
                           path_a,

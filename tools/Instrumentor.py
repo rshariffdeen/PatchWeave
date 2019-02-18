@@ -13,7 +13,7 @@ import Extractor
 
 def instrument_klee_var_expr(source_path, start_line, end_line, only_in_range):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Emitter.normal("\t\tinstrumenting source code")
+    Emitter.normal("\t\t\tinstrumenting source code")
     if not only_in_range:
         syntax_format_command = "clang-tidy " + source_path + " -fix -checks=\"readability-braces-around-statements\""
         ret_code = execute_command(syntax_format_command)

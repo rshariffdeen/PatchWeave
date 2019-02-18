@@ -161,6 +161,7 @@ def identify_insertion_points(estimated_loc, var_expr_map,
                                                                trace_list,
                                                                var_expr_log
                                                                )
+    Emitter.sub_sub_title("generating candidate insertion point list")
     for function_id in function_list:
         source_path, function_name = function_id.split(":")
         info = function_list[function_id]
@@ -171,6 +172,7 @@ def identify_insertion_points(estimated_loc, var_expr_map,
         for exec_line in exec_line_list:
             # if exec_line == last_line:
             #     continue
+            Emitter.special("\t\t" + source_path + "-" + function_name + ":" + str(exec_line))
             insertion_point_list.append(source_path + ":" + str(exec_line))
     return insertion_point_list
 

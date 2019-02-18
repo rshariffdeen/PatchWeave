@@ -54,7 +54,7 @@ def map_ast_from_source(source_a, source_b, script_file_path):
 
 def map_source_function(source_list):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Emitter.normal("\t\tcollecting function list from source files ...")
+    Emitter.normal("\t\t\tcollecting function list from source files ...")
     source_function_map = dict()
     for source_path in source_list:
         if source_path in source_function_map.keys():

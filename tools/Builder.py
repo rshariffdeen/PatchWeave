@@ -229,7 +229,7 @@ def clean_all():
 
 def build_instrumented_code(source_directory):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Emitter.normal("\t\tbuilding instrumented code")
+    Emitter.normal("\t\t\tbuilding instrumented code")
     CXX_FLAGS = "'-g -O0 -static -DNDEBUG -ftrapv'"
     C_FLAGS = "'-g -O0 -static -ftrapv -L/home/rshariffdeen/workspace/klee/build-rshariffdeen/lib -lkleeRuntest'"
     build_command = "cd " + source_directory + ";"

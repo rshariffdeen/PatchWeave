@@ -36,7 +36,7 @@ def extract_variable_name(source_path, start_pos, end_pos):
 
 def extract_source_list(trace_list):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Emitter.normal("\t\tcollecting source file list from trace ...")
+    Emitter.normal("\t\t\tcollecting source file list from trace ...")
     source_list = list()
     for trace_line in trace_list:
         source_path, line_number = str(trace_line).split(":")
@@ -228,7 +228,7 @@ def extract_var_ref_list(ast_node, start_line, end_line, only_in_range):
 def extract_variable_list(source_path, start_line, end_line, only_in_range):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     # print(source_path, start_line, end_line)
-    Emitter.normal("\t\t\tgenerating variable(available) list")
+    Emitter.normal("\t\t\t\tgenerating variable(available) list")
     variable_list = list()
     ast_map = ASTGenerator.get_ast_json(source_path)
     func_node = Finder.search_function_node_by_loc(ast_map, int(end_line), source_path)
@@ -416,7 +416,7 @@ def extract_reference_node_list(ast_node):
 
 def extract_source_lines_from_trace(trace_list):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Emitter.normal("\t\t\textracting source lines executed ...")
+    Emitter.normal("\t\t\t\textracting source lines executed ...")
     unique_trace_list = list(set(trace_list))
     source_line_map = dict()
     for trace_line in unique_trace_list:
