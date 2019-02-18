@@ -77,8 +77,8 @@ KEY_DURATION_EXPLOIT = 'exploitation'
 # ---------------- ARGUMENTS ---------------------------
 ARG_CONF_FILE = "--conf="
 ARG_DEBUG = "--debug"
-ARG_NO_SYM_TRACE_GEN = "--no-sym-trace-gen"
-ARG_NO_BUILD = "--no-build"
+ARG_SKIP_SYM_TRACE_GEN = "--skip-sym-trace-gen"
+ARG_SKIP_TRACE_GEN = "--skip-trace-gen"
 ARG_SKIP_EXPLOIT = "--skip-exploit"
 
 # ----------------- TOOLS --------------------------------

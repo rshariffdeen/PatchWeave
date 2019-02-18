@@ -9,7 +9,7 @@ Project_D = None
 
 DEBUG = False
 SKIP_TRACE_GEN = False
-NO_SYM_TRACE_GEN = False
+SKIP_SYM_TRACE_GEN = False
 SKIP_EXPLOIT = False
 
 STANDARD_FUNCTION_LIST = list()
