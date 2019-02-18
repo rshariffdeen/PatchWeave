@@ -111,7 +111,6 @@ def config_all(is_llvm=False):
 
 def build_normal():
     global CC, CXX, CXX_FLAGS, C_FLAGS, LD_FLAGS
-    Emitter.sub_title("building projects")
     CC = "clang"
     CXX = "clang++"
     CXX_FLAGS = "'-g -O0 -static'"
