@@ -235,7 +235,7 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                 #                                    source_path_d)
                 ast_script_c.append(translated_command)
             Writer.write_ast_script(ast_map_c, ast_script_file)
-            Emitter.normal("\tgenerating variable map")
+            Emitter.sub_sub_title("computing symbolic expressions for target")
             Generator.generate_symbolic_expressions(source_path_c,
                                                     line_number_c,
                                                     line_number_c,
@@ -248,8 +248,11 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
             var_expr_map_c = Collector.collect_symbolic_expressions(var_log_c)
             # print(var_expr_map_b)
             # print(var_expr_map_c)
+            Emitter.sub_sub_title("generating variable mapping from donor to target")
             var_map = Mapper.map_variable(var_expr_map_b, var_expr_map_c)
-            # print(var_map)
+            for var_a in var_map:
+                Emitter.special("\t\t " + var_a + " -> " + var_map[var_a])
+            print(var_map)
             # print(ast_script_c)
             Writer.write_var_map(var_map, var_map_file)
             ret_code = execute_ast_transformation(source_path_b,

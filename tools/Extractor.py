@@ -303,15 +303,18 @@ def extract_input_bytes_used(sym_expr):
     input_byte_list = list()
     if model_a is not None:
         input_byte_list = extract_keys_from_model(model_a)
-        if input_byte_list is None:
+        if not input_byte_list:
             script_lines = str(sym_expr).split("\n")
             value_line = script_lines[3]
-            tokens = value_line.split("A-data")
-            if len(tokens) > 2:
-                error_exit("MORE than expected!!")
-            else:
-                byte_index = ((tokens[1].split(")")[0]).split("bv")[1]).split(" ")[0]
-                input_byte_list.append(int(byte_index))
+            if "A-data" in value_line:
+                tokens = value_line.split("A-data")
+                if len(tokens) > 2:
+                    error_exit("MORE than expected!!")
+                elif len(tokens) == 2:
+                    byte_index = ((tokens[1].split(")")[0]).split("bv")[1]).split(" ")[0]
+                    input_byte_list.append(int(byte_index))
+                else:
+                   error_exit("unexpected error")
     if input_byte_list:
         input_byte_list.sort()
 

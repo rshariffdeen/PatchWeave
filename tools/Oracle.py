@@ -6,10 +6,29 @@ import sys
 import os
 from ast import ASTGenerator
 from common import Definitions
+from common.Utilities import  error_exit
+from six.moves import cStringIO
+from pysmt.smtlib.parser import SmtLibParser
+from pysmt.shortcuts import is_sat
 import Converter
 import Extractor
 import Finder
 import Logger
+
+
+def is_var_expr_equal(z3_code):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    parser = SmtLibParser()
+    try:
+        script = parser.get_script(cStringIO(z3_code))
+        formula = script.get_last_formula()
+        result = is_sat(formula, solver_name="z3")
+        return result
+
+    except Exception:
+        print(z3_code)
+        error_exit("Error Z3")
+
 
 
 def is_node_equal(node_a, node_b, var_map):
