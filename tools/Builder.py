@@ -111,6 +111,7 @@ def config_all(is_llvm=False):
 
 def build_normal():
     global CC, CXX, CXX_FLAGS, C_FLAGS, LD_FLAGS
+    clean_all()
     CC = "clang"
     CXX = "clang++"
     CXX_FLAGS = "'-g -O0 -static'"
