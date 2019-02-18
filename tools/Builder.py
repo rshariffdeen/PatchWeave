@@ -61,7 +61,7 @@ def build_project(project_path, build_command=None):
 
 
 def build_all():
-    Emitter.normal("building")
+    Emitter.sub_sub_title("building projects")
 
     Emitter.normal("\t" + Values.Project_A.path)
     if not Values.BUILD_COMMAND_A:
@@ -89,7 +89,7 @@ def build_all():
 
 
 def config_all(is_llvm=False):
-    Emitter.normal("configuring projects")
+    Emitter.sub_sub_title("configuring projects")
 
     Emitter.normal("\t" + Values.Project_A.path)
     if not Values.BUILD_COMMAND_A:
@@ -135,7 +135,6 @@ def build_verify():
 
 def build_asan():
     global CC, CXX, CXX_FLAGS, C_FLAGS, LD_FLAGS
-    Emitter.sub_title("building projects with asan")
     clean_all()
     CC = "clang"
     CXX = "clang++"
@@ -183,7 +182,7 @@ def soft_restore_project(project_path):
 
 
 def restore_all():
-    Emitter.normal("restoring projects")
+    Emitter.sub_sub_title("restoring projects")
     Emitter.normal("\t" + Values.Project_A.path)
     restore_project(Values.Project_A.path)
     Emitter.normal("\t" + Values.Project_B.path)
@@ -195,7 +194,7 @@ def restore_all():
 
 
 def soft_restore_all():
-    Emitter.normal("restoring(soft) projects")
+    Emitter.sub_sub_title("restoring(soft) projects")
     Emitter.normal("\t" + Values.Project_A.path)
     soft_restore_project(Values.Project_A.path)
     Emitter.normal("\t" + Values.Project_B.path)
@@ -213,7 +212,7 @@ def clean_project(project_path):
 
 def clean_all():
     restore_all()
-    Emitter.normal("cleaning projects")
+    Emitter.sub_sub_title("cleaning projects")
     Emitter.normal("\t" + Values.Project_A.path)
     clean_project(Values.Project_A.path)
 

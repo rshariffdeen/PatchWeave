@@ -68,7 +68,7 @@ def collect_trace(file_path, project_path, suspicious_loc_list):
 
 def collect_suspicious_points(trace_log):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Emitter.normal("\textracting crash point")
+    Emitter.normal("\tcollecting suspicious points")
     suspect_list = list()
     if os.path.exists(trace_log):
         with open(trace_log, 'r') as trace_file:
@@ -83,7 +83,7 @@ def collect_suspicious_points(trace_log):
 
 def collect_crash_point(trace_file_path):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Emitter.normal("\textracting crash point")
+    Emitter.normal("\tcollecting crash point")
     crash_location = ""
     if os.path.exists(trace_file_path):
         with open(trace_file_path, 'r') as trace_file:
@@ -95,9 +95,33 @@ def collect_crash_point(trace_file_path):
     return crash_location
 
 
+def collect_exploit_return_code(output_file_path):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    Emitter.normal("\tcollecting exit code")
+    return_code = ""
+    if os.path.exists(output_file_path):
+        with open(output_file_path, 'r') as output_file:
+            for read_line in output_file:
+                if "RETURN CODE:" in read_line:
+                    read_line = read_line.replace("RETURN CODE: ", "")
+                    return_code = int(read_line.split(": ")[0])
+                    break
+    return return_code
+
+
+def collect_exploit_output(output_file_path):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    Emitter.normal("\tcollecting program output")
+    output = ""
+    if os.path.exists(output_file_path):
+        with open(output_file_path, 'r') as output_file:
+            output = output_file.readlines()
+    return output
+
+
 def collect_stack_info(trace_file_path):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Emitter.normal("\textracting stack information")
+    Emitter.normal("\tcollecting stack information")
     stack_map = dict()
     if os.path.exists(trace_file_path):
         with open(trace_file_path, 'r') as trace_file:

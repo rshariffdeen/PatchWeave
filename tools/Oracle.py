@@ -7,6 +7,7 @@ sys.path.append('./ast/')
 import Logger
 from ast import ASTGenerator
 from tools import Converter, Extractor
+from common import Definitions
 import Finder
 
 
@@ -76,5 +77,12 @@ def is_declaration_line(source_file, line_number):
         return False
     dec_line_list = Extractor.extract_declaration_line_list(function_node)
     if line_number in dec_line_list:
+        return True
+    return False
+
+
+def did_program_crash(program_output):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    if any(crash_word in str(program_output).lower() for crash_word in Definitions.crash_word_list):
         return True
     return False
