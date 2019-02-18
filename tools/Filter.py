@@ -5,7 +5,8 @@
 import sys
 import Finder
 import Emitter
-from tools import Extractor, Logger
+import Extractor
+import Logger
 
 
 def filter_trace_list_by_loc(trace_list, estimate_loc):

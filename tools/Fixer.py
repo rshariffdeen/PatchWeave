@@ -6,7 +6,7 @@ import sys, os
 from common.Utilities import execute_command, error_exit, show_partial_diff, backup_file
 import Emitter
 from common import Definitions
-from tools import Logger
+import Logger
 from ast import ASTGenerator
 
 FILE_SYNTAX_ERRORS = ""

@@ -8,9 +8,16 @@ from common.Utilities import execute_command, backup_file, show_partial_diff, ge
 from common import Definitions
 import phases.Concolic
 from ast import ASTGenerator
-import phases.Analyse
-import phases.Trace
-from tools import Mapper, Identifier, Generator, Logger, Solver, Collector, Emitter, Writer, Finder
+from phases import Analyse, Trace
+import Mapper
+import Identifier
+import Generator
+import Logger
+import Solver
+import Collector
+import Emitter
+import Writer
+import Finder
 
 function_list_a = list()
 function_list_b = list()
@@ -22,19 +29,6 @@ missing_macro_list = dict()
 missing_header_list = dict()
 
 modified_source_list = list()
-
-
-TOOL_AST_PATCH = "patchweave"
-
-FILE_VAR_EXPR_LOG_A = ""
-FILE_VAR_EXPR_LOG_B = ""
-FILE_VAR_EXPR_LOG_C = ""
-FILE_VAR_MAP = ""
-FILE_SKIP_LIST = ""
-FILE_AST_SCRIPT = ""
-FILE_TEMP_FIX = ""
-
-FILENAME_BACKUP = "temp-source"
 
 
 def get_sym_path(source_location):
@@ -165,27 +159,27 @@ def weave_functions():
         show_partial_diff(backup_file_path, source_path_d)
 
 
-def weave_code(diff_loc, diff_loc_info, path_a, path_b):
+def weave_code(diff_loc, diff_loc_info, path_a, path_b, file_info, trace_list, estimate_loc):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    skip_list_file, log_file_info = file_info
+    var_log_a, var_log_b, var_log_c  = log_file_info
     operation = diff_loc_info['operation']
     ast_script = diff_loc_info['ast-script']
     source_path_a, line_number_a = diff_loc.split(":")
     source_path_b = str(source_path_a).replace(path_a, path_b)
-    byte_list = Solver.compute_common_bytes(diff_loc)
-    estimate_loc = Identifier.identify_divergent_point(byte_list)
 
     if operation == 'insert':
         start_line_b, end_line_b = diff_loc_info['new-lines']
         skip_line_list = diff_loc_info['skip-lines']
-        Writer.write_skip_list(skip_line_list, FILE_SKIP_LIST)
+        Writer.write_skip_list(skip_line_list, skip_list_file)
         line_range_b = (start_line_b, end_line_b)
         line_range_a = (-1, -1)
         Generator.generate_symbolic_expressions(source_path_b,
                                                 start_line_b,
                                                 end_line_b,
-                                                FILE_VAR_EXPR_LOG_B)
+                                                var_log_b)
 
-        var_expr_map_b = Collector.collect_symbolic_expressions(FILE_VAR_EXPR_LOG_B)
+        var_expr_map_b = Collector.collect_symbolic_expressions(var_log_b)
         # print(var_expr_map_b)
         insertion_loc_list = Identifier.identify_insertion_points(estimate_loc,
                                                                   var_expr_map_b)

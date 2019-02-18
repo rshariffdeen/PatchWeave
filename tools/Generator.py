@@ -5,9 +5,20 @@
 import sys
 from common import Values
 from ast import ASTGenerator
+from six.moves import cStringIO
+from pysmt.smtlib.parser import SmtLibParser
 from common.Utilities import backup_file, restore_file, reset_git
-from tools import Logger, Emitter, Instrumentor, Builder, \
-    Extractor, KleeExecutor, Filter, Mapper, Finder, Collector, Converter
+import Logger
+import Emitter
+import Instrumentor
+import Builder
+import Extractor
+import KleeExecutor
+import Filter
+import Mapper
+import Finder
+import Collector
+import Converter
 
 
 def generate_symbolic_expressions(source_path, start_line, end_line,
@@ -78,3 +89,48 @@ def generate_candidate_function_list(estimate_loc, var_expr_map, trace_list, var
         info['score'] = len(var_map)
         candidate_function_list[function_id] = info
     return candidate_function_list
+
+
+def generate_z3_code_for_expr(var_expr, var_name, bit_size):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    var_name = var_name + "_" + str(bit_size)
+    if bit_size == 64:
+        zero = "x0000000000000000"
+    else:
+        zero = "x00000000"
+    code = "(set-logic QF_AUFBV )\n"
+    code += "(declare-fun A-data () (Array (_ BitVec 32) (_ BitVec 8) ) )\n"
+    code += "(declare-fun " + var_name + "() (_ BitVec " + str(bit_size) + "))\n"
+    # code += "(declare-fun b () (_ BitVec " + str(bit_size) + "))\n"
+    code += "(assert (= " + var_name + " " + var_expr + "))\n"
+    # code += "(assert (not (= b #" + zero + ")))\n"
+    code += "(assert  (not (= " + var_name + " #" + zero + ")))\n"
+    code += "(check-sat)"
+    return code
+
+
+def generate_z3_code(var_expr, var_name):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    var_name = str(var_name).replace("->", "")
+    var_name = str(var_name).replace("[", "-")
+    var_name = str(var_name).replace("]", "-")
+    count_64 = int(var_expr.count("64)"))
+    count_bracket = int(var_expr.count(")"))
+
+    if count_bracket == 1:
+        if count_64 == 1:
+            code = generate_z3_code_for_expr(var_expr, var_name, 64)
+        else:
+            code = generate_z3_code_for_expr(var_expr, var_name, 32)
+    else:
+
+        try:
+            code = generate_z3_code_for_expr(var_expr, var_name, 32)
+            parser = SmtLibParser()
+            script = parser.get_script(cStringIO(code))
+            formula = script.get_last_formula()
+        except Exception as exception:
+            code = generate_z3_code_for_expr(var_expr, var_name, 64)
+    return code
+
+

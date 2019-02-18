@@ -12,9 +12,7 @@ from ast import ASTGenerator
 import Logger
 import Extractor
 import Finder
-import KleeExecutor
-import Filter
-from tools import Collector, Generator
+import Generator
 import Mapper
 
 
@@ -152,10 +150,14 @@ def get_best_insertion_point(insertion_point_list):
     return insertion_point_list[0]
 
 
-def identify_insertion_points(estimated_loc, var_expr_map):
+def identify_insertion_points(estimated_loc, var_expr_map, trace_list, var_expr_log):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     insertion_point_list = list()
-    function_list = Generator.generate_candidate_function_list(estimated_loc, var_expr_map)
+    function_list = Generator.generate_candidate_function_list(estimated_loc,
+                                                               var_expr_map,
+                                                               trace_list,
+                                                               var_expr_log
+                                                               )
 
     for function_id in function_list:
         source_path, function_name = function_id.split(":")

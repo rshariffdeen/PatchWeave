@@ -8,7 +8,7 @@ from common.Utilities import execute_command, error_exit
 import Emitter
 import Logger
 import collections
-from tools import Extractor
+import Extractor
 
 
 def instrument_klee_var_expr(source_path, start_line, end_line, only_in_range):

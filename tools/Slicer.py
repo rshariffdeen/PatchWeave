@@ -4,7 +4,9 @@
 
 import sys
 from common.Utilities import get_code
-from tools import Extractor, Oracle, Logger
+import Extractor
+import Oracle
+import Logger
 
 
 def slice_code_from_trace(diff_info, trace_list, path_a, path_b):

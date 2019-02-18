@@ -6,7 +6,8 @@ import os
 import sys
 from common.Utilities import execute_command, error_exit
 from common import Definitions, Values
-from tools import Logger, Emitter
+import Logger
+import Emitter
 
 CC = "clang"
 CXX = "clang++"

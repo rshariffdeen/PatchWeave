@@ -10,7 +10,8 @@ import Emitter
 import Logger
 from ast import ASTGenerator
 from common import Definitions
-from tools import Converter
+import Converter
+import Solver
 import Finder
 
 
@@ -291,6 +292,35 @@ def extract_keys_from_model(model):
         if type(pair) == list:
             byte_list.append(int(str(pair[0])))
     return byte_list
+
+
+def extract_input_bytes_used(sym_expr):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    model_a = Solver.get_model(sym_expr)
+    # print(model_a)
+    input_byte_list = list()
+    if model_a is not None:
+        input_byte_list = extract_keys_from_model(model_a)
+        if input_byte_list is None:
+            script_lines = str(sym_expr).split("\n")
+            value_line = script_lines[3]
+            tokens = value_line.split("A-data")
+            if len(tokens) > 2:
+                error_exit("MORE than expected!!")
+            else:
+                byte_index = ((tokens[1].split(")")[0]).split("bv")[1]).split(" ")[0]
+                input_byte_list.append(int(byte_index))
+    if input_byte_list:
+        input_byte_list.sort()
+
+    return input_byte_list
+
+
+def compute_common_bytes(bytes_a, bytes_c):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    Emitter.normal("\tanalysing common bytes in symbolic paths")
+    common_byte_list = list(set(bytes_a).intersection(bytes_c))
+    return common_byte_list
 
 
 def extract_divergent_point_list(list_trace_a, list_trace_b, path_a, path_b):

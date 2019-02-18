@@ -5,7 +5,10 @@
 import sys
 from common.Utilities import execute_command, get_file_extension_list
 from ast import ASTGenerator
-from tools import Mapper, Logger, Filter, Emitter
+import Mapper
+import Logger
+import Filter
+import Emitter
 
 
 def diff_files(output_diff_file, output_c_diff, output_h_diff,

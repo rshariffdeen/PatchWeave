@@ -2,13 +2,14 @@
 # -*- coding: utf-8 -*-
 
 
-import sys, os
-sys.path.append('./ast/')
-import Logger
+import sys
+import os
 from ast import ASTGenerator
-from tools import Converter, Extractor
 from common import Definitions
+import Converter
+import Extractor
 import Finder
+import Logger
 
 
 def is_node_equal(node_a, node_b, var_map):
@@ -27,8 +28,8 @@ def is_node_equal(node_a, node_b, var_map):
         else:
             return False
     elif node_type_a == "MemberExpr":
-        node_value_a, discard_list = Converter.get_member_expr_str(node_a)
-        node_value_b, discard_list = Converter.get_member_expr_str(node_b)
+        node_value_a, discard_list = Converter.convert_member_expr(node_a)
+        node_value_b, discard_list = Converter.convert_member_expr(node_b)
         if node_value_a == node_value_b:
             return True
         else:

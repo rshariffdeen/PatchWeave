@@ -4,7 +4,8 @@
 
 import sys
 from ast import ASTGenerator
-from tools import Oracle, Logger
+import Oracle
+import Logger
 
 
 def search_matching_node(ast_node, search_node, var_map):
