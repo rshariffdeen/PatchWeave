@@ -149,7 +149,6 @@ def build_asan():
 
 def build_llvm():
     global CC, CXX, CXX_FLAGS, C_FLAGS, LD_FLAGS
-    Emitter.sub_title("building projects with wllvm")
     clean_all()
     os.environ["LLVM_COMPILER"] = "clang"
     CC = "wllvm"
