@@ -10,6 +10,7 @@ Project_D = None
 DEBUG = False
 NO_BUILD = False
 NO_SYM_TRACE_GEN = False
+SKIP_EXPLOIT = False
 
 STANDARD_FUNCTION_LIST = list()
 STANDARD_MACRO_LIST = list()

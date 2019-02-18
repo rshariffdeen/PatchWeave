@@ -55,6 +55,8 @@ def read_conf():
                 Values.DEBUG = True
             elif Definitions.ARG_NO_BUILD in arg:
                 Values.NO_BUILD = True
+            elif Definitions.ARG_SKIP_EXPLOIT in arg:
+                Values.SKIP_EXPLOIT = True
             elif Definitions.ARG_CONF_FILE in arg:
                 Values.FILE_CONFIGURATION = str(arg).replace(Definitions.ARG_CONF_FILE, '')
             elif Definitions.ARG_NO_SYM_TRACE_GEN in arg:

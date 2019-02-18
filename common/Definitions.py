@@ -79,6 +79,7 @@ ARG_CONF_FILE = "--conf="
 ARG_DEBUG = "--debug"
 ARG_NO_SYM_TRACE_GEN = "--no-sym-trace-gen"
 ARG_NO_BUILD = "--no-build"
+ARG_SKIP_EXPLOIT = "--skip-exploit"
 
 # ----------------- TOOLS --------------------------------
 TOOL_VECGEN = "third-party/deckard/cvecgen_fail "
