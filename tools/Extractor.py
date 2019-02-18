@@ -288,6 +288,8 @@ def extract_keys_from_model(model):
     for dec in model:
         if hasattr(model[dec], "num_entries"):
             k_list = model[dec].as_list()
+            if dec.name() == "A-data":
+                break
     for pair in k_list:
         if type(pair) == list:
             byte_list.append(int(str(pair[0])))

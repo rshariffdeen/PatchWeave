@@ -149,15 +149,18 @@ def get_best_insertion_point(insertion_point_list):
     return insertion_point_list[0]
 
 
-def identify_insertion_points(estimated_loc, var_expr_map, trace_list, var_expr_log):
+def identify_insertion_points(estimated_loc, var_expr_map,
+                              bit_size, sym_poc_path,
+                              trace_list, var_expr_log):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     insertion_point_list = list()
     function_list = Generator.generate_candidate_function_list(estimated_loc,
                                                                var_expr_map,
+                                                               bit_size,
+                                                               sym_poc_path,
                                                                trace_list,
                                                                var_expr_log
                                                                )
-
     for function_id in function_list:
         source_path, function_name = function_id.split(":")
         info = function_list[function_id]
@@ -181,9 +184,13 @@ def identify_divergent_point(byte_list, sym_path_list, trace_list):
     estimated_loc = ""
     for n in range(length, 0, -1):
         key = sym_path_list.keys()[n]
+        # print(key)
         sym_path = sym_path_list[key]
+        # print(sym_path)
         bytes_temp = Extractor.extract_input_bytes_used(sym_path)
+        # print(bytes_temp)
         count = len(list(set(byte_list).intersection(bytes_temp)))
+        # print(count_common, count)
         if count == count_common:
             candidate_list.append(key)
     length = len(trace_list) - 1

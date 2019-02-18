@@ -187,8 +187,14 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b,
         var_expr_map_b = Collector.collect_symbolic_expressions(var_log_b)
         # print(var_expr_map_b)
         insertion_loc_list = Identifier.identify_insertion_points(estimate_loc,
-                                                                  var_expr_map_b)
-        # print(insertion_loc_list)
+                                                                  var_expr_map_b,
+                                                                  bit_size,
+                                                                  sym_poc_path,
+                                                                  trace_list,
+                                                                  var_log_c
+                                                                  )
+        print(insertion_loc_list)
+        exit(-1)
         ast_script_c = list()
         for insertion_loc in insertion_loc_list:
             Emitter.normal("\t\t" + insertion_loc)
@@ -219,17 +225,40 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b,
             if ret_code == 0:
                 break
     elif operation == 'modify':
-        line_range_a = diff_info['old-lines']
-        line_range_b = diff_info['new-lines']
-        skip_line_list = diff_info['skip-lines']
-        output_skip_list(skip_line_list)
-        Mapper.generate_symbolic_expressions(source_path_b, line_range_b[0], line_range_b[1], FILE_VAR_EXPR_LOG_B)
-        var_expr_map_b = Mapper.collect_symbolic_expressions(FILE_VAR_EXPR_LOG_B)
+        start_line_a, end_line_a = diff_loc_info['old-lines']
+        start_line_b, end_line_b = diff_loc_info['new-lines']
+        skip_line_list = diff_loc_info['skip-lines']
+        Writer.write_skip_list(skip_line_list, skip_list_file)
+        line_range_a = (start_line_a, end_line_a)
+        line_range_b = (start_line_b, end_line_b)
+
+        Generator.generate_symbolic_expressions(source_path_b,
+                                                start_line_b,
+                                                end_line_b,
+                                                bit_size,
+                                                sym_poc_path,
+                                                var_log_b)
+        var_expr_map_b = Collector.collect_symbolic_expressions(var_log_b)
         # print(var_expr_map_b)
-        Mapper.generate_symbolic_expressions(source_path_a, line_range_a[0], line_range_a[1], FILE_VAR_EXPR_LOG_A)
-        var_expr_map_a = Mapper.collect_symbolic_expressions(FILE_VAR_EXPR_LOG_A)
+
+        Generator.generate_symbolic_expressions(source_path_a,
+                                                start_line_a,
+                                                end_line_a,
+                                                bit_size,
+                                                sym_poc_path,
+                                                var_log_a)
+
+        var_expr_map_a = Collector.collect_symbolic_expressions(var_log_a)
         # print(var_expr_map_a)
-        insertion_loc_list = identify_insertion_points(estimate_loc, var_expr_map_a)
+        insertion_loc_list = Identifier.identify_insertion_points(estimate_loc,
+                                                                  var_expr_map_a,
+                                                                  bit_size,
+                                                                  sym_poc_path,
+                                                                  trace_list,
+                                                                  var_log_a
+                                                                  )
+
+        exit(1)
         # print(insertion_loc_list)
         ast_script_c = list()
         for insertion_loc in insertion_loc_list:

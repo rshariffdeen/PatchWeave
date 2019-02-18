@@ -14,7 +14,7 @@ def filter_trace_list_by_loc(trace_list, estimate_loc):
     Emitter.normal("\tfiltering trace based on estimation point")
     filtered_trace_list = list()
     # print(trace_list)
-    # print(estimate_loc)
+    print(estimate_loc)
     for n in range(len(trace_list) - 1, 0, -1):
         filtered_trace_list.append(trace_list[n])
         if estimate_loc == trace_list[n]:

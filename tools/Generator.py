@@ -65,7 +65,7 @@ def generate_symbolic_expressions(source_path, start_line, end_line,
 
 
 def generate_candidate_function_list(estimate_loc, var_expr_map,
-                                     bit_size, poc_path,
+                                     bit_size, sym_poc_path,
                                      trace_list, var_expr_log):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Emitter.normal("\tgenerating candidate functions")
@@ -89,7 +89,7 @@ def generate_candidate_function_list(estimate_loc, var_expr_map,
                                       last_line,
                                       last_line,
                                       bit_size,
-                                      poc_path,
+                                      sym_poc_path,
                                       var_expr_log,
                                       False)
 

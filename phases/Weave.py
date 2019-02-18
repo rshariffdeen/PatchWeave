@@ -102,14 +102,19 @@ def transplant_code():
         diff_loc_info = Analyse.diff_info[diff_loc]
         div_sym_path_cond = get_sym_path_cond(diff_loc)
         last_sym_path_cond = Concolic.sym_path_c[Concolic.sym_path_c.keys()[-1]]
+        # print(Concolic.sym_path_c.keys()[-1])
+        # print(last_sym_path_cond)
         bytes_a = Extractor.extract_input_bytes_used(div_sym_path_cond)
         bytes_c = Extractor.extract_input_bytes_used(last_sym_path_cond)
+        # print(bytes_c)
+        bytes_c = Extractor.extract_input_bytes_used(last_sym_path_cond)
+        # print(bytes_c)
         byte_list = Extractor.extract_common_bytes(bytes_a, bytes_c)
+        # print(byte_list)
         estimate_loc = Identifier.identify_divergent_point(byte_list,
                                                            Concolic.sym_path_c,
                                                            Trace.list_trace_c
                                                            )
-
         Weaver.weave_code(diff_loc,
                           diff_loc_info,
                           path_a,
