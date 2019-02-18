@@ -39,7 +39,7 @@ def sym_trace_donor():
     poc_path = Values.PATH_POC
     Emitter.normal(project_path_a)
 
-    if not Values.NO_SYM_TRACE_GEN:
+    if not Values.SKIP_SYM_TRACE_GEN:
         binary_path = project_path_a + exploit_a.split(" ")[0]
         binary_dir, binary_name = Converter.convert_binary_to_llvm(binary_path)
         binary_args = " ".join(exploit_a.split(" ")[1:])
@@ -54,7 +54,7 @@ def sym_trace_donor():
     sym_path_a = Collector.collect_symbolic_path(FILE_KLEE_LOG_A, project_path_a)
 
     Emitter.normal(project_path_b)
-    if not Values.NO_SYM_TRACE_GEN:
+    if not Values.SKIP_SYM_TRACE_GEN:
         binary_path = project_path_b + exploit_a.split(" ")[0]
         binary_dir, binary_name = Converter.convert_binary_to_llvm(binary_path)
         binary_args = " ".join(exploit_a.split(" ")[1:])
@@ -76,7 +76,7 @@ def sym_trace_target():
     exploit_c = Values.EXPLOIT_C
     poc_path = Values.PATH_POC
     Emitter.normal(project_path_c)
-    if not Values.NO_SYM_TRACE_GEN:
+    if not Values.SKIP_SYM_TRACE_GEN:
         binary_path = project_path_c + exploit_c.split(" ")[0]
         binary_dir, binary_name = Converter.convert_binary_to_llvm(binary_path)
         binary_args = " ".join(exploit_c.split(" ")[1:])

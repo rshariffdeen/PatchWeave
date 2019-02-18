@@ -20,9 +20,12 @@ FILE_DIFF_ALL = ""
 FILE_AST_SCRIPT = ""
 FILE_AST_DIFF_ERROR = ""
 
+diff_info = dict()
+
 
 def analyse_source_diff():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    global diff_info
     Differ.diff_files(Definitions.FILE_DIFF_ALL,
                       Definitions.FILE_DIFF_C,
                       Definitions.FILE_DIFF_H,
@@ -36,12 +39,13 @@ def analyse_source_diff():
     Emitter.sub_sub_title("analysing C/CPP source files")
     Differ.diff_c_files(Definitions.FILE_DIFF_C)
     Emitter.sub_sub_title("analysing changed code segments")
-    Values.diff_info = Differ.diff_code(Definitions.FILE_DIFF_C, Definitions.FILE_TEMP_DIFF)
+    diff_info = Differ.diff_code(Definitions.FILE_DIFF_C, Definitions.FILE_TEMP_DIFF)
 
 
 def analyse_ast_diff():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Values.diff_info = Differ.diff_ast(Values.diff_info,
+    global diff_info
+    diff_info = Differ.diff_ast(diff_info,
                                        Values.PATH_A,
                                        Values.PATH_B,
                                        Definitions.FILE_AST_SCRIPT)

@@ -41,17 +41,6 @@ EXPLOIT_PREPARE = ""
 ASAN_FLAG = ""
 
 
-# ------------------ Shared Computed Values ----------------
-diff_info = dict()
-list_trace_a = list()
-list_trace_b = list()
-list_trace_c = list()
-stack_a = dict()
-stack_c = dict()
-
-
-
-
 header_file_list_to_patch = []
 c_file_list_to_patch = []
 

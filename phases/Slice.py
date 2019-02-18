@@ -8,6 +8,7 @@ from common.Utilities import error_exit
 from common import Definitions, Values
 import Trace
 from tools import Logger, Emitter, Slicer
+from phases import Analyse
 import Concolic
 
 
@@ -18,7 +19,7 @@ def remove_code():
     path_a = Values.PATH_A
     path_b = Values.PATH_B
     trace_list = Trace.list_trace_b
-    diff_info = Values.diff_info
+    diff_info = Analyse.diff_info
     diff_info = Slicer.slice_code_from_trace(diff_info, trace_list, path_a, path_b)
     Values.diff_info = Slicer.slice_skipped_diff_locs(diff_info)
 
@@ -29,7 +30,7 @@ def remove_func_calls():
     path_a = Values.PATH_A
     path_b = Values.PATH_B
     sym_path_list = Concolic.sym_path_b.keys()
-    diff_info = Values.diff_info
+    diff_info = Analyse.diff_info
     diff_info = Slicer.slice_function_calls(diff_info, sym_path_list, path_a, path_b)
     Values.diff_info = Slicer.slice_skipped_diff_locs(diff_info)
 

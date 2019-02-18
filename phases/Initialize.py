@@ -53,14 +53,14 @@ def read_conf():
         for arg in sys.argv:
             if Definitions.ARG_DEBUG in arg:
                 Values.DEBUG = True
-            elif Definitions.ARG_NO_BUILD in arg:
+            elif Definitions.ARG_SKIP_TRACE_GEN in arg:
                 Values.SKIP_TRACE_GEN = True
             elif Definitions.ARG_SKIP_EXPLOIT in arg:
                 Values.SKIP_EXPLOIT = True
             elif Definitions.ARG_CONF_FILE in arg:
                 Values.FILE_CONFIGURATION = str(arg).replace(Definitions.ARG_CONF_FILE, '')
-            elif Definitions.ARG_NO_SYM_TRACE_GEN in arg:
-                Values.NO_SYM_TRACE_GEN = True
+            elif Definitions.ARG_SKIP_SYM_TRACE_GEN in arg:
+                Values.SKIP_SYM_TRACE_GEN = True
             elif "PatchWeave.py" in arg:
                 continue
             else:
