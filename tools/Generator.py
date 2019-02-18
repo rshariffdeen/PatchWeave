@@ -4,8 +4,10 @@
 
 import sys
 from common import Values
+from ast import ASTGenerator
 from common.Utilities import backup_file, restore_file, reset_git
-from tools import Logger, Emitter, Instrumentor, Builder, Extractor, KleeExecutor
+from tools import Logger, Emitter, Instrumentor, Builder, \
+    Extractor, KleeExecutor, Filter, Mapper, Finder, Collector, Converter
 
 
 def generate_symbolic_expressions(source_path, start_line, end_line,
@@ -34,18 +36,18 @@ def generate_symbolic_expressions(source_path, start_line, end_line,
     backup_file(binary_path, "original-bitcode")
     Instrumentor.instrument_klee_var_expr(source_path, start_line, end_line, only_in_range)
     Builder.build_instrumented_code(source_directory)
-    Extractor.extract_bitcode(binary_path)
+    Converter.convert_binary_to_llvm(binary_path)
     KleeExecutor.generate_var_expressions(binary_args, binary_directory, binary_name, output_log)
     restore_file("original-bitcode", binary_path)
     reset_git(source_directory)
 
 
-def generate_candidate_function_list(estimate_loc, var_expr_map, trace_list):
+def generate_candidate_function_list(estimate_loc, var_expr_map, trace_list, var_expr_log):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Emitter.normal("\tgenerating candidate functions")
     filtered_trace_list = Filter.filter_trace_list_by_loc(trace_list, estimate_loc)
     source_list_c = Extractor.extract_source_list(filtered_trace_list)
-    source_function_map = identify_functions_in_source(source_list_c)
+    source_function_map = Mapper.map_source_function(source_list_c)
     trace_function_list = Extractor.extract_source_lines_from_trace(filtered_trace_list)
     candidate_function_list = dict()
     for function_id in trace_function_list:
@@ -59,14 +61,13 @@ def generate_candidate_function_list(estimate_loc, var_expr_map, trace_list):
                                                            int(last_line),
                                                            source_path)
         # print(function_node)
-        KleeExecutor.generate_symbolic_expressions(source_path,
-                                                   last_line,
-                                                   last_line,
-                                                   FILE_VAR_EXPR_LOG_C,
-                                                   False)
+        generate_symbolic_expressions(source_path,
+                                      last_line,
+                                      last_line,
+                                      var_expr_log,
+                                      False)
 
-
-        sym_expr_map = Collector.collect_symbolic_expressions(FILE_VAR_EXPR_LOG_C)
+        sym_expr_map = Collector.collect_symbolic_expressions(var_expr_log)
         var_map = Mapper.map_variable(var_expr_map, sym_expr_map)
         function_id = source_path + ":" + function_name
         info = dict()

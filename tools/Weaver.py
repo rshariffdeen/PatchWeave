@@ -23,13 +23,6 @@ missing_header_list = dict()
 
 modified_source_list = list()
 
-var_expr_map_a = dict()
-var_expr_map_b = dict()
-var_expr_map_c = dict()
-
-ast_map_a = dict()
-ast_map_b = dict()
-ast_map_c = dict()
 
 TOOL_AST_PATCH = "patchweave"
 
@@ -194,7 +187,8 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b):
 
         var_expr_map_b = Collector.collect_symbolic_expressions(FILE_VAR_EXPR_LOG_B)
         # print(var_expr_map_b)
-        insertion_loc_list = Identifier.identify_insertion_points(estimate_loc, var_expr_map_b)
+        insertion_loc_list = Identifier.identify_insertion_points(estimate_loc,
+                                                                  var_expr_map_b)
         # print(insertion_loc_list)
         ast_script_c = list()
         for insertion_loc in insertion_loc_list:

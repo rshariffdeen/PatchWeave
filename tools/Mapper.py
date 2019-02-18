@@ -140,3 +140,17 @@ def map_ast_from_source(source_a, source_b, script_file_path):
                 mapping[node_id_b] = node_id_a
     return mapping
 
+
+def map_source_function(source_list):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    Emitter.normal("\t\tcollecting function list from source files ...")
+    source_function_map = dict()
+    for source_path in source_list:
+        if source_path in source_function_map.keys():
+            continue
+        try:
+            function_list, definition_list = ASTGenerator.parse_ast(source_path, False)
+            source_function_map[source_path] = function_list
+        except Exception as e:
+            error_exit(e, "Error in parse_ast.")
+    return source_function_map

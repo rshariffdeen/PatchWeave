@@ -14,7 +14,7 @@ import Extractor
 import Finder
 import KleeExecutor
 import Filter
-from tools import Collector
+from tools import Collector, Generator
 import Mapper
 
 
@@ -152,10 +152,10 @@ def get_best_insertion_point(insertion_point_list):
     return insertion_point_list[0]
 
 
-def identify_insertion_points(estimated_loc, var_expr_map, stack_info):
+def identify_insertion_points(estimated_loc, var_expr_map):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     insertion_point_list = list()
-    function_list = generate_candidate_function_list(estimated_loc, var_expr_map)
+    function_list = Generator.generate_candidate_function_list(estimated_loc, var_expr_map)
 
     for function_id in function_list:
         source_path, function_name = function_id.split(":")
@@ -169,22 +169,6 @@ def identify_insertion_points(estimated_loc, var_expr_map, stack_info):
             #     continue
             insertion_point_list.append(source_path + ":" + str(exec_line))
     return insertion_point_list
-
-
-
-def identify_functions_in_source(source_list):
-    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Emitter.normal("\t\tcollecting function list from source files ...")
-    source_function_map = dict()
-    for source_path in source_list:
-        if source_path in source_function_map.keys():
-            continue
-        try:
-            function_list, definition_list = ASTGenerator.parse_ast(source_path, False)
-            source_function_map[source_path] = function_list
-        except Exception as e:
-            error_exit(e, "Error in parse_ast.")
-    return source_function_map
 
 
 def identify_divergent_point(byte_list, sym_path, trace_list):
