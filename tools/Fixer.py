@@ -3,12 +3,11 @@
 
 
 import sys, os
-sys.path.append('./ast/')
 from common.Utilities import execute_command, error_exit, show_partial_diff, backup_file
 import Emitter
 from common import Definitions
 from tools import Logger
-import Generator
+from ast import ASTGenerator
 
 FILE_SYNTAX_ERRORS = ""
 FILENAME_BACKUP = "backup-syntax-fix"
@@ -61,7 +60,7 @@ def fix_return_type(source_file, source_location):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Emitter.normal("\t\tfixing return type")
     line_number = int(source_location.split(":")[1])
-    ast_map = Generator.get_ast_json(source_file)
+    ast_map = ASTGenerator.get_ast_json(source_file)
     function_node = Weaver.get_fun_node(ast_map, int(line_number), source_file)
     return_node = extract_return_node(function_node, line_number)
     function_definition = function_node['value']

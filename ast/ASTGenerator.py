@@ -3,14 +3,14 @@
 ''' Main vector generation functions '''
 
 from common.Utilities import error_exit, execute_command, backup_file, restore_file
-import Vector
+import ASTVector
 import AST
 from tools import Logger, Emitter
 import sys
 from common import Definitions
 import json
 import os
-from phases import Analyse
+
 
 APP_FORMAT_LLVM = "clang-format -style=LLVM "
 APP_AST_DIFF = "crochet-diff"
@@ -23,7 +23,7 @@ interesting = ["VarDecl", "DeclRefExpr", "ParmVarDecl", "TypedefDecl",
 
 def generate_vector(file_path, f_or_struct, start_line, end_line, is_deckard=True):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    v = Vector.Vector(file_path, f_or_struct, start_line, end_line, is_deckard)
+    v = ASTVector.Vector(file_path, f_or_struct, start_line, end_line, is_deckard)
     if not v.vector:
         return None
     # if file_path in proj_attribute.keys():
@@ -177,7 +177,7 @@ def get_function_name_list(project, source_file, pertinent_lines):
                     project.functions[source_file] = dict()
 
                 if function_name not in project.functions[source_file]:
-                    project.functions[source_file][function_name] = Vector.Vector(source_file, function_name, begin_line, finish_line, False)
+                    project.functions[source_file][function_name] = ASTVector.Vector(source_file, function_name, begin_line, finish_line, False)
                     Emitter.normal("\t\t\t" + function_name + " in " + source_file.replace(project.path, project.name + "/"))
                     Emitter.normal("\t\t\t" + function_name + " " + str(begin_line) + "-" + str(finish_line), False)
                 break

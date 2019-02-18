@@ -4,7 +4,6 @@
 
 import sys
 import os
-sys.path.append('./ast/')
 from common.Utilities import error_exit, execute_command
 import Logger
 

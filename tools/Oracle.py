@@ -5,7 +5,7 @@
 import sys, os
 sys.path.append('./ast/')
 import Logger
-import Generator
+from ast import ASTGenerator
 from tools import Converter, Extractor
 import Finder
 
@@ -50,7 +50,7 @@ def is_node_equal(node_a, node_b, var_map):
 
 def is_function_important(source_path, function_call_node, sym_path_list):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    ast_tree = Generator.get_ast_json(source_path)
+    ast_tree = ASTGenerator.get_ast_json(source_path)
     function_ref_node = function_call_node['children'][0]
     function_name = function_ref_node['value']
     function_def_node = Finder.search_function_node_by_name(ast_tree, function_name)
@@ -68,7 +68,7 @@ def is_function_important(source_path, function_call_node, sym_path_list):
 
 def is_declaration_line(source_file, line_number):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    ast_tree = Generator.get_ast_json(source_file)
+    ast_tree = ASTGenerator.get_ast_json(source_file)
     function_node = Finder.search_function_node_by_loc(ast_tree,
                                                        int(line_number),
                                                        source_file)

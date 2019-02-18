@@ -3,6 +3,7 @@
 
 
 import sys
+from ast import ASTGenerator
 from tools import Oracle, Logger
 
 
@@ -101,3 +102,16 @@ def search_function_node_by_loc(ast_node, line_number, source_path):
             if line_number in range(child_node_start_line, child_node_end_line + 1):
                 return child_node
     return None
+
+
+def find_definition_insertion_point(source_path):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    file_name = source_path.split("/")[-1]
+    ast_node = ASTGenerator.get_ast_json(source_path)
+    for child_node in ast_node['children']:
+        child_node_type = child_node['type']
+        if child_node_type == "FunctionDecl":
+            child_node_file_name = child_node['file']
+            if child_node_file_name == file_name:
+                return int(child_node['start line'])
+    return -1

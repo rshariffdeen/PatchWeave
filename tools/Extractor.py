@@ -8,7 +8,7 @@ sys.path.append('./ast/')
 from common.Utilities import error_exit, get_file_list, is_intersect, execute_command
 import Emitter
 import Logger
-import Generator
+from ast import ASTGenerator
 from common import Definitions
 from tools import Converter
 import Finder
@@ -68,7 +68,7 @@ def extract_complete_function_node(function_def_node, source_path):
                         source_file_loc = file_name
                         break
                 search_dir = os.path.dirname(search_dir)
-        ast_tree = Generator.get_ast_json(source_file_loc)
+        ast_tree = ASTGenerator.get_ast_json(source_file_loc)
         function_node = Finder.search_function_node_by_name(ast_tree, function_name)
         return function_node, source_file_loc
 
@@ -104,7 +104,7 @@ def extract_call_node_list(ast_node):
 def extract_function_call_list(source_file, line_number):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     line_list = dict()
-    ast_tree = Generator.get_ast_json(source_file)
+    ast_tree = ASTGenerator.get_ast_json(source_file)
     function_node = Finder.search_function_node_by_loc(ast_tree,
                                                        int(line_number),
                                                        source_file)
@@ -229,7 +229,7 @@ def extract_variable_list(source_path, start_line, end_line, only_in_range):
     # print(source_path, start_line, end_line)
     Emitter.normal("\t\t\tgenerating variable(available) list")
     variable_list = list()
-    ast_map = Generator.get_ast_json(source_path)
+    ast_map = ASTGenerator.get_ast_json(source_path)
     func_node = Finder.search_function_node_by_loc(ast_map, int(end_line), source_path)
     if func_node is None:
         return variable_list

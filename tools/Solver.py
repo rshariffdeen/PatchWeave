@@ -3,11 +3,10 @@
 
 
 import sys, os
-sys.path.append('./ast/')
 from common.Utilities import execute_command, error_exit, show_partial_diff
 import Emitter
 from common import Definitions
-import Generator
+from ast import ASTGenerator
 from phases import Trace, Concolic
 from tools import Mapper, Logger
 
@@ -20,7 +19,7 @@ def get_function_map(source_list):
         if source_path in source_function_map.keys():
             continue
         try:
-            function_list, definition_list = Generator.parse_ast(source_path, False)
+            function_list, definition_list = ASTGenerator.parse_ast(source_path, False)
             source_function_map[source_path] = function_list
         except Exception as e:
             error_exit(e, "Error in parse_ast.")
@@ -100,7 +99,7 @@ def generate_candidate_function_list(estimate_loc, var_expr_map):
         function_info = trace_function_list[function_id]
         begin_line = function_info['begin']
         last_line = function_info['last']
-        ast_map_c = Generator.get_ast_json(source_path)
+        ast_map_c = ASTGenerator.get_ast_json(source_path)
         # print(int(last_line), source_path)
         function_node = get_fun_node(ast_map_c, int(last_line), source_path)
         # print(function_node)
@@ -455,19 +454,6 @@ def identify_missing_macros(function_node, source_file, target_file):
                                 missing_macro_list[token] = info
                             else:
                                 error_exit("MACRO REQUIRED MULTIPLE TIMES!!")
-
-
-def get_definition_insertion_point(source_path):
-    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    file_name = source_path.split("/")[-1]
-    ast_node = Generator.get_ast_json(source_path)
-    for child_node in ast_node['children']:
-        child_node_type = child_node['type']
-        if child_node_type == "FunctionDecl":
-            child_node_file_name = child_node['file']
-            if child_node_file_name == file_name:
-                return int(child_node['start line'])
-    return -1
 
 
 def get_best_insertion_point(insertion_point_list):

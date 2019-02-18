@@ -4,14 +4,13 @@
 
 import sys, os
 sys.path.append('./ast/')
-import time
-from common.Utilities import execute_command, error_exit, backup_file, show_partial_diff, get_code
+from common.Utilities import execute_command, backup_file, show_partial_diff, get_code
 from common import Definitions
-import Concolic
+import phases.Concolic
 from ast import ASTGenerator
-import Analyse
-import Trace
-from tools import Mapper, Identifier, KleeExecutor, Logger, Solver, Fixer, Emitter, Writer, Weaver
+import phases.Analyse
+import phases.Trace
+from tools import Mapper, Identifier, KleeExecutor, Logger, Solver, Fixer, Emitter, Writer, Finder
 
 function_list_a = list()
 function_list_b = list()
@@ -45,22 +44,84 @@ FILE_TEMP_FIX = ""
 FILENAME_BACKUP = "temp-source"
 
 
-def transplant_missing_header():
+def get_sym_path(source_location):
+    sym_path = ""
+    if Definitions.VALUE_PATH_A in source_location:
+        for path in phases.Trace.list_trace_a:
+            if path in phases.Concolic.sym_path_a.keys():
+                sym_path = phases.Concolic.sym_path_a[path]
+            if path == source_location:
+                break
+    elif Definitions.VALUE_PATH_B in source_location:
+        for path in phases.Trace.list_trace_b:
+            if path in phases.Concolic.sym_path_b.keys():
+                sym_path = phases.Concolic.sym_path_b[path]
+            if path == source_location:
+                break
+    elif Definitions.VALUE_PATH_C in source_location:
+        for path in phases.Trace.list_trace_c:
+            if path in phases.Concolic.sym_path_c.keys():
+                sym_path = phases.Concolic.sym_path_c[path]
+            if path == source_location:
+                break
+    return sym_path
+
+
+def translate_patch(patch_code, var_map):
+    for var in var_map.keys():
+        if var in patch_code:
+            str(patch_code).replace(var, var_map[var])
+    return patch_code
+
+
+def insert_patch(patch_code, source_path, line_number):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Emitter.sub_title("transplanting missing header")
-    global missing_header_list
-    for header_name in missing_header_list:
+    global modified_source_list
+    content = ""
+    if source_path not in modified_source_list:
+        modified_source_list.append(source_path)
+    if os.path.exists(source_path):
+        with open(source_path, 'r') as source_file:
+            content = source_file.readlines()
+            existing_statement = content[line_number]
+            content[line_number] = patch_code + existing_statement
+
+    with open(source_path, 'w') as source_file:
+        source_file.writelines(content)
+
+
+def execute_ast_transformation(source_path_b, source_path_d):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    global modified_source_list
+    Emitter.normal("\t\texecuting AST transformation")
+    parameters = " -map=" + FILE_VAR_MAP + " -script=" + FILE_AST_SCRIPT
+    parameters += " -source=" + source_path_b + " -target=" + source_path_d
+    parameters += " -skip-list=" + FILE_SKIP_LIST
+    transform_command = TOOL_AST_PATCH + parameters + " > " + FILE_TEMP_FIX
+    ret_code = int(execute_command(transform_command))
+    if source_path_d not in modified_source_list:
+        modified_source_list.append(source_path_d)
+    if ret_code == 0:
+        move_command = "cp " + FILE_TEMP_FIX + " " + source_path_d
+        show_partial_diff(source_path_d, FILE_TEMP_FIX)
+        execute_command(move_command)
+    return ret_code
+
+
+def weave_headers(header_list):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    for header_name in header_list:
         Emitter.normal(header_name)
         target_file = missing_header_list[header_name]
         transplant_code = "\n#include<" + header_name + ">\n"
-        def_insert_line = get_definition_insertion_point(target_file)
+        def_insert_line = Finder.find_definition_insertion_point(target_file)
         backup_file(target_file, FILENAME_BACKUP)
         insert_patch(transplant_code, target_file, def_insert_line)
         backup_file_path = Definitions.DIRECTORY_BACKUP + "/" + FILENAME_BACKUP
         show_partial_diff(backup_file_path, target_file)
 
 
-def transplant_missing_macros():
+def weave_macros():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Emitter.sub_title("transplanting missing macros")
     for macro_name in missing_macro_list:
@@ -82,7 +143,7 @@ def transplant_missing_macros():
         show_partial_diff(backup_file_path, target_file)
 
 
-def transplant_missing_functions():
+def weave_functions():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     global def_insert_point, missing_header_list
     Emitter.sub_title("transplanting missing functions")
@@ -111,7 +172,7 @@ def transplant_missing_functions():
         show_partial_diff(backup_file_path, source_path_d)
 
 
-def transplant_code(diff_info, diff_loc):
+def weave_code(diff_info, diff_loc):
     global mapping_ba, var_expr_map_a, var_expr_map_b, var_expr_map_c
     global ast_map_a, ast_map_b, ast_map_c
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
@@ -141,7 +202,7 @@ def transplant_code(diff_info, diff_loc):
         for insertion_loc in insertion_loc_list:
             Emitter.normal("\t\t" + insertion_loc)
             source_path_c, line_number_c = insertion_loc.split(":")
-            ast_map_c = Generator.get_ast_json(source_path_c)
+            ast_map_c = ASTGenerator.get_ast_json(source_path_c)
             source_path_d = source_path_c.replace(Definitions.Project_C.path, Definitions.Project_D.path)
             function_node = get_fun_node(ast_map_c, int(line_number_c), source_path_c)
             position_c = get_ast_node_position(function_node, int(line_number_c))
@@ -184,7 +245,7 @@ def transplant_code(diff_info, diff_loc):
             Emitter.normal("\t\t" + insertion_loc)
             source_path_c, line_number_c = insertion_loc.split(":")
             source_path_d = source_path_c.replace(Definitions.Project_C.path, Definitions.Project_D.path)
-            ast_map_c = Generator.get_ast_json(source_path_c)
+            ast_map_c = ASTGenerator.get_ast_json(source_path_c)
             # print(insertion_loc)
             function_node = get_fun_node(ast_map_c, int(line_number_c), source_path_c)
             position_c = get_ast_node_position(function_node, int(line_number_c))
@@ -237,51 +298,12 @@ def transplant_code(diff_info, diff_loc):
 
 def transplant_patch():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    for diff_loc in Analyse.diff_info.keys():
+    for diff_loc in phases.Analyse.diff_info.keys():
         Emitter.normal(diff_loc)
-        diff_info = Analyse.diff_info[diff_loc]
+        diff_info = phases.Analyse.diff_info[diff_loc]
         transplant_code(diff_info, diff_loc)
     transplant_missing_functions()
     transplant_missing_macros()
     transplant_missing_header()
     Fixer.check()
 
-
-def safe_exec(function_def, title, *args):
-    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    start_time = time.time()
-    Emitter.sub_title(title + "...")
-    description = title[0].lower() + title[1:]
-    try:
-        Logger.information("running " + str(function_def))
-        if not args:
-            result = function_def()
-        else:
-            result = function_def(*args)
-        duration = str(time.time() - start_time)
-        Emitter.success("\n\tSuccessful " + description + ", after " + duration + " seconds.")
-    except Exception as exception:
-        duration = str(time.time() - start_time)
-        Emitter.error("Crash during " + description + ", after " + duration + " seconds.")
-        error_exit(exception, "Unexpected error during " + description + ".")
-    return result
-
-
-def set_values():
-    global FILE_VAR_EXPR_LOG_A, FILE_VAR_EXPR_LOG_B, FILE_VAR_EXPR_LOG_C
-    global FILE_VAR_MAP, FILE_SKIP_LIST, FILE_AST_SCRIPT
-    global FILE_TEMP_FIX, FILE_MACRO_DEF
-
-    FILE_VAR_EXPR_LOG_A = Definitions.DIRECTORY_OUTPUT + "/log-sym-expr-a"
-    FILE_VAR_EXPR_LOG_B = Definitions.DIRECTORY_OUTPUT + "/log-sym-expr-b"
-    FILE_VAR_EXPR_LOG_C = Definitions.DIRECTORY_OUTPUT + "/log-sym-expr-c"
-    FILE_VAR_MAP = Definitions.DIRECTORY_OUTPUT + "/var-map"
-    FILE_SKIP_LIST = Definitions.DIRECTORY_OUTPUT + "/skip-list"
-    FILE_AST_SCRIPT = Definitions.DIRECTORY_OUTPUT + "/gen-ast-script"
-    FILE_TEMP_FIX = Definitions.DIRECTORY_OUTPUT + "/temp-fix"
-
-def weave():
-    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Emitter.title("repairing bug")
-    set_values()
-    safe_exec(transplant_patch, "transplanting patch")

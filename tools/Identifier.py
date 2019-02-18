@@ -4,12 +4,11 @@
 
 import sys
 import os
-sys.path.append('./ast/')
+
 from common.Utilities import error_exit
 import Emitter
 from common import Definitions
 import Logger
-import Generator
 import Extractor
 import Finder
 import KleeExecutor
@@ -137,7 +136,7 @@ def identify_missing_macros(function_node, source_file, target_file):
 def get_definition_insertion_point(source_path):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     file_name = source_path.split("/")[-1]
-    ast_node = Generator.get_ast_json(source_path)
+    ast_node = ASTGenerator.get_ast_json(source_path)
     for child_node in ast_node['children']:
         child_node_type = child_node['type']
         if child_node_type == "FunctionDecl":
@@ -185,7 +184,7 @@ def generate_candidate_function_list(estimate_loc, var_expr_map, trace_list):
         function_info = trace_function_list[function_id]
         begin_line = function_info['begin']
         last_line = function_info['last']
-        ast_map_c = Generator.get_ast_json(source_path)
+        ast_map_c = ASTGenerator.get_ast_json(source_path)
         # print(int(last_line), source_path)
         function_node = Finder.search_function_node_by_loc(ast_map_c,
                                                            int(last_line),
@@ -219,7 +218,7 @@ def identify_functions_in_source(source_list):
         if source_path in source_function_map.keys():
             continue
         try:
-            function_list, definition_list = Generator.parse_ast(source_path, False)
+            function_list, definition_list = ASTGenerator.parse_ast(source_path, False)
             source_function_map[source_path] = function_list
         except Exception as e:
             error_exit(e, "Error in parse_ast.")

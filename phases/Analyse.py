@@ -8,7 +8,7 @@ sys.path.append('./ast/')
 import time
 from common.Utilities import error_exit
 from common import Definitions, Values
-import Generator
+from ast import ASTGenerator
 from tools import Mapper, Logger, Filter, Emitter, Differ
 
 FILE_EXCLUDED_EXTENSIONS = ""
