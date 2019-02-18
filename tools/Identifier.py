@@ -64,9 +64,8 @@ def identify_missing_headers(function_node, target_file):
     return missing_header_list
 
 
-def identify_missing_definitions(function_node):
+def identify_missing_definitions(function_node, missing_function_list):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    global missing_function_list
     Emitter.normal("\tidentifying missing definitions")
     missing_definition_list = list()
     ref_list = Extractor.extract_reference_node_list(function_node)

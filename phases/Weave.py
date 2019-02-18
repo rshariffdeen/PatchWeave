@@ -41,7 +41,6 @@ FILE_SKIP_LIST = ""
 FILE_AST_SCRIPT = ""
 FILE_TEMP_FIX = ""
 
-FILENAME_BACKUP = "temp-source"
 
 
 def get_sym_path_cond(source_location):
@@ -87,8 +86,7 @@ def transplant_missing_functions():
 
 
 def transplant_code():
-    global mapping_ba, var_expr_map_a, var_expr_map_b, var_expr_map_c
-    global ast_map_a, ast_map_b, ast_map_c
+    global missing_function_list
     path_a = Values.PATH_A
     path_b = Values.PATH_B
     path_c = Values.PATH_C
@@ -105,18 +103,18 @@ def transplant_code():
         div_sym_path_cond = get_sym_path_cond(diff_loc)
         last_sym_path_cond = Concolic.sym_path_c[Concolic.sym_path_c.keys()[-1]]
         estimate_loc = Solver.estimate_divergent_point(div_sym_path_cond, last_sym_path_cond)
-        Weaver.weave_code(diff_loc,
-                          diff_loc_info,
-                          path_a,
-                          path_b,
-                          path_c,
-                          path_d,
-                          bit_size,
-                          sym_poc_path,
-                          file_info,
-                          trace_list,
-                          estimate_loc
-                          )
+        missing_function_list = Weaver.weave_code(diff_loc,
+                                                  diff_loc_info,
+                                                  path_a,
+                                                  path_b,
+                                                  path_c,
+                                                  path_d,
+                                                  bit_size,
+                                                  sym_poc_path,
+                                                  file_info,
+                                                  trace_list,
+                                                  estimate_loc
+                                                  )
 
 
 def transplant_patch():

@@ -3,7 +3,6 @@
 
 
 import sys, os
-sys.path.append('./ast/')
 from common.Utilities import execute_command, backup_file, show_partial_diff, get_code
 from common import Definitions, Values
 import phases.Concolic
@@ -17,20 +16,12 @@ import Collector
 import Emitter
 import Writer
 import Finder
+import Extractor
 
-function_list_a = list()
-function_list_b = list()
-function_list_c = list()
-target_candidate_function_list = list()
-mapping_ba = dict()
-missing_function_list = dict()
-missing_macro_list = dict()
-missing_header_list = dict()
-
-modified_source_list = list()
 
 TOOL_AST_PATCH = "patchweave"
 FILE_TEMP_FIX = Definitions.DIRECTORY_TMP + "/temp-fix"
+FILENAME_BACKUP = "temp-source"
 
 
 def get_sym_path(source_location):
@@ -133,22 +124,26 @@ def weave_macros():
         show_partial_diff(backup_file_path, target_file)
 
 
-def weave_functions():
+def weave_functions(missing_function_list):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    global def_insert_point, missing_header_list
-    Emitter.sub_title("transplanting missing functions")
+    def_insert_point = ""
+    missing_header_list = dict()
+    missing_macro_list = dict()
+
     for function_name in missing_function_list:
         info = missing_function_list[function_name]
         node_id = info['node_id']
         source_path_b = info['source_b']
         source_path_d = info['source_d']
         Emitter.normal(function_name)
-        function_def_node = get_ast_node_by_id(ast_map_a, int(node_id))
-        function_node, function_source_file = get_complete_function_node(function_def_node, source_path_b)
-        missing_def_list = identify_missing_definitions(function_node)
-        def_insert_point = get_definition_insertion_point(source_path_d)
-        identify_missing_macros(function_node, function_source_file, source_path_d)
-        identify_missing_headers(function_node, source_path_d)
+        ast_map_b = ASTGenerator.get_ast_json(source_path_b)
+        function_def_node = Finder.search_ast_node_by_id(ast_map_b, int(node_id))
+        function_node, function_source_file = Extractor.extract_complete_function_node(function_def_node,
+                                                                                       source_path_b)
+        missing_def_list = Identifier.identify_missing_definitions(function_node)
+        def_insert_point = Finder.find_definition_insertion_point(source_path_d)
+        Identifier.identify_missing_macros(function_node, function_source_file, source_path_d)
+        Identifier.identify_missing_headers(function_node, source_path_d)
         start_line = function_node["start line"]
         end_line = function_node["end line"]
         # print(function_name)
@@ -160,6 +155,8 @@ def weave_functions():
         insert_patch(original_function, source_path_d, def_insert_point)
         backup_file_path = Definitions.DIRECTORY_BACKUP + "/" + FILENAME_BACKUP
         show_partial_diff(backup_file_path, source_path_d)
+
+    return missing_header_list
 
 
 def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
@@ -174,6 +171,7 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
     ast_script = diff_loc_info['ast-script']
     source_path_a, line_number_a = diff_loc.split(":")
     source_path_b = str(source_path_a).replace(path_a, path_b)
+    missing_function_list = dict()
 
     if operation == 'insert':
         start_line_b, end_line_b = diff_loc_info['new-lines']
@@ -224,7 +222,7 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                 inserting_node = Finder.search_ast_node_by_id(ast_map_b,
                                                               inserting_node_id)
                 translated_command = inserting_node_str + " into " + position_c + "\n"
-                Identifier.identify_missing_functions(ast_map_c,
+                missing_function_list = Identifier.identify_missing_functions(ast_map_c,
                                                       inserting_node,
                                                       source_path_b,
                                                       source_path_d,
@@ -251,8 +249,8 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
             Emitter.sub_sub_title("generating variable mapping from donor to target")
             var_map = Mapper.map_variable(var_expr_map_b, var_expr_map_c)
             for var_a in var_map:
-                Emitter.special("\t\t " + var_a + " -> " + var_map[var_a])
-            print(var_map)
+                Emitter.special("\t\t\t " + var_a + " -> " + var_map[var_a])
+            # print(var_map)
             # print(ast_script_c)
             Writer.write_var_map(var_map, var_map_file)
             ret_code = execute_ast_transformation(source_path_b,
@@ -357,4 +355,4 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
             ret_code = execute_ast_transformation(source_path_b, source_path_d)
             if ret_code == 0:
                 break
-
+    return missing_function_list
