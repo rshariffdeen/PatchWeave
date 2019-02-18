@@ -32,7 +32,6 @@ ast_map_a = dict()
 ast_map_b = dict()
 ast_map_c = dict()
 
-TOOL_AST_PATCH = "patchweave"
 
 FILE_VAR_EXPR_LOG_A = ""
 FILE_VAR_EXPR_LOG_B = ""
@@ -92,10 +91,13 @@ def transplant_code():
     global ast_map_a, ast_map_b, ast_map_c
     path_a = Values.PATH_A
     path_b = Values.PATH_B
+    path_c = Values.PATH_C
+    path_d = Values.Project_D.path
     sym_poc_path = Concolic.FILE_SYMBOLIC_POC
     bit_size = Concolic.VALUE_BIT_SIZE
     log_file_info = FILE_VAR_EXPR_LOG_A, FILE_VAR_EXPR_LOG_B, FILE_VAR_EXPR_LOG_C
-    file_info = FILE_SKIP_LIST, log_file_info
+    out_file_info = FILE_SKIP_LIST, FILE_AST_SCRIPT, FILE_VAR_MAP
+    file_info = out_file_info, log_file_info
     trace_list = Trace.list_trace_c
     for diff_loc in Analyse.diff_info.keys():
         Emitter.normal(diff_loc)
@@ -107,6 +109,8 @@ def transplant_code():
                           diff_loc_info,
                           path_a,
                           path_b,
+                          path_c,
+                          path_d,
                           bit_size,
                           sym_poc_path,
                           file_info,
@@ -158,7 +162,6 @@ def set_values():
     FILE_VAR_MAP = Definitions.DIRECTORY_OUTPUT + "/var-map"
     FILE_SKIP_LIST = Definitions.DIRECTORY_OUTPUT + "/skip-list"
     FILE_AST_SCRIPT = Definitions.DIRECTORY_OUTPUT + "/gen-ast-script"
-    FILE_TEMP_FIX = Definitions.DIRECTORY_OUTPUT + "/temp-fix"
 
 
 def weave():

@@ -29,6 +29,9 @@ missing_header_list = dict()
 
 modified_source_list = list()
 
+TOOL_AST_PATCH = "patchweave"
+FILE_TEMP_FIX = Definitions.DIRECTORY_TMP + "/temp-fix"
+
 
 def get_sym_path(source_location):
     sym_path = ""
@@ -76,13 +79,14 @@ def insert_patch(patch_code, source_path, line_number):
         source_file.writelines(content)
 
 
-def execute_ast_transformation(source_path_b, source_path_d):
+def execute_ast_transformation(source_path_b, source_path_d, file_info):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     global modified_source_list
+    skip_file, ast_script_file,var_map_file = file_info
     Emitter.normal("\t\texecuting AST transformation")
-    parameters = " -map=" + FILE_VAR_MAP + " -script=" + FILE_AST_SCRIPT
+    parameters = " -map=" + var_map_file + " -script=" + ast_script_file
     parameters += " -source=" + source_path_b + " -target=" + source_path_d
-    parameters += " -skip-list=" + FILE_SKIP_LIST
+    parameters += " -skip-list=" + skip_file
     transform_command = TOOL_AST_PATCH + parameters + " > " + FILE_TEMP_FIX
     ret_code = int(execute_command(transform_command))
     if source_path_d not in modified_source_list:
@@ -158,12 +162,14 @@ def weave_functions():
         show_partial_diff(backup_file_path, source_path_d)
 
 
-def weave_code(diff_loc, diff_loc_info, path_a, path_b,
+def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                bit_size, sym_poc_path,
                file_info, trace_list, estimate_loc):
+
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    skip_list_file, log_file_info = file_info
-    var_log_a, var_log_b, var_log_c  = log_file_info
+    out_file_info, log_file_info = file_info
+    skip_list_file, ast_script_file, var_map_file = out_file_info
+    var_log_a, var_log_b, var_log_c = log_file_info
     operation = diff_loc_info['operation']
     ast_script = diff_loc_info['ast-script']
     source_path_a, line_number_a = diff_loc.split(":")
@@ -196,32 +202,59 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b,
                                                                   )
 
         ast_script_c = list()
+        Emitter.sub_sub_title("generating patch for insertion point")
+        ast_map_a = ASTGenerator.get_ast_json(source_path_a)
+        ast_map_b = ASTGenerator.get_ast_json(source_path_b)
+
         for insertion_loc in insertion_loc_list:
             Emitter.normal("\t\t" + insertion_loc)
             source_path_c, line_number_c = insertion_loc.split(":")
             ast_map_c = ASTGenerator.get_ast_json(source_path_c)
-            source_path_d = source_path_c.replace(Definitions.Project_C.path, Definitions.Project_D.path)
-            function_node = get_fun_node(ast_map_c, int(line_number_c), source_path_c)
-            position_c = get_ast_node_position(function_node, int(line_number_c))
+            source_path_d = source_path_c.replace(path_c, path_d)
+            function_node = Finder.search_function_node_by_loc(ast_map_c,
+                                                               int(line_number_c),
+                                                               source_path_c)
+
+            position_c = Finder.find_ast_node_position(function_node,
+                                                       int(line_number_c))
+            Emitter.normal("\t\t\tgenerating AST script")
             for script_line in ast_script:
                 inserting_node_str = script_line.split(" into ")[0]
                 inserting_node_id = int((inserting_node_str.split("(")[1]).split(")")[0])
-                inserting_node = get_ast_node_by_id(ast_map_b, inserting_node_id)
+                inserting_node = Finder.search_ast_node_by_id(ast_map_b,
+                                                              inserting_node_id)
                 translated_command = inserting_node_str + " into " + position_c + "\n"
-                identify_missing_functions(inserting_node, source_path_b, source_path_d, skip_line_list)
-                # identify_missing_macros(inserting_node, source_path_b, source_path_d)
+                Identifier.identify_missing_functions(ast_map_c,
+                                                      inserting_node,
+                                                      source_path_b,
+                                                      source_path_d,
+                                                      skip_line_list)
+
+                # Identifier.identify_missing_macros(inserting_node,
+                #                                    source_path_b,
+                #                                    source_path_d)
                 ast_script_c.append(translated_command)
-            Mapper.generate_symbolic_expressions(source_path_c, line_number_c, line_number_c, FILE_VAR_EXPR_LOG_C, False)
-            var_expr_map_c = Mapper.collect_symbolic_expressions(FILE_VAR_EXPR_LOG_C)
+            Writer.write_ast_script(ast_map_c, ast_script_file)
+            Emitter.normal("\tgenerating variable map")
+            Generator.generate_symbolic_expressions(source_path_c,
+                                                    line_number_c,
+                                                    line_number_c,
+                                                    bit_size,
+                                                    sym_poc_path,
+                                                    var_log_c,
+                                                    False
+                                                    )
+
+            var_expr_map_c = Collector.collect_symbolic_expressions(var_log_c)
             # print(var_expr_map_b)
             # print(var_expr_map_c)
-            var_map = Mapper.generate_mapping(var_expr_map_b, var_expr_map_c)
+            var_map = Mapper.map_variable(var_expr_map_b, var_expr_map_c)
             # print(var_map)
             # print(ast_script_c)
-
-            output_var_map(var_map)
-            output_ast_script(ast_script_c)
-            ret_code = execute_ast_transformation(source_path_b, source_path_d)
+            Writer.write_var_map(var_map, var_map_file)
+            ret_code = execute_ast_transformation(source_path_b,
+                                                  source_path_d,
+                                                  out_file_info)
             if ret_code == 0:
                 break
     elif operation == 'modify':
@@ -264,11 +297,18 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b,
         for insertion_loc in insertion_loc_list:
             Emitter.normal("\t\t" + insertion_loc)
             source_path_c, line_number_c = insertion_loc.split(":")
-            source_path_d = source_path_c.replace(Definitions.Project_C.path, Definitions.Project_D.path)
+            source_path_d = source_path_c.replace(path_c, path_d)
             ast_map_c = ASTGenerator.get_ast_json(source_path_c)
             # print(insertion_loc)
-            function_node = get_fun_node(ast_map_c, int(line_number_c), source_path_c)
-            position_c = get_ast_node_position(function_node, int(line_number_c))
+            function_node = Finder.search_function_node_by_loc(ast_map_c,
+                                                               int(line_number_c),
+                                                               source_path_c)
+
+            position_c = Finder.find_ast_node_position(function_node,
+                                                       int(line_number_c))
+
+
+
             Mapper.generate_symbolic_expressions(source_path_c, line_number_c, line_number_c, FILE_VAR_EXPR_LOG_C, False)
             var_expr_map_c = Mapper.collect_symbolic_expressions(FILE_VAR_EXPR_LOG_C)
             # print(var_expr_map_c)

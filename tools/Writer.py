@@ -24,7 +24,7 @@ def write_skip_list(skip_list, output_file):
         map_file.writelines(content)
 
 
-def output_ast_script(ast_script, output_file):
+def write_ast_script(ast_script, output_file):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     with open(output_file, 'w') as script_file:
         script_file.writelines(ast_script)

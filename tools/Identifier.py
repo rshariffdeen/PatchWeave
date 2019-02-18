@@ -17,17 +17,21 @@ import Generator
 
 def identify_missing_functions(ast_map, ast_node, source_path_b, source_path_d, skip_list):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Emitter.normal("\t\tidentifying missing function calls")
+    Emitter.normal("\t\t\tidentifying missing function calls")
     missing_function_list = dict()
-    call_list = Extractor.extract_function_call_list(ast_node)
+    call_list = Extractor.extract_call_node_list(ast_node)
+    print(call_list)
     for call_expr in call_list:
+        print(call_expr)
         function_ref_node = call_expr['children'][0]
         function_name = function_ref_node['value']
+        print(function_name)
         line_number = function_ref_node['start line']
         if line_number in skip_list:
             continue
         function_node = Finder.search_function_node_by_name(ast_map, function_name)
         if function_node is not None:
+            print(function_node)
             if function_name not in missing_function_list.keys():
                 info = dict()
                 info['node_id'] = function_node['id']
@@ -42,6 +46,7 @@ def identify_missing_functions(ast_map, ast_node, source_path_b, source_path_d, 
                 if info != missing_function_list[function_name]:
                     print(missing_function_list[function_name])
                     error_exit("MULTIPLE FUNCTION REFERENCES ON DIFFERENT TARGETS FOUND!!!")
+    print(missing_function_list)
     return missing_function_list
 
 
