@@ -64,19 +64,19 @@ def build_all():
     Emitter.normal("building")
 
     Emitter.normal("\t" + Values.Project_A.path)
-    if not Definitions.VALUE_BUILD_COMMAND_A:
+    if not Values.BUILD_COMMAND_A:
         build_project(Values.Project_A.path)
     else:
         build_project(Values.Project_A.path, Values.BUILD_COMMAND_A)
 
     Emitter.normal("\t" + Values.Project_B.path)
-    if not Definitions.VALUE_BUILD_COMMAND_A:
+    if not Values.BUILD_COMMAND_A:
         build_project(Values.Project_B.path)
     else:
         build_project(Values.Project_B.path, Values.BUILD_COMMAND_A)
 
     Emitter.normal("\t" + Values.Project_C.path)
-    if not Definitions.VALUE_BUILD_COMMAND_C:
+    if not Values.BUILD_COMMAND_C:
         build_project(Values.Project_C.path)
     else:
         build_project(Values.Project_C.path, Values.BUILD_COMMAND_C)

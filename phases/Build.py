@@ -11,9 +11,13 @@ from common.Utilities import error_exit
 
 def build_projects():
     if not Values.NO_BUILD:
-        Builder.build_asan()
-        Trace.test_exploits()
-        Builder.build_llvm()
+        if Values.ASAN_FLAG == "":
+            Builder.build_llvm()
+            Trace.test_exploits()
+        else:
+            Builder.build_asan()
+            Trace.test_exploits()
+            Builder.build_llvm()
     else:
         Builder.soft_restore_all()
 

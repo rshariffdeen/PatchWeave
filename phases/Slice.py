@@ -48,6 +48,7 @@ def slice_skipped_diff_locs():
                 continue
         filtered_diff_info[diff_loc] = diff_info
     Analyse.diff_info = filtered_diff_info
+    slice_skipped_diff_locs()
 
 
 def slice_function_calls():
@@ -72,13 +73,6 @@ def slice_function_calls():
                                                         ):
                         skip_lines.append(line_number)
         diff_info['skip-lines'] = skip_lines
-
-
-def slice_diff():
-    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    slice_code_from_trace()
-    slice_skipped_diff_locs()
-    slice_function_calls()
     slice_skipped_diff_locs()
 
 
@@ -104,5 +98,6 @@ def safe_exec(function_def, title, *args):
 
 def slice():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Emitter.title("Slicing unrelated code")
-    safe_exec(slice_diff, "removing unwanted code")
+    Emitter.title("Slicing code")
+    safe_exec(slice_code_from_trace, "slicing code not in trace")
+    safe_exec(slice_function_calls, "slicing function calls")
