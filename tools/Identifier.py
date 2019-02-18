@@ -7,8 +7,7 @@ import os
 
 from common.Utilities import error_exit
 import Emitter
-from common import Definitions
-from ast import ASTGenerator
+from common import Values
 import Logger
 import Extractor
 import Finder
@@ -80,18 +79,17 @@ def identify_missing_definitions(function_node, missing_function_list):
                 if identifier not in dec_list:
                     missing_definition_list.append(identifier)
             elif ref_type == "FunctionDecl":
-                if identifier in Definitions.STANDARD_FUNCTION_LIST:
+                if identifier in Values.STANDARD_FUNCTION_LIST:
                     continue
                 if identifier not in missing_function_list:
                     print(identifier)
-                    print(Definitions.STANDARD_FUNCTION_LIST)
+                    print(Values.STANDARD_FUNCTION_LIST)
                     error_exit("FOUND NEW DEPENDENT FUNCTION")
     return list(set(missing_definition_list))
 
 
-def identify_missing_macros(function_node, source_file, target_file):
+def identify_missing_macros(function_node, source_file, target_file, missing_macro_list):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    global missing_function_list, missing_macro_list
     Emitter.normal("\tidentifying missing macros")
     ref_list = Extractor.extract_reference_node_list(function_node)
     dec_list = Extractor.extract_decl_list(function_node)
@@ -103,12 +101,12 @@ def identify_missing_macros(function_node, source_file, target_file):
             node_child_count = len(ref_node['children'])
             if function_identifier in identifier or "(" in identifier:
                 continue
-            if identifier in Definitions.STANDARD_MACRO_LIST:
+            if identifier in Values.STANDARD_MACRO_LIST:
                 continue
             if node_child_count:
                 for child_node in ref_node['children']:
                     identifier = str(child_node['value'])
-                    if identifier in Definitions.STANDARD_MACRO_LIST:
+                    if identifier in Values.STANDARD_MACRO_LIST:
                         continue
                     if identifier not in dec_list:
                         if identifier not in missing_macro_list.keys():
@@ -133,24 +131,6 @@ def identify_missing_macros(function_node, source_file, target_file):
                                 missing_macro_list[token] = info
                             else:
                                 error_exit("MACRO REQUIRED MULTIPLE TIMES!!")
-
-
-def get_definition_insertion_point(source_path):
-    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    file_name = source_path.split("/")[-1]
-    ast_node = ASTGenerator.get_ast_json(source_path)
-    for child_node in ast_node['children']:
-        child_node_type = child_node['type']
-        if child_node_type == "FunctionDecl":
-            child_node_file_name = child_node['file']
-            if child_node_file_name == file_name:
-                return int(child_node['start line'])
-    return -1
-
-
-def get_best_insertion_point(insertion_point_list):
-    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    return insertion_point_list[0]
 
 
 def identify_insertion_points(estimated_loc, var_expr_map,
