@@ -99,7 +99,7 @@ def end(time_info):
     Logger.end(time_info)
     statistics("\nRun time statistics:\n-----------------------\n")
     statistics("Initialization: " + time_info[Definitions.KEY_DURATION_INITIALIZATION] + " seconds")
-    statistics("Build: " + time_info[Definitions.KEY_DURATION_BUILD] + " seconds")
+    statistics("Build: " + time_info[Definitions.KEY_DURATION_EXPLOIT] + " seconds")
     statistics("Diff Analysis: " + time_info[Definitions.KEY_DURATION_DIFF_ANALYSIS] + " seconds")
     statistics("Trace Analysis: " + time_info[Definitions.KEY_DURATION_TRACE_ANALYSIS] + " seconds")
     statistics("Symbolic Trace Analysis: " + time_info[Definitions.KEY_DURATION_SYMBOLIC_TRACE_ANALYSIS] + " seconds")

@@ -10,7 +10,7 @@ import phases.Concolic
 from ast import ASTGenerator
 import phases.Analyse
 import phases.Trace
-from tools import Mapper, Identifier, KleeExecutor, Logger, Solver, Fixer, Emitter, Writer, Finder
+from tools import Mapper, Identifier, Generator, Logger, Solver, Collector, Emitter, Writer, Finder
 
 function_list_a = list()
 function_list_b = list()
@@ -187,15 +187,14 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b):
         Writer.write_skip_list(skip_line_list, FILE_SKIP_LIST)
         line_range_b = (start_line_b, end_line_b)
         line_range_a = (-1, -1)
-        binary_arguments, binary_path, binary_name, bit_size, poc_path, log_path
-        KleeExecutor.generate_var_expressions(source_path_b,
-                                                   start_line_b,
-                                                   end_line_b,
-                                                   FILE_VAR_EXPR_LOG_B)
+        Generator.generate_symbolic_expressions(source_path_b,
+                                                start_line_b,
+                                                end_line_b,
+                                                FILE_VAR_EXPR_LOG_B)
 
-        var_expr_map_b = Mapper.collect_symbolic_expressions(FILE_VAR_EXPR_LOG_B)
+        var_expr_map_b = Collector.collect_symbolic_expressions(FILE_VAR_EXPR_LOG_B)
         # print(var_expr_map_b)
-        insertion_loc_list = identify_insertion_points(estimate_loc, var_expr_map_b)
+        insertion_loc_list = Identifier.identify_insertion_points(estimate_loc, var_expr_map_b)
         # print(insertion_loc_list)
         ast_script_c = list()
         for insertion_loc in insertion_loc_list:

@@ -71,7 +71,7 @@ KEY_DURATION_VARIABLE_MATCH = "match-variables"
 KEY_DURATION_TRANSLATION = 'translation'
 KEY_DURATION_TRANSPLANTATION = "transplantation"
 KEY_DURATION_VERIFICATION = 'verification'
-KEY_DURATION_BUILD = 'build-project'
+KEY_DURATION_EXPLOIT = 'exploitation'
 
 
 # ---------------- ARGUMENTS ---------------------------

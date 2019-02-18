@@ -4,7 +4,7 @@
 import sys
 import time
 from common import Definitions, Values
-from tools import Emitter, Builder, Logger
+from tools import Emitter, Builder, Logger, Exploiter
 from phases import Trace
 from common.Utilities import error_exit
 
@@ -13,10 +13,10 @@ def build_projects():
     if not Values.NO_BUILD:
         if Values.ASAN_FLAG == "":
             Builder.build_llvm()
-            Trace.test_exploits()
+            Exploiter.test_exploits()
         else:
             Builder.build_asan()
-            Trace.test_exploits()
+            Exploiter.test_exploits()
             Builder.build_llvm()
     else:
         Builder.soft_restore_all()

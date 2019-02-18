@@ -34,8 +34,6 @@ target_crashed = False
 target_suspect_line_list = list()
 donor_suspect_line_list = list()
 
-crash_word_list = ["abort", "core dumped", "crashed"]
-
 
 def trace_donor():
     global list_trace_a, list_trace_b, stack_a

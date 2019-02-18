@@ -5,7 +5,7 @@ import time
 from tools import Emitter
 from common import Definitions
 from common.Utilities import error_exit, create_directories
-from phases import Trace, Weave, Concolic, Slice, Analyse, Verify, Initialize, Build
+from phases import Trace, Weave, Concolic, Slice, Analyse, Verify, Initialize, Exploit
 
 
 def first_run_check():
@@ -25,8 +25,8 @@ def run_patchweave():
     time_info[Definitions.KEY_DURATION_INITIALIZATION] = str(time.time() - time_check)
 
     time_check = time.time()
-    Build.build()
-    time_info[Definitions.KEY_DURATION_BUILD] = str(time.time() - time_check)
+    Exploit.exploit()
+    time_info[Definitions.KEY_DURATION_EXPLOIT] = str(time.time() - time_check)
 
     time_check = time.time()
     Analyse.analyse()

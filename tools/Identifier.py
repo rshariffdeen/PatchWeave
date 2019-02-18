@@ -8,6 +8,7 @@ import os
 from common.Utilities import error_exit
 import Emitter
 from common import Definitions
+from ast import ASTGenerator
 import Logger
 import Extractor
 import Finder
@@ -169,45 +170,6 @@ def identify_insertion_points(estimated_loc, var_expr_map, stack_info):
             insertion_point_list.append(source_path + ":" + str(exec_line))
     return insertion_point_list
 
-
-def generate_candidate_function_list(estimate_loc, var_expr_map, trace_list):
-    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Emitter.normal("\tgenerating candidate functions")
-    filtered_trace_list = Filter.filter_trace_list_by_loc(trace_list, estimate_loc)
-    source_list_c = Extractor.extract_source_list(filtered_trace_list)
-    source_function_map = identify_functions_in_source(source_list_c)
-    trace_function_list = Extractor.extract_source_lines_from_trace(source_function_map,
-                                                                    filtered_trace_list)
-    candidate_function_list = dict()
-    for function_id in trace_function_list:
-        source_path, function_name = str(function_id).split(":")
-        function_info = trace_function_list[function_id]
-        begin_line = function_info['begin']
-        last_line = function_info['last']
-        ast_map_c = ASTGenerator.get_ast_json(source_path)
-        # print(int(last_line), source_path)
-        function_node = Finder.search_function_node_by_loc(ast_map_c,
-                                                           int(last_line),
-                                                           source_path)
-        # print(function_node)
-        KleeExecutor.generate_symbolic_expressions(source_path,
-                                                   last_line,
-                                                   last_line,
-                                                   FILE_VAR_EXPR_LOG_C,
-                                                   False)
-
-
-        sym_expr_map = Collector.collect_symbolic_expressions(FILE_VAR_EXPR_LOG_C)
-        var_map = Mapper.map_variable(var_expr_map, sym_expr_map)
-        function_id = source_path + ":" + function_name
-        info = dict()
-        info['var-map'] = var_map
-        info['begin-line'] = begin_line
-        info['last-line'] = last_line
-        info['exec-lines'] = function_info['lines']
-        info['score'] = len(var_map)
-        candidate_function_list[function_id] = info
-    return candidate_function_list
 
 
 def identify_functions_in_source(source_list):

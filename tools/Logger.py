@@ -65,7 +65,7 @@ def end(time_duration):
     output("[END] PatchWeave ended at " + str(datetime.datetime.now()) + "\n\n")
     output("\nTime duration\n----------------------\n\n")
     output("Initialization: " + time_duration[Definitions.KEY_DURATION_INITIALIZATION] + " seconds")
-    output("Build: " + time_duration[Definitions.KEY_DURATION_BUILD] + " seconds")
+    output("Build: " + time_duration[Definitions.KEY_DURATION_EXPLOIT] + " seconds")
     output("Diff Analysis: " + time_duration[Definitions.KEY_DURATION_DIFF_ANALYSIS] + " seconds")
     output("Trace Analysis: " + time_duration[Definitions.KEY_DURATION_TRACE_ANALYSIS] + " seconds")
     output("Symbolic Trace Analysis: " + time_duration[Definitions.KEY_DURATION_SYMBOLIC_TRACE_ANALYSIS] + " seconds")
