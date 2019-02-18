@@ -72,7 +72,9 @@ def generate_candidate_function_list(estimate_loc, var_expr_map,
     filtered_trace_list = Filter.filter_trace_list_by_loc(trace_list, estimate_loc)
     source_list_c = Extractor.extract_source_list(filtered_trace_list)
     source_function_map = Mapper.map_source_function(source_list_c)
-    trace_function_list = Extractor.extract_source_lines_from_trace(filtered_trace_list)
+    trace_function_list = Filter.filter_function_list_using_trace(source_function_map,
+                                                                  filtered_trace_list)
+    print(trace_function_list)
     candidate_function_list = dict()
     for function_id in trace_function_list:
         source_path, function_name = str(function_id).split(":")
