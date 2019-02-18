@@ -8,7 +8,7 @@ sys.path.append('./ast/')
 import time
 from common.Utilities import error_exit
 from common import Definitions, Values
-from tools import Collector, Converter, KleeExecutor, Logger, Emitter
+from tools import Collector, Converter, KleeExecutor, Logger, Emitter, Builder
 
 FILE_EXPLOIT_OUTPUT_A = ""
 FILE_EXPLOIT_OUTPUT_C = ""
@@ -47,7 +47,7 @@ def trace_donor():
     poc_path = Values.PATH_POC
     Emitter.normal(project_path_a)
 
-    if not Values.NO_SYM_TRACE_GEN:
+    if not Values.SKIP_TRACE_GEN:
         binary_path = project_path_a + exploit_a.split(" ")[0]
         binary_dir, binary_name = Converter.convert_binary_to_llvm(binary_path)
         KleeExecutor.generate_trace(exploit_command,
@@ -66,7 +66,7 @@ def trace_donor():
 
     # print(list_trace_a[-1])
     Emitter.normal(project_path_b)
-    if not Values.NO_SYM_TRACE_GEN:
+    if not Values.SKIP_TRACE_GEN:
         binary_path = project_path_b + exploit_a.split(" ")[0]
         binary_dir, binary_name = Converter.convert_binary_to_llvm(binary_path)
         KleeExecutor.generate_trace(exploit_command,
@@ -91,7 +91,7 @@ def trace_target():
     poc_path = Values.PATH_POC
 
     Emitter.normal(project_path_c)
-    if not Values.NO_SYM_TRACE_GEN:
+    if not Values.SKIP_TRACE_GEN:
         binary_path = project_path_c + exploit_c.split(" ")[0]
         binary_dir, binary_name = Converter.convert_binary_to_llvm(binary_path)
         KleeExecutor.generate_trace(exploit_command,
@@ -145,5 +145,7 @@ def trace():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Emitter.title("Analysing execution traces")
     set_values()
+    if not Values.SKIP_TRACE_GEN:
+        safe_exec(Builder.build_llvm(), "building llvm files")
     safe_exec(trace_donor, "tracing donor program")
     safe_exec(trace_target, "tracing target program")

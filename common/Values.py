@@ -8,7 +8,7 @@ Project_C = None
 Project_D = None
 
 DEBUG = False
-NO_BUILD = False
+SKIP_TRACE_GEN = False
 NO_SYM_TRACE_GEN = False
 SKIP_EXPLOIT = False
 

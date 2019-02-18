@@ -10,7 +10,7 @@ from common.Utilities import error_exit
 
 
 def build_projects():
-    if not Values.NO_BUILD:
+    if not Values.SKIP_TRACE_GEN:
         if Values.ASAN_FLAG == "":
             Builder.build_llvm()
             Exploiter.test_exploits()
