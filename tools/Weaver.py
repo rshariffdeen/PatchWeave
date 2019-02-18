@@ -172,24 +172,23 @@ def weave_functions():
         show_partial_diff(backup_file_path, source_path_d)
 
 
-def weave_code(diff_info, diff_loc):
-    global mapping_ba, var_expr_map_a, var_expr_map_b, var_expr_map_c
-    global ast_map_a, ast_map_b, ast_map_c
+def weave_code(diff_loc, diff_loc_info, path_a, path_b):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    operation = diff_info['operation']
-    ast_script = diff_info['ast-script']
+    operation = diff_loc_info['operation']
+    ast_script = diff_loc_info['ast-script']
     source_path_a, line_number_a = diff_loc.split(":")
-    source_path_b = str(source_path_a).replace(Definitions.VALUE_PATH_A, Definitions.VALUE_PATH_B)
+    source_path_b = str(source_path_a).replace(path_a, path_b)
     byte_list = Solver.compute_common_bytes(diff_loc)
     estimate_loc = Identifier.identify_divergent_point(byte_list)
 
     if operation == 'insert':
-        start_line_b, end_line_b = diff_info['new-lines']
-        skip_line_list = diff_info['skip-lines']
+        start_line_b, end_line_b = diff_loc_info['new-lines']
+        skip_line_list = diff_loc_info['skip-lines']
         Writer.write_skip_list(skip_line_list, FILE_SKIP_LIST)
         line_range_b = (start_line_b, end_line_b)
         line_range_a = (-1, -1)
-        KleeExecutor.generate_symbolic_expressions(source_path_b,
+        binary_arguments, binary_path, binary_name, bit_size, poc_path, log_path
+        KleeExecutor.generate_var_expressions(source_path_b,
                                                    start_line_b,
                                                    end_line_b,
                                                    FILE_VAR_EXPR_LOG_B)
@@ -294,16 +293,4 @@ def weave_code(diff_info, diff_loc):
             ret_code = execute_ast_transformation(source_path_b, source_path_d)
             if ret_code == 0:
                 break
-
-
-def transplant_patch():
-    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    for diff_loc in phases.Analyse.diff_info.keys():
-        Emitter.normal(diff_loc)
-        diff_info = phases.Analyse.diff_info[diff_loc]
-        transplant_code(diff_info, diff_loc)
-    transplant_missing_functions()
-    transplant_missing_macros()
-    transplant_missing_header()
-    Fixer.check()
 

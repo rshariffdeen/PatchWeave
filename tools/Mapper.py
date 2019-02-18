@@ -23,36 +23,6 @@ FILE_TEMP_INSTRUMENTED = Definitions.DIRECTORY_TMP + "/temp-instrumented"
 
 
 
-def generate_symbolic_expressions(source_path, start_line, end_line, output_log, only_in_range=True):
-    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Emitter.normal("\tgenerating symbolic expressions")
-    source_file_name = str(source_path).split("/")[-1]
-    source_directory = "/".join(str(source_path).split("/")[:-1])
-
-    if Definitions.Project_A.path in source_path:
-        binary_path = Definitions.Project_A.path + Definitions.VALUE_EXPLOIT_A.split(" ")[0]
-        binary_args = " ".join(Definitions.VALUE_EXPLOIT_A.split(" ")[1:])
-    elif Definitions.Project_B.path in source_path:
-        binary_path = Definitions.Project_B.path + Definitions.VALUE_EXPLOIT_A.split(" ")[0]
-        binary_args = " ".join(Definitions.VALUE_EXPLOIT_A.split(" ")[1:])
-    elif Definitions.Project_C.path in source_path:
-        binary_path = Definitions.Project_C.path + Definitions.VALUE_EXPLOIT_C.split(" ")[0]
-        binary_args = " ".join(Definitions.VALUE_EXPLOIT_C.split(" ")[1:])
-    else:
-        binary_path = Definitions.Project_D.path + Definitions.VALUE_EXPLOIT_C.split(" ")[0]
-        binary_args = " ".join(Definitions.VALUE_EXPLOIT_C.split(" ")[1:])
-
-    binary_name = str(binary_path).split("/")[-1]
-    binary_directory = "/".join(str(binary_path).split("/")[:-1])
-    backup_file(binary_path, "original-bitcode")
-
-    instrument_code_for_klee(source_path, start_line, end_line, only_in_range)
-    Builder.build_instrumented_code(source_directory)
-    extract_bitcode(binary_path)
-    Concolic.generate_var_expressions(binary_args, binary_directory, binary_name, output_log)
-    restore_file("original-bitcode", binary_path)
-    reset_git(source_directory)
-
 
 def get_model_from_solver(str_formula):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
