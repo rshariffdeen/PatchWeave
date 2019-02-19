@@ -85,6 +85,8 @@ def execute_ast_transformation(source_path_b, source_path_d, file_info):
         move_command = "cp " + FILE_TEMP_FIX + " " + source_path_d
         show_partial_diff(source_path_d, FILE_TEMP_FIX)
         execute_command(move_command)
+    else:
+        Emitter.warning("\t AST transformation FAILED")
     return ret_code
 
 
