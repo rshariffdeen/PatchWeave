@@ -3,12 +3,12 @@
 
 
 import sys
-import subprocess
-sys.path.append('./ast/')
 import time
 from common.Utilities import error_exit
 from common import Definitions, Values
+from phases import Exploit
 from tools import Collector, Converter, KleeExecutor, Logger, Emitter, Builder
+
 
 FILE_EXPLOIT_OUTPUT_A = ""
 FILE_EXPLOIT_OUTPUT_C = ""
@@ -25,14 +25,7 @@ stack_a = dict()
 stack_c = dict()
 
 crash_location_a = ""
-divergent_location_list = list()
 crash_location_c = ""
-donor_exit_code = ""
-target_exit_code = ""
-donor_crashed = False
-target_crashed = False
-target_suspect_line_list = list()
-donor_suspect_line_list = list()
 
 
 def trace_donor():
@@ -58,11 +51,9 @@ def trace_donor():
 
     crash_location_a = Collector.collect_crash_point(FILE_TRACE_LOG_A)
     stack_a = Collector.collect_stack_info(FILE_TRACE_LOG_A)
-    if crash_location_a == "":
-        donor_suspect_line_list = Collector.collect_suspicious_points(FILE_EXPLOIT_OUTPUT_A)
     list_trace_a = Collector.collect_trace(FILE_TRACE_LOG_A,
                                            project_path_a,
-                                           donor_suspect_line_list)
+                                           Exploit.donor_suspect_line_list)
 
     # print(list_trace_a[-1])
     Emitter.normal(project_path_b)
@@ -102,8 +93,7 @@ def trace_target():
 
     crash_location_c = Collector.collect_crash_point(FILE_TRACE_LOG_C)
     stack_c = Collector.collect_stack_info(FILE_TRACE_LOG_C)
-    if crash_location_c == "":
-        target_suspect_line_list = Collector.collect_suspicious_points(FILE_EXPLOIT_OUTPUT_C)
+
     list_trace_c = Collector.collect_trace(FILE_TRACE_LOG_C,
                                            project_path_c,
                                            target_suspect_line_list)
@@ -132,10 +122,6 @@ def safe_exec(function_def, title, *args):
 
 def set_values():
     global FILE_TRACE_LOG_A, FILE_TRACE_LOG_B, FILE_TRACE_LOG_C
-    global FILE_EXPLOIT_OUTPUT_A, FILE_EXPLOIT_OUTPUT_C, FILE_EXPLOIT_OUTPUT_D
-    FILE_EXPLOIT_OUTPUT_A = Definitions.DIRECTORY_OUTPUT + "/exploit-log-a"
-    FILE_EXPLOIT_OUTPUT_C = Definitions.DIRECTORY_OUTPUT + "/exploit-log-c"
-    FILE_EXPLOIT_OUTPUT_D = Definitions.DIRECTORY_OUTPUT + "/exploit-log-d"
     FILE_TRACE_LOG_A = Definitions.DIRECTORY_OUTPUT + "/trace-klee-pa"
     FILE_TRACE_LOG_B = Definitions.DIRECTORY_OUTPUT + "/trace-klee-pb"
     FILE_TRACE_LOG_C = Definitions.DIRECTORY_OUTPUT + "/trace-klee-pc"

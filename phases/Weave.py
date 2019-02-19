@@ -2,16 +2,14 @@
 # -*- coding: utf-8 -*-
 
 
-import sys, os
-sys.path.append('./ast/')
+import sys
 import time
-from common.Utilities import execute_command, error_exit, backup_file, show_partial_diff, get_code
+from common.Utilities import error_exit
 from common import Definitions, Values
 import Concolic
-from ast import ASTGenerator
 import Analyse
 import Trace
-from tools import Mapper, Identifier, Extractor, Logger, Solver, Fixer, Emitter, Writer, Weaver
+from tools import Logger, Solver, Fixer, Emitter, Weaver
 
 function_list_a = list()
 function_list_b = list()
@@ -98,7 +96,11 @@ def transplant_code():
         diff_loc_info = Analyse.diff_info[diff_loc]
         div_sym_path_cond = get_sym_path_cond(diff_loc)
         last_sym_path_cond = Concolic.sym_path_c[Concolic.sym_path_c.keys()[-1]]
-        estimate_loc = Solver.estimate_divergent_point(div_sym_path_cond, last_sym_path_cond)
+        estimate_loc = Solver.estimate_divergent_point(div_sym_path_cond,
+                                                       last_sym_path_cond,
+                                                       Concolic.sym_path_c,
+                                                       Trace.list_trace_c
+                                                       )
         modified_source_list, missing_function_list = Weaver.weave_code(diff_loc,
                                                                         diff_loc_info,
                                                                         path_a,

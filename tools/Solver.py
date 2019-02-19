@@ -2,16 +2,14 @@
 # -*- coding: utf-8 -*-
 
 
-import sys, os
-from phases import Trace, Concolic
+import sys
 import Logger
-import Mapper
 import Emitter
 import Extractor
 import Identifier
 
 
-def estimate_divergent_point(path_cond_a, path_cond_b):
+def estimate_divergent_point(path_cond_a, path_cond_b, target_sym_path, target_trace):
     Emitter.sub_sub_title("estimating divergent point in Pc")
     Emitter.normal("\textracting input bytes from div point in Pa")
     bytes_a = Extractor.extract_input_bytes_used(path_cond_a)
@@ -22,8 +20,8 @@ def estimate_divergent_point(path_cond_a, path_cond_b):
     # print(byte_list)
     Emitter.normal("\testimating divergent point")
     estimate_loc = Identifier.identify_divergent_point(byte_list,
-                                                       Concolic.sym_path_c,
-                                                       Trace.list_trace_c
+                                                       target_sym_path,
+                                                       target_trace
                                                        )
     Emitter.special("\testimated divergent point:" + estimate_loc)
     return estimate_loc

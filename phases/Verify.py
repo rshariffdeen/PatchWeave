@@ -7,7 +7,8 @@ import time
 from common.Utilities import error_exit
 from common import Values, Definitions
 from tools import Logger, Emitter, Verifier
-from phases import Trace
+import Trace
+import Exploit
 
 
 def verify_compilation():
@@ -17,12 +18,12 @@ def verify_compilation():
 
 def verify_exploit():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    target_trace_info = Trace.target_exit_code, Trace.target_crashed, Trace.FILE_EXPLOIT_OUTPUT_C
+    target_trace_info = Exploit.target_exit_code, Exploit.target_crashed, Exploit.FILE_EXPLOIT_OUTPUT_C
     Verifier.run_exploit(target_trace_info,
                          Values.EXPLOIT_C,
                          Values.Project_D.path,
                          Values.PATH_POC,
-                         Trace.FILE_EXPLOIT_OUTPUT_D,
+                         Exploit.FILE_EXPLOIT_OUTPUT_D,
                          Definitions.crash_word_list,
                          Trace.crash_location_c
                          )

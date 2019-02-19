@@ -3,13 +3,10 @@
 
 
 import sys
-
-sys.path.append('./ast/')
 import time
 from common.Utilities import error_exit
 from common import Definitions, Values
-from ast import ASTGenerator
-from tools import Mapper, Logger, Filter, Emitter, Differ
+from tools import Logger, Emitter, Differ
 
 FILE_EXCLUDED_EXTENSIONS = ""
 FILE_EXCLUDED_EXTENSIONS_A = ""

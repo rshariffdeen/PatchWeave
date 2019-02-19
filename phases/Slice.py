@@ -5,10 +5,10 @@
 import sys
 import time
 from common.Utilities import error_exit
-from common import Definitions, Values
+from common import Values
 import Trace
 from tools import Logger, Emitter, Slicer
-from phases import Analyse
+import Analyse
 import Concolic
 
 

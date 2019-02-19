@@ -3,8 +3,6 @@
 
 
 import sys
-
-sys.path.append('./ast/')
 import time
 from common.Utilities import execute_command, error_exit
 from common import Definitions, Values
