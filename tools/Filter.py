@@ -151,7 +151,7 @@ def filter_ast_script(ast_script, info_a, info_b, mapping_ba):
 
 def filter_ast_script_by_skip_line(ast_script, ast_node_a, ast_node_b, skip_lines):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Emitter.normal("\t\tfiltering AST script")
+    Emitter.normal("filtering AST script")
     filtered_ast_script = list()
     for script_line in ast_script:
         if "Insert" in script_line:
