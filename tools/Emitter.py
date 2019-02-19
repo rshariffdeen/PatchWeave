@@ -89,6 +89,18 @@ def program_output(output_message):
         write("\t\t" + str(output_message).strip(), GREY)
 
 
+def emit_var_map(var_map):
+    write("\tVar Map:", BLUE)
+    for var_a in var_map:
+        special("\t\t\t " + var_a + " -> " + var_map[var_a])
+
+
+def emit_ast_script(ast_script):
+    write("\tAST Script:", BLUE)
+    for line in ast_script:
+        special("\t\t\t " + line)
+
+
 def warning(message):
     if Values.DEBUG:
         write(message, YELLOW)
