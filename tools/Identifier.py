@@ -131,6 +131,7 @@ def identify_missing_macros(function_node, source_file, target_file, missing_mac
                                 missing_macro_list[token] = info
                             else:
                                 error_exit("MACRO REQUIRED MULTIPLE TIMES!!")
+    return missing_macro_list
 
 
 def identify_insertion_points(estimated_loc, var_expr_map,

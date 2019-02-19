@@ -142,6 +142,7 @@ def weave_functions(missing_function_list):
                                                                                        source_path_b)
         missing_def_list = Identifier.identify_missing_definitions(function_node)
         def_insert_point = Finder.find_definition_insertion_point(source_path_d)
+
         Identifier.identify_missing_macros(function_node, function_source_file, source_path_d)
         Identifier.identify_missing_headers(function_node, source_path_d)
         start_line = function_node["start line"]
