@@ -81,7 +81,7 @@ def special(message):
 
 
 def program_output(output_message):
-    write("\tProgram Output:", BLUE)
+    write("\tProgram Output:", WHITE)
     if type(output_message) == list:
         for line in output_message:
             write("\t\t\t" + line.strip(), GREEN)
@@ -90,13 +90,13 @@ def program_output(output_message):
 
 
 def emit_var_map(var_map):
-    write("\t\tVar Map:", BLUE)
+    write("\t\tVar Map:", WHITE)
     for var_a in var_map:
         special("\t\t\t " + var_a + " -> " + var_map[var_a])
 
 
 def emit_ast_script(ast_script):
-    write("\t\tAST Script:", BLUE)
+    write("\t\tAST Script:", WHITE)
     for line in ast_script:
         special("\t\t\t " + line.strip())
 
