@@ -4,21 +4,15 @@
 
 import sys, os
 from common.Utilities import execute_command, error_exit, show_partial_diff, backup_file
-import Emitter
 from common import Definitions
-import Logger
 from ast import ASTGenerator
+import Logger
+import Finder
+import Emitter
+
 
 FILE_SYNTAX_ERRORS = ""
 FILENAME_BACKUP = "backup-syntax-fix"
-
-
-def verify_compilation():
-    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-
-
-def verify_exploit():
-    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
 
 
 def extract_return_node(ast_node, line_number):
@@ -61,7 +55,7 @@ def fix_return_type(source_file, source_location):
     Emitter.normal("\t\tfixing return type")
     line_number = int(source_location.split(":")[1])
     ast_map = ASTGenerator.get_ast_json(source_file)
-    function_node = Weaver.get_fun_node(ast_map, int(line_number), source_file)
+    function_node = Finder.search_function_node_by_loc(ast_map, int(line_number), source_file)
     return_node = extract_return_node(function_node, line_number)
     function_definition = function_node['value']
     function_name = function_node['identifier']
@@ -77,7 +71,7 @@ def fix_return_type(source_file, source_location):
         show_partial_diff(backup_file_path, source_file)
     else:
         error_exit("NEW RETURN TYPE!")
-    check_syntax_errors()
+    # check_syntax_errors()
 
 
 def fix_syntax_errors(source_file):
@@ -91,10 +85,12 @@ def fix_syntax_errors(source_file):
             fix_return_type(source_file, source_location)
 
 
-def check_syntax_errors():
+def check_syntax_errors(modified_source_list):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    for source_file in Weaver.modified_source_list:
+    Emitter.sub_title("computing syntax errors")
+    for source_file in modified_source_list:
         Emitter.normal(source_file)
+        Emitter.normal("\tchecking syntax errors")
         check_command = "clang-check -analyze " + source_file + " > " + FILE_SYNTAX_ERRORS
         check_command += " 2>&1"
         ret_code = int(execute_command(check_command))
@@ -109,8 +105,8 @@ def set_values():
     FILE_SYNTAX_ERRORS = Definitions.DIRECTORY_OUTPUT + "/syntax-errors"
 
 
-def check():
+def check(modified_source_list):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Emitter.sub_title("checking syntax errors")
+    Emitter.sub_title("fixing syntax errors")
     set_values()
-    check_syntax_errors()
+    check_syntax_errors(modified_source_list)

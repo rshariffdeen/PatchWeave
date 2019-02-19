@@ -378,7 +378,7 @@ def extract_declaration_line_list(ast_node):
     return list(set(line_list))
 
 
-def extract_macro_definitions(source_path, output_file):
+def extract_macro_definitions(source_path):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Emitter.normal("\textracting macro definitions from\n\t\t" + str(source_path))
     extract_command = "clang -E -dM " + source_path + " > " + FILE_MACRO_DEF

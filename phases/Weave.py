@@ -67,25 +67,22 @@ def get_sym_path_cond(source_location):
 
 def transplant_missing_header():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Emitter.sub_title("transplanting missing header")
     Weaver.weave_headers(missing_header_list)
 
 
 def transplant_missing_macros():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Emitter.sub_title("transplanting missing macros")
     Weaver.weave_macros(missing_macro_list)
 
 
 def transplant_missing_functions():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    global def_insert_point, missing_header_list
-    Emitter.sub_title("transplanting missing functions")
-    Weaver.weave_functions(missing_function_list)
+    global missing_header_list, missing_macro_list
+    missing_header_list, missing_macro_list = Weaver.weave_functions(missing_function_list)
 
 
 def transplant_code():
-    global missing_function_list
+    global missing_function_list, modified_source_list
     path_a = Values.PATH_A
     path_b = Values.PATH_B
     path_c = Values.PATH_C
@@ -102,18 +99,18 @@ def transplant_code():
         div_sym_path_cond = get_sym_path_cond(diff_loc)
         last_sym_path_cond = Concolic.sym_path_c[Concolic.sym_path_c.keys()[-1]]
         estimate_loc = Solver.estimate_divergent_point(div_sym_path_cond, last_sym_path_cond)
-        missing_function_list = Weaver.weave_code(diff_loc,
-                                                  diff_loc_info,
-                                                  path_a,
-                                                  path_b,
-                                                  path_c,
-                                                  path_d,
-                                                  bit_size,
-                                                  sym_poc_path,
-                                                  file_info,
-                                                  trace_list,
-                                                  estimate_loc
-                                                  )
+        modified_source_list, missing_function_list = Weaver.weave_code(diff_loc,
+                                                                        diff_loc_info,
+                                                                        path_a,
+                                                                        path_b,
+                                                                        path_c,
+                                                                        path_d,
+                                                                        bit_size,
+                                                                        sym_poc_path,
+                                                                        file_info,
+                                                                        trace_list,
+                                                                        estimate_loc
+                                                                        )
 
 
 def safe_exec(function_def, title, *args):
@@ -157,4 +154,4 @@ def weave():
     safe_exec(transplant_missing_functions, "transplanting functions")
     safe_exec(transplant_missing_macros, "transplanting macros")
     safe_exec(transplant_missing_header, "transplanting header files")
-    safe_exec(Fixer.check(), "correcting syntax errors")
+    safe_exec(Fixer.check, "correcting syntax errors", modified_source_list)

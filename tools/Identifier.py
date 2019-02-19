@@ -88,9 +88,10 @@ def identify_missing_definitions(function_node, missing_function_list):
     return list(set(missing_definition_list))
 
 
-def identify_missing_macros(function_node, source_file, target_file, missing_macro_list):
+def identify_missing_macros(function_node, source_file, target_file):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Emitter.normal("\tidentifying missing macros")
+    missing_macro_list = dict()
     ref_list = Extractor.extract_reference_node_list(function_node)
     dec_list = Extractor.extract_decl_list(function_node)
     function_identifier = function_node['identifier']

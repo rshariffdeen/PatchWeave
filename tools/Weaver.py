@@ -6,7 +6,7 @@
 import sys
 import os
 from common.Utilities import execute_command, backup_file, show_partial_diff, get_code
-from common import Definitions, Values
+from common import Definitions
 import phases.Concolic
 from ast import ASTGenerator
 from phases import Trace
@@ -49,14 +49,14 @@ def get_sym_path(source_location):
     return sym_path
 
 
-def translate_patch(patch_code, var_map):
+def translate_code(patch_code, var_map):
     for var in var_map.keys():
         if var in patch_code:
             str(patch_code).replace(var, var_map[var])
     return patch_code
 
 
-def insert_patch(patch_code, source_path, line_number):
+def insert_code(patch_code, source_path, line_number):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     global modified_source_list
     content = ""
@@ -88,29 +88,32 @@ def execute_ast_transformation(source_path_b, source_path_d, file_info):
     return ret_code
 
 
-def weave_headers(header_list):
+def weave_headers(missing_header_list):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    for header_name in header_list:
+    if not missing_header_list:
+        Emitter.normal("\t-none-")
+    for header_name in missing_header_list:
         Emitter.normal(header_name)
         target_file = missing_header_list[header_name]
         transplant_code = "\n#include<" + header_name + ">\n"
         def_insert_line = Finder.find_definition_insertion_point(target_file)
         backup_file(target_file, FILENAME_BACKUP)
-        insert_patch(transplant_code, target_file, def_insert_line)
+        insert_code(transplant_code, target_file, def_insert_line)
         backup_file_path = Definitions.DIRECTORY_BACKUP + "/" + FILENAME_BACKUP
         show_partial_diff(backup_file_path, target_file)
 
 
-def weave_macros():
+def weave_macros(missing_macro_list):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Emitter.sub_title("transplanting missing macros")
+    if not missing_macro_list:
+        Emitter.normal("\t-none-")
     for macro_name in missing_macro_list:
         Emitter.normal(macro_name)
         macro_info = missing_macro_list[macro_name]
         source_file = macro_info['source']
         target_file = macro_info['target']
-        macro_def_list = extract_macro_definitions(source_file)
-        def_insert_line = get_definition_insertion_point(target_file)
+        macro_def_list = Extractor.extract_macro_definitions(source_file)
+        def_insert_line = Finder.find_definition_insertion_point(target_file)
         transplant_code = ""
         for macro_def in macro_def_list:
             if macro_name in macro_def:
@@ -118,13 +121,15 @@ def weave_macros():
                     if macro_name in macro_def.split(" "):
                         transplant_code += "\n" + macro_def + "\n"
         backup_file(target_file, FILENAME_BACKUP)
-        insert_patch(transplant_code, target_file, def_insert_line)
+        insert_code(transplant_code, target_file, def_insert_line)
         backup_file_path = Definitions.DIRECTORY_BACKUP + "/" + FILENAME_BACKUP
         show_partial_diff(backup_file_path, target_file)
 
 
 def weave_functions(missing_function_list):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    if not missing_function_list:
+        Emitter.normal("\t-none-")
     def_insert_point = ""
     missing_header_list = dict()
     missing_macro_list = dict()
@@ -139,11 +144,11 @@ def weave_functions(missing_function_list):
         function_def_node = Finder.search_ast_node_by_id(ast_map_b, int(node_id))
         function_node, function_source_file = Extractor.extract_complete_function_node(function_def_node,
                                                                                        source_path_b)
-        missing_def_list = Identifier.identify_missing_definitions(function_node)
+        missing_def_list = Identifier.identify_missing_definitions(function_node, missing_function_list)
         def_insert_point = Finder.find_definition_insertion_point(source_path_d)
 
-        Identifier.identify_missing_macros(function_node, function_source_file, source_path_d)
-        Identifier.identify_missing_headers(function_node, source_path_d)
+        missing_macro_list = Identifier.identify_missing_macros(function_node, function_source_file, source_path_d)
+        missing_header_list = Identifier.identify_missing_headers(function_node, source_path_d)
         start_line = function_node["start line"]
         end_line = function_node["end line"]
         # print(function_name)
@@ -152,11 +157,11 @@ def weave_functions(missing_function_list):
             original_function += get_code(function_source_file, int(i)) + "\n"
         # translated_patch = translate_patch(original_patch, var_map_ac)
         backup_file(source_path_d, FILENAME_BACKUP)
-        insert_patch(original_function, source_path_d, def_insert_point)
+        insert_code(original_function, source_path_d, def_insert_point)
         backup_file_path = Definitions.DIRECTORY_BACKUP + "/" + FILENAME_BACKUP
         show_partial_diff(backup_file_path, source_path_d)
 
-    return missing_header_list
+    return missing_header_list, missing_macro_list
 
 
 def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
@@ -173,7 +178,6 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
     source_path_b = str(source_path_a).replace(path_a, path_b)
     missing_function_list = dict()
     modified_source_list = list()
-
 
     if operation == 'insert':
         start_line_b, end_line_b = diff_loc_info['new-lines']
@@ -356,9 +360,9 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                         for i in range(int(start_line), int(end_line + 1)):
                             original_patch += get_code(source_path_b, int(i)) + "\n"
                             print(original_patch)
-                        translated_patch = translate_patch(original_patch, var_map_ac)
+                        translated_patch = translate_code(original_patch, var_map_ac)
                         print(translated_patch)
-                        insert_patch(translated_patch, source_path_c, line_number_c)
+                        insert_code(translated_patch, source_path_c, line_number_c)
                     else:
                         translated_command = script_line.replace(replacing_node_str, target_node_str)
                         ast_script_c.append(translated_command)
@@ -372,4 +376,4 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                 if source_path_d not in modified_source_list:
                     modified_source_list.append(source_path_d)
                 break
-    return missing_function_list
+    return modified_source_list, missing_function_list

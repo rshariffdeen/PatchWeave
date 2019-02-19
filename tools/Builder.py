@@ -124,10 +124,10 @@ def build_normal():
 
 def build_verify():
     global CC, CXX, CXX_FLAGS, C_FLAGS, LD_FLAGS
-    Emitter.sub_title("building projects")
+    Emitter.sub_sub_title("building projects")
     CXX_FLAGS = "'-g -O0 -static -DNDEBUG -ftrapv'"
     C_FLAGS = "'-g -O0 -static -DNDEBUG -ftrapv'"
-    Emitter.normal("\t" + Values.Project_D.path)
+    Emitter.normal("\t\t" + Values.Project_D.path)
     if not Values.BUILD_COMMAND_C:
         build_project(Values.Project_D.path)
     else:

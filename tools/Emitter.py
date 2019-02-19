@@ -81,8 +81,11 @@ def special(message):
 
 
 def program_output(output_message):
-    for line in output_message:
-        write(line.strip(), GREY)
+    if type(output_message) == list:
+        for line in output_message:
+            write(line.strip(), GREY)
+    else:
+        write(str(output_message).strip(), GREY)
 
 
 def warning(message):
