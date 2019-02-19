@@ -4,9 +4,11 @@
 
 import sys
 from common.Utilities import get_code
+from ast import ASTGenerator
 import Extractor
 import Oracle
 import Logger
+import Filter
 
 
 def slice_code_from_trace(diff_info, trace_list, path_a, path_b):
@@ -44,6 +46,28 @@ def slice_skipped_diff_locs(diff_info):
             skip_lines = diff_loc_info['skip-lines']
             if set(line_numbers) == set(skip_lines):
                 continue
+        filtered_diff_info[diff_loc] = diff_loc_info
+    return filtered_diff_info
+
+
+def slice_ast_script(diff_info, project_path_a, project_path_b):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    filtered_diff_info = dict()
+    for diff_loc in diff_info:
+        diff_loc_info = diff_info[diff_loc]
+        skip_lines = diff_loc_info['skip-lines']
+        ast_script = diff_loc_info['ast-script']
+        source_path_a, line_number_a = diff_loc.split(":")
+        source_path_b = str(source_path_a).replace(project_path_a,
+                                                   project_path_b)
+        ast_map_a = ASTGenerator.get_ast_json(source_path_a)
+        ast_map_b = ASTGenerator.get_ast_json(source_path_b)
+        filtered_ast_script = Filter.filter_ast_script_by_skip_line(ast_script,
+                                                                    ast_map_a,
+                                                                    ast_map_b,
+                                                                    skip_lines
+                                                                    )
+        diff_loc_info['ast-script'] = filtered_ast_script
         filtered_diff_info[diff_loc] = diff_loc_info
     return filtered_diff_info
 

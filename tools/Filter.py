@@ -149,17 +149,10 @@ def filter_ast_script(ast_script, info_a, info_b, mapping_ba):
     return filtered_ast_script
 
 
-def filter_ast_script_by_line(ast_script, info_a, info_b, mapping_ba, skip_lines):
+def filter_ast_script_by_skip_line(ast_script, ast_node_a, ast_node_b, skip_lines):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Emitter.normal("\t\tfiltering AST script")
-    source_path_a, line_range_a, ast_node_a = info_a
-    source_path_b, line_range_b, ast_node_b = info_b
     filtered_ast_script = list()
-    line_range_start_a, line_range_end_a = line_range_a
-    line_range_start_b, line_range_end_b = line_range_b
-    line_numbers_a = set(range(int(line_range_start_a), int(line_range_end_a) + 1))
-    line_numbers_b = set(range(int(line_range_start_b), int(line_range_end_b) + 1))
-    # print(merged_ast_script)
     for script_line in ast_script:
         if "Insert" in script_line:
             node_id_b = int(((script_line.split(" into ")[0]).split("(")[1]).split(")")[0])
@@ -169,17 +162,14 @@ def filter_ast_script_by_line(ast_script, info_a, info_b, mapping_ba, skip_lines
             node_line_end = int(node_b['end line']) + 1
             if node_line_start in skip_lines:
                 continue
-            node_line_numbers = set(range(node_line_start, node_line_end))
-            intersection = line_numbers_b.intersection(node_line_numbers)
-            if intersection:
-                if node_type_b in ["IfStmt"]:
-                    body_node = node_b['children'][1]
-                    count = 0
-                    for child_node in body_node['children']:
-                        if int(child_node['start line']) not in skip_lines:
-                            count = count + 1
-                    if count != 0:
-                        filtered_ast_script.append(script_line)
-                else:
+            if node_type_b in ["IfStmt"]:
+                body_node = node_b['children'][1]
+                count = 0
+                for child_node in body_node['children']:
+                    if int(child_node['start line']) not in skip_lines:
+                        count = count + 1
+                if count != 0:
                     filtered_ast_script.append(script_line)
+            else:
+                filtered_ast_script.append(script_line)
     return filtered_ast_script
