@@ -2,7 +2,9 @@
 # -*- coding: utf-8 -*-
 
 
-import sys, os
+
+import sys
+import os
 from common.Utilities import execute_command, backup_file, show_partial_diff, get_code
 from common import Definitions, Values
 import phases.Concolic

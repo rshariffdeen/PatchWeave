@@ -146,6 +146,6 @@ def trace():
     Emitter.title("Analysing execution traces")
     set_values()
     if not Values.SKIP_TRACE_GEN:
-        safe_exec(Builder.build_llvm(), "building llvm files")
+        safe_exec(Builder.build_llvm, "building llvm files")
     safe_exec(trace_donor, "tracing donor program")
     safe_exec(trace_target, "tracing target program")
