@@ -21,7 +21,7 @@ def remove_code():
     trace_list = Trace.list_trace_b
     diff_info = Analyse.diff_info
     diff_info = Slicer.slice_code_from_trace(diff_info, trace_list, path_a, path_b)
-    Values.diff_info = Slicer.slice_skipped_diff_locs(diff_info)
+    Analyse.diff_info = Slicer.slice_skipped_diff_locs(diff_info)
 
 
 def remove_func_calls():
@@ -32,7 +32,7 @@ def remove_func_calls():
     sym_path_list = Concolic.sym_path_b.keys()
     diff_info = Analyse.diff_info
     diff_info = Slicer.slice_function_calls(diff_info, sym_path_list, path_a, path_b)
-    Values.diff_info = Slicer.slice_skipped_diff_locs(diff_info)
+    Analyse.diff_info = Slicer.slice_skipped_diff_locs(diff_info)
 
 
 def safe_exec(function_def, title, *args):
