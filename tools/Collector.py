@@ -101,10 +101,10 @@ def collect_exploit_return_code(output_file_path):
     return_code = ""
     if os.path.exists(output_file_path):
         with open(output_file_path, 'r') as output_file:
-            for read_line in output_file:
+            for read_line in output_file.readlines():
                 if "RETURN CODE:" in read_line:
                     read_line = read_line.replace("RETURN CODE: ", "")
-                    return_code = int(read_line.split(": ")[0])
+                    return_code = int(read_line)
                     break
     return return_code
 

@@ -17,10 +17,10 @@ def run_compilation():
 def compare_output(target_output, target_exit_code, repaired_target_output, repaired_target_exit_code):
     Emitter.sub_sub_title("before transplantation")
     Emitter.program_output(target_output)
-    Emitter.normal("\t\t\t exit code:" + str(target_exit_code))
+    Emitter.normal("\t\t\t exit code: " + str(target_exit_code))
     Emitter.sub_sub_title("after transplantation")
     Emitter.program_output(repaired_target_output)
-    Emitter.normal("\t\t\t exit code:" + str(repaired_target_exit_code))
+    Emitter.normal("\t\t exit code: " + str(repaired_target_exit_code))
 
 
 def run_exploit(target_trace_info, exploit_command, project_path, poc_path,
@@ -30,6 +30,7 @@ def run_exploit(target_trace_info, exploit_command, project_path, poc_path,
 
     target_exit_code, target_crashed, target_output_file = target_trace_info
     target_output = ""
+    # print(target_exit_code, target_crashed)
     with open(target_output_file, "r") as prev_file:
         target_output = prev_file.readlines()
 
@@ -50,7 +51,7 @@ def run_exploit(target_trace_info, exploit_command, project_path, poc_path,
                                                                 project_path,
                                                                 poc_path,
                                                                 prog_output_file)
-    print(repaired_target_crashed, target_crashed)
+    # print(repaired_target_crashed, target_crashed)
     if target_crashed:
         if repaired_target_crashed:
             compare_output(target_output,
@@ -65,7 +66,7 @@ def run_exploit(target_trace_info, exploit_command, project_path, poc_path,
                            repaired_target_output,
                            repaired_target_exit_code
                            )
-            Emitter.success("\n\tprogram did not crash!!")
+            Emitter.success("\n\tprogram was repaired!!")
     else:
         runtime_error_count_c = target_output.count("runtime error")
         runtime_error_count_d = repaired_target_output.count("runtime error")
