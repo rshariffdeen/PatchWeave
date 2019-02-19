@@ -17,7 +17,8 @@ def verify_compilation():
 
 def verify_exploit():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Verifier.run_exploit(Trace.target_exit_code,
+    target_trace_info = Trace.target_exit_code, Trace.target_crashed, Trace.FILE_EXPLOIT_OUTPUT_C
+    Verifier.run_exploit(target_trace_info,
                          Values.EXPLOIT_C,
                          Values.Project_D.path,
                          Values.PATH_POC,

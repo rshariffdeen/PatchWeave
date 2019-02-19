@@ -3,7 +3,6 @@
 
 
 import sys
-from common.Utilities import error_exit
 import Logger
 import Emitter
 import Builder
@@ -15,34 +14,90 @@ def run_compilation():
     Builder.build_verify()
 
 
-def run_exploit(prev_exit_code, exploit_command, project_path, poc_path,
+def compare_output(target_output, target_exit_code, repaired_target_output, repaired_target_exit_code):
+    Emitter.normal("\t\tbefore transplantation:")
+    Emitter.program_output(target_output)
+    Emitter.normal("\t\t\t exit code:" + str(target_exit_code))
+    Emitter.normal("\t\tafter transplantation:")
+    Emitter.program_output(repaired_target_output)
+    Emitter.normal("\t\t\t exit code:" + str(repaired_target_exit_code))
+
+
+def run_exploit(target_trace_info, exploit_command, project_path, poc_path,
                    prog_output_file, crash_word_list, crash_location):
 
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+
+    target_exit_code, target_crashed, target_output_file = target_trace_info
+    target_output = ""
+    with open(target_output_file, "r") as prev_file:
+        target_output = prev_file.readlines()
+
     if crash_location == "":
         Builder.build_asan()
-        target_exit_code, target_crashed, target_output = Exploiter.run_exploit(exploit_command,
+        repaired_target_exit_code, \
+        repaired_target_crashed, \
+        repaired_target_output = Exploiter.run_exploit(exploit_command,
                                                                 project_path,
                                                                 poc_path,
                                                                 prog_output_file)
-
-        if any(crash_word in target_output.lower() for crash_word in crash_word_list):
-            target_crashed = True
-            Emitter.normal("\tprogram crashed with exit code " + str(target_exit_code))
-        else:
-            if target_exit_code != 0:
-                Emitter.normal("\tprogram exited with exit code " + str(target_exit_code))
-            else:
-                error_exit("program did not crash!!")
 
     else:
-        target_exit_code, target_crashed, target_output = Exploiter.run_exploit(exploit_command,
+        repaired_target_exit_code,\
+        repaired_target_crashed, \
+        repaired_target_output = Exploiter.run_exploit(exploit_command,
                                                                 project_path,
                                                                 poc_path,
                                                                 prog_output_file)
-        if int(target_exit_code) == int(prev_exit_code):
-            error_exit("\tprogram crashed with exit code " + str(target_exit_code))
+
+    if target_crashed:
+        if repaired_target_crashed:
+
+            Emitter.error("\tprogram crashed with exit code " + str(target_exit_code))
+            compare_output(target_output,
+                           target_exit_code,
+                           repaired_target_output,
+                           repaired_target_exit_code
+                           )
         else:
-            Emitter.normal("\tprogram did not crash!!")
-            Emitter.normal("\t\tbefore transplantation exit code " + str(prev_exit_code))
-            Emitter.normal("\t\tafter transplantation exit code " + str(target_exit_code))
+            Emitter.success("\tprogram did not crash!!")
+            compare_output(target_output,
+                           target_exit_code,
+                           repaired_target_output,
+                           repaired_target_exit_code
+                           )
+    else:
+        runtime_error_count_c = target_output.count("runtime error")
+        runtime_error_count_d = repaired_target_output.count("runtime error")
+
+        if repaired_target_crashed:
+
+            Emitter.error("\tprogram crashed with exit code " + str(target_exit_code))
+            compare_output(target_output,
+                           target_exit_code,
+                           repaired_target_output,
+                           repaired_target_exit_code
+                           )
+
+        if runtime_error_count_c <= runtime_error_count_d:
+            Emitter.error("\tprogram was not repaired!!")
+            compare_output(target_output,
+                           target_exit_code,
+                           repaired_target_output,
+                           repaired_target_exit_code
+                           )
+        elif runtime_error_count_d == 0:
+            Emitter.error("\tprogram was repaired!!")
+            compare_output(target_output,
+                           target_exit_code,
+                           repaired_target_output,
+                           repaired_target_exit_code
+                           )
+        else:
+            Emitter.success("\tprogram partially repaired!!")
+            compare_output(target_output,
+                           target_exit_code,
+                           repaired_target_output,
+                           repaired_target_exit_code
+                           )
+

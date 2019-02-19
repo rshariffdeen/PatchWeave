@@ -39,6 +39,7 @@ BUILD_COMMAND_C = ""
 PATH_POC = ""
 EXPLOIT_PREPARE = ""
 ASAN_FLAG = ""
+FILE_CONFIGURATION = ""
 
 silence_emitter = False
 

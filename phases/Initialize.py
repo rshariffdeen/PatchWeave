@@ -7,7 +7,7 @@ import sys
 from common.Utilities import execute_command
 from entities import Project
 from common import Definitions, Values
-from tools import Emitter
+from tools import Emitter, Builder
 
 
 def load_standard_list():
@@ -39,7 +39,7 @@ def create_patch_dir():
 
 
 def create_output_dir():
-    conf_file_name = Definitions.FILE_CONFIGURATION.split("/")[-1]
+    conf_file_name = Values.FILE_CONFIGURATION.split("/")[-1]
     dir_name = conf_file_name.replace(".conf", "")
     Definitions.DIRECTORY_OUTPUT = Definitions.DIRECTORY_OUTPUT_BASE + "/" + dir_name
     if not os.path.isdir(Definitions.DIRECTORY_OUTPUT):
@@ -114,3 +114,5 @@ def initialize():
     load_values()
     Emitter.sub_title("set environment")
     set_env_value()
+    if Values.SKIP_EXPLOIT:
+        Builder.soft_restore_all()

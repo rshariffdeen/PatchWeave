@@ -84,9 +84,9 @@ def program_output(output_message):
     write("\tProgram Output:", BLUE)
     if type(output_message) == list:
         for line in output_message:
-            write("\t\t" + line.strip(), GREEN)
+            write("\t\t\t" + line.strip(), GREEN)
     else:
-        write("\t\t" + output_message, GREEN)
+        write("\t\t\t" + output_message, GREEN)
 
 
 def emit_var_map(var_map):
