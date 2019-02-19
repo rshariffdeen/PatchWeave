@@ -12,6 +12,8 @@ import Identifier
 def estimate_divergent_point(path_cond_a, path_cond_b, target_sym_path, target_trace):
     Emitter.sub_sub_title("estimating divergent point in Pc")
     Emitter.normal("\textracting input bytes from div point in Pa")
+    # print(path_cond_a)
+    # print(path_cond_b)
     bytes_a = Extractor.extract_input_bytes_used(path_cond_a)
     Emitter.normal("\textracting input bytes from last path condition in Pc")
     bytes_c = Extractor.extract_input_bytes_used(path_cond_b)

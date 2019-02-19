@@ -30,7 +30,7 @@ crash_location_c = ""
 
 def trace_donor():
     global list_trace_a, list_trace_b, stack_a
-    global crash_location_a, donor_suspect_line_list
+    global crash_location_a
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
 
     project_path_a = Values.PATH_A
@@ -51,9 +51,13 @@ def trace_donor():
 
     crash_location_a = Collector.collect_crash_point(FILE_TRACE_LOG_A)
     stack_a = Collector.collect_stack_info(FILE_TRACE_LOG_A)
+    donor_suspect_line_list = list()
+    if crash_location_a == "":
+        donor_suspect_line_list = Exploit.donor_suspect_line_list
     list_trace_a = Collector.collect_trace(FILE_TRACE_LOG_A,
                                            project_path_a,
-                                           Exploit.donor_suspect_line_list)
+                                           donor_suspect_line_list
+                                           )
 
     # print(list_trace_a[-1])
     Emitter.normal(project_path_b)
@@ -73,7 +77,6 @@ def trace_donor():
 
 def trace_target():
     global list_trace_c, crash_location_c, stack_c
-    global target_suspect_line_list
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
 
     project_path_c = Values.PATH_C
@@ -93,10 +96,12 @@ def trace_target():
 
     crash_location_c = Collector.collect_crash_point(FILE_TRACE_LOG_C)
     stack_c = Collector.collect_stack_info(FILE_TRACE_LOG_C)
-
+    target_suspect_line_list = list()
+    if crash_location_c == "":
+        target_suspect_line_list = Exploit.target_suspect_line_list
     list_trace_c = Collector.collect_trace(FILE_TRACE_LOG_C,
                                            project_path_c,
-                                           Exploit.target_suspect_line_list)
+                                           target_suspect_line_list)
     # print(list_trace_c[-1])
 
 
