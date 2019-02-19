@@ -81,12 +81,12 @@ def special(message):
 
 
 def program_output(output_message):
-    write("Program Output:", BLUE)
+    write("\tProgram Output:", BLUE)
     if type(output_message) == list:
         for line in output_message:
-            write("\t" + line.strip(), GREY)
+            write("\t\t" + line.strip(), GREY)
     else:
-        write(str("\t" + output_message).strip(), GREY)
+        write("\t\t" + str(output_message).strip(), GREY)
 
 
 def warning(message):
