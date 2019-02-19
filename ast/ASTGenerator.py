@@ -41,7 +41,7 @@ def ast_dump(file_path, output_path, is_header=False):
         dump_command += " --"
     dump_command += " 2> output/errors_AST_dump > " + output_path
     a = execute_command(dump_command)
-    Emitter.warning(a[0])
+    Emitter.debug(a[0])
 
 
 def get_ast_json(file_path):

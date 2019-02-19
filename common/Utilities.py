@@ -103,7 +103,7 @@ def show_partial_diff(source_path_a, source_path_b):
     with open(output_file, 'r') as diff_file:
         diff_line = diff_file.readline().strip()
         while diff_line:
-            Emitter.normal("\t\t\t" + diff_line)
+            Emitter.special("\t\t\t" + diff_line)
             diff_line = diff_file.readline().strip()
 
 

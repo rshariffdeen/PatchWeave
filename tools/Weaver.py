@@ -5,7 +5,7 @@
 
 import sys
 import os
-from common.Utilities import execute_command, backup_file, show_partial_diff, get_code
+from common.Utilities import execute_command, backup_file, show_partial_diff, get_code, error_exit
 from common import Definitions
 import phases.Concolic
 from ast import ASTGenerator
@@ -86,7 +86,7 @@ def execute_ast_transformation(source_path_b, source_path_d, file_info):
         show_partial_diff(source_path_d, FILE_TEMP_FIX)
         execute_command(move_command)
     else:
-        Emitter.warning("\t AST transformation FAILED")
+        error_exit("\t AST transformation FAILED")
     return ret_code
 
 
@@ -240,7 +240,7 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                 #                                    source_path_b,
                 #                                    source_path_d)
                 ast_script_c.append(translated_command)
-            Writer.write_ast_script(ast_map_c, ast_script_file)
+            Writer.write_ast_script(ast_script_c, ast_script_file)
             Emitter.sub_sub_title("computing symbolic expressions for target")
             Generator.generate_symbolic_expressions(source_path_c,
                                                     line_number_c,
