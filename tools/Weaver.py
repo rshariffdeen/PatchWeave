@@ -295,8 +295,6 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                                                                   trace_list,
                                                                   var_log_a
                                                                   )
-
-        exit(1)
         # print(insertion_loc_list)
         ast_script_c = list()
         for insertion_loc in insertion_loc_list:
@@ -312,34 +310,45 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
             position_c = Finder.find_ast_node_position(function_node,
                                                        int(line_number_c))
 
+            Generator.generate_symbolic_expressions(source_path_c,
+                                                    line_number_c,
+                                                    line_number_c,
+                                                    bit_size,
+                                                    sym_poc_path,
+                                                    var_log_c,
+                                                    False)
 
-
-            Mapper.generate_symbolic_expressions(source_path_c, line_number_c, line_number_c, FILE_VAR_EXPR_LOG_C, False)
-            var_expr_map_c = Mapper.collect_symbolic_expressions(FILE_VAR_EXPR_LOG_C)
-            # print(var_expr_map_c)
-            var_map_ac = Mapper.generate_mapping(var_expr_map_a, var_expr_map_c)
-            var_map_bc = Mapper.generate_mapping(var_expr_map_b, var_expr_map_c)
+            var_expr_map_c = Collector.collect_symbolic_expressions(var_log_c)
+            var_map_ac = Mapper.map_variable(var_expr_map_a, var_expr_map_c)
+            var_map_bc = Mapper.map_variable(var_expr_map_b, var_expr_map_c)
+            ast_map_b = ASTGenerator.get_ast_json(source_path_b)
+            ast_map_a = ASTGenerator.get_ast_json(source_path_a)
             for script_line in ast_script:
                 translated_command = script_line
                 if "Insert" in script_line:
                     inserting_node_str = script_line.split(" into ")[0]
                     inserting_node_id = int((inserting_node_str.split("(")[1]).split(")")[0])
-                    inserting_node = get_ast_node_by_id(ast_map_b, inserting_node_id)
+                    inserting_node = Finder.search_ast_node_by_id(ast_map_b, inserting_node_id)
                     translated_command = inserting_node_str + " into " + position_c
-                    identify_missing_functions(inserting_node, source_path_b, source_path_d, skip_line_list)
+                    missing_function_list = Identifier.identify_missing_functions(ast_map_c,
+                                                                                  inserting_node,
+                                                                                  source_path_b,
+                                                                                  source_path_d,
+                                                                                  skip_line_list)
+
                     # identify_missing_macros(inserting_node, source_path_b, source_path_d)
                     ast_script_c.append(translated_command)
                 elif "Replace" in script_line:
                     replacing_node_str = (script_line.split(" with ")[0]).replace("Replace ", "")
                     replacing_node_id = (replacing_node_str.split("(")[1]).split(")")[0]
-                    replacing_node = get_ast_node_by_id(ast_map_a, int(replacing_node_id))
-                    target_node_str = get_matching_node(function_node, replacing_node, var_map_ac)
+                    replacing_node = Finder.search_ast_node_by_id(ast_map_a, int(replacing_node_id))
+                    target_node_str = Finder.search_matching_node(function_node, replacing_node, var_map_ac)
                     if target_node_str is None:
                         continue
                     elif "Macro" in target_node_str:
-                        print("insdie macro")
+                        print("inside macro")
                         target_node_id = int((target_node_str.split("(")[1]).split(")")[0])
-                        target_node = get_ast_node_by_id(ast_map_c, target_node_id)
+                        target_node = Finder.search_ast_node_by_id(ast_map_c, target_node_id)
                         ast_script_c.append(translated_command)
                         start_line = target_node["start line"]
                         end_line = target_node["end line"]
@@ -354,9 +363,11 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                         translated_command = script_line.replace(replacing_node_str, target_node_str)
                         ast_script_c.append(translated_command)
             # print(var_map_ac)
-            output_var_map(var_map_ac)
-            output_ast_script(ast_script_c)
-            ret_code = execute_ast_transformation(source_path_b, source_path_d)
+            Writer.write_var_map(var_map_ac, var_map_file)
+            Writer.write_ast_script(ast_script_c, ast_script_file)
+            ret_code = execute_ast_transformation(source_path_b,
+                                                  source_path_d,
+                                                  out_file_info)
             if ret_code == 0:
                 if source_path_d not in modified_source_list:
                     modified_source_list.append(source_path_d)
