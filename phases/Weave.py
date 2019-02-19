@@ -42,7 +42,6 @@ FILE_AST_SCRIPT = ""
 FILE_TEMP_FIX = ""
 
 
-
 def get_sym_path_cond(source_location):
     sym_path_cond = ""
     if Values.PATH_A in source_location:
@@ -115,18 +114,6 @@ def transplant_code():
                                                   trace_list,
                                                   estimate_loc
                                                   )
-
-
-def transplant_patch():
-    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    for diff_loc in Analyse.diff_info.keys():
-        Emitter.normal(diff_loc)
-        diff_info = Analyse.diff_info[diff_loc]
-        transplant_code(diff_info, diff_loc)
-    transplant_missing_functions()
-    transplant_missing_macros()
-    transplant_missing_header()
-    Fixer.check()
 
 
 def safe_exec(function_def, title, *args):

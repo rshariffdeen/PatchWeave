@@ -74,16 +74,13 @@ def insert_patch(patch_code, source_path, line_number):
 
 def execute_ast_transformation(source_path_b, source_path_d, file_info):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    global modified_source_list
-    skip_file, ast_script_file,var_map_file = file_info
+    skip_file, ast_script_file, var_map_file = file_info
     Emitter.normal("\t\texecuting AST transformation")
     parameters = " -map=" + var_map_file + " -script=" + ast_script_file
     parameters += " -source=" + source_path_b + " -target=" + source_path_d
     parameters += " -skip-list=" + skip_file
     transform_command = TOOL_AST_PATCH + parameters + " > " + FILE_TEMP_FIX
     ret_code = int(execute_command(transform_command))
-    if source_path_d not in modified_source_list:
-        modified_source_list.append(source_path_d)
     if ret_code == 0:
         move_command = "cp " + FILE_TEMP_FIX + " " + source_path_d
         show_partial_diff(source_path_d, FILE_TEMP_FIX)
@@ -175,6 +172,8 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
     source_path_a, line_number_a = diff_loc.split(":")
     source_path_b = str(source_path_a).replace(path_a, path_b)
     missing_function_list = dict()
+    modified_source_list = list()
+
 
     if operation == 'insert':
         start_line_b, end_line_b = diff_loc_info['new-lines']
@@ -260,6 +259,8 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                                                   source_path_d,
                                                   out_file_info)
             if ret_code == 0:
+                if source_path_d not in modified_source_list:
+                    modified_source_list.append(source_path_d)
                 break
     elif operation == 'modify':
         start_line_a, end_line_a = diff_loc_info['old-lines']
@@ -357,5 +358,7 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
             output_ast_script(ast_script_c)
             ret_code = execute_ast_transformation(source_path_b, source_path_d)
             if ret_code == 0:
+                if source_path_d not in modified_source_list:
+                    modified_source_list.append(source_path_d)
                 break
     return missing_function_list
