@@ -6,7 +6,7 @@ import sys
 import time
 from common.Utilities import error_exit
 from common import Definitions, Values
-from phases import Exploit
+import Exploit
 from tools import Collector, Converter, KleeExecutor, Logger, Emitter, Builder
 
 
@@ -96,7 +96,7 @@ def trace_target():
 
     list_trace_c = Collector.collect_trace(FILE_TRACE_LOG_C,
                                            project_path_c,
-                                           target_suspect_line_list)
+                                           Exploit.target_suspect_line_list)
     # print(list_trace_c[-1])
 
 
