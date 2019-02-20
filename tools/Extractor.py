@@ -167,7 +167,7 @@ def extract_var_ref_list(ast_node, start_line, end_line, only_in_range):
             left_var_list = extract_var_ref_list(left_side, start_line, end_line, only_in_range)
             operands_var_list = right_var_list + left_var_list
             for var_name, line_number in operands_var_list:
-                var_list.append((var_name, insert_line_number))
+                var_list.append((str(var_name), insert_line_number))
             return var_list
     if node_type == "DeclRefExpr":
         line_number = int(ast_node['start line'])
@@ -175,14 +175,14 @@ def extract_var_ref_list(ast_node, start_line, end_line, only_in_range):
             ref_type = ast_node['ref_type']
             if ref_type == "FunctionDecl":
                 return var_list
-        var_name = ast_node['value']
+        var_name = str(ast_node['value'])
         var_list.append((var_name, line_number))
     if node_type in ["MemberExpr"]:
         var_name, auxilary_list = Converter.convert_member_expr(ast_node)
         line_number = int(ast_node['start line'])
-        var_list.append((var_name, line_number))
+        var_list.append((str(var_name), line_number))
         for aux_var_name in auxilary_list:
-            var_list.append((aux_var_name, line_number))
+            var_list.append((str(aux_var_name), line_number))
         return var_list
     if node_type in ["ForStmt"]:
         body_node = ast_node['children'][child_count - 1]
@@ -191,7 +191,7 @@ def extract_var_ref_list(ast_node, start_line, end_line, only_in_range):
             condition_node = ast_node['children'][i]
             condition_node_var_list = extract_var_ref_list(condition_node, start_line, end_line, only_in_range)
             for var_name, line_number in condition_node_var_list:
-                var_list.append((var_name, insert_line))
+                var_list.append((str(var_name), insert_line))
         var_list = var_list + extract_var_ref_list(body_node, start_line, end_line, only_in_range)
         return var_list
     if node_type in ["IfStmt"]:
@@ -200,7 +200,7 @@ def extract_var_ref_list(ast_node, start_line, end_line, only_in_range):
         insert_line = body_node['start line']
         condition_node_var_list = extract_var_ref_list(condition_node, start_line, end_line, only_in_range)
         for var_name, line_number in condition_node_var_list:
-            var_list.append((var_name, insert_line))
+            var_list.append((str(var_name), insert_line))
         var_list = var_list + extract_var_ref_list(body_node, start_line, end_line, only_in_range)
         return var_list
     if node_type in ["CallExpr"]:
@@ -211,13 +211,13 @@ def extract_var_ref_list(ast_node, start_line, end_line, only_in_range):
                 if child_node_type == "DeclRefExpr":
                     ref_type = child_node['ref_type']
                     if ref_type == "VarDecl":
-                        var_name = child_node['value']
+                        var_name = str(child_node['value'])
                         var_list.append((var_name, line_number))
                 if child_node_type == "MemberExpr":
                     var_name, auxilary_list = Converter.convert_member_expr(child_node)
-                    var_list.append((var_name, line_number))
+                    var_list.append((str(var_name), line_number))
                     for aux_var_name in auxilary_list:
-                        var_list.append((aux_var_name, line_number))
+                        var_list.append((str(aux_var_name), line_number))
         return var_list
     if child_count:
         for child_node in ast_node['children']:
