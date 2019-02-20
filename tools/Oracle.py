@@ -30,7 +30,6 @@ def is_var_expr_equal(z3_code):
         error_exit("Error Z3")
 
 
-
 def is_node_equal(node_a, node_b, var_map):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     node_type_a = str(node_a['type'])

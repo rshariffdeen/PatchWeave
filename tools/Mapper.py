@@ -30,7 +30,7 @@ def map_variable(var_map_a, var_map_b):
             # print(sym_expr)
             input_bytes_b = Extractor.extract_input_bytes_used(sym_expr_b)
             # print(input_bytes_b)
-            if input_bytes_a == input_bytes_b:
+            if input_bytes_a and (input_bytes_a == input_bytes_b):
                 z3_eq_code = Generator.generate_z3_code_for_equivalence(sym_expr_a, sym_expr_b)
                 if Oracle.is_var_expr_equal(z3_eq_code):
                     candidate_list.append(var_b)
@@ -46,7 +46,7 @@ def map_variable(var_map_a, var_map_b):
                     best_candidate = var_b
                 elif l_distance == distance:
                     print(best_candidate, distance)
-                    print(l_distance, var_b)
+                    print(var_b, l_distance)
                     error_exit("more than one candidate")
             var_map[var_a] = best_candidate
     return var_map

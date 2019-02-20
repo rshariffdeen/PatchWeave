@@ -165,7 +165,7 @@ def identify_insertion_points(candidate_function):
         # print(unique_var_name_list)
         score = len(list(set(unique_var_name_list).intersection(var_map.values())))
         Emitter.normal("\t\t\t\tscore: " + str(score))
-        insertion_point_list[source_path + ":" + str(exec_line)] = score
+        insertion_point_list[exec_line] = score
         if score > best_score:
             best_score = score
 

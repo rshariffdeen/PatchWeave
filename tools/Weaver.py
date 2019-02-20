@@ -225,7 +225,7 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
         ast_map_a = ASTGenerator.get_ast_json(source_path_a)
         ast_map_b = ASTGenerator.get_ast_json(source_path_b)
 
-        Emitter.normal("\t\t" + best_candidate_insertion_loc)
+        Emitter.normal("\t\t" + str(best_candidate_insertion_loc))
         source_path_c, line_number_c = best_candidate_insertion_loc.split(":")
         ast_map_c = ASTGenerator.get_ast_json(source_path_c)
         source_path_d = source_path_c.replace(path_c, path_d)
@@ -319,7 +319,7 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
 
         best_candidate_function_info = insertion_function_list[best_candidate_function_id]
         best_candidate_function = best_candidate_function_id, best_candidate_function_info
-        source_path, function_name = best_candidate_function_id.split(":")
+        source_path_c, function_name = best_candidate_function_id.split(":")
         Emitter.success("\n\t\tBest candidate function: " + function_name + '\n')
         Emitter.sub_sub_title("generating candidate insertion point list")
         insertion_loc_list, loc_best_score = Identifier.identify_insertion_points(best_candidate_function)
@@ -330,8 +330,8 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
         # print(insertion_loc_list)
         ast_script_c = list()
 
-        Emitter.normal("\t\t" + best_candidate_insertion_loc)
-        source_path_c, line_number_c = best_candidate_insertion_loc.split(":")
+        Emitter.normal("\t\t" + str(best_candidate_insertion_loc))
+        line_number_c = best_candidate_insertion_loc
         source_path_d = source_path_c.replace(path_c, path_d)
         ast_map_c = ASTGenerator.get_ast_json(source_path_c)
         # print(insertion_loc)
