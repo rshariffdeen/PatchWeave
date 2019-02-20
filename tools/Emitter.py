@@ -13,6 +13,8 @@ ROSE = '\t\x1b[1;35m'
 CYAN = '\x1b[1;36m'
 WHITE = '\t\x1b[1;37m'
 
+PROG_OUTPUT_COLOR = '\t\x1b[0;30;47m'
+
 
 def write(print_message, print_color, new_line=True):
     if not Values.silence_emitter:
@@ -81,12 +83,12 @@ def special(message):
 
 
 def program_output(output_message):
-    write("\tProgram Output:", WHITE)
+    write("\t\tProgram Output:", WHITE)
     if type(output_message) == list:
         for line in output_message:
-            write("\t\t\t" + line.strip(), GREEN)
+            write("\t\t\t" + line.strip(), PROG_OUTPUT_COLOR)
     else:
-        write("\t\t\t" + output_message, GREEN)
+        write("\t\t\t" + output_message, PROG_OUTPUT_COLOR)
 
 
 def emit_var_map(var_map):

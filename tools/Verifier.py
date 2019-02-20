@@ -17,7 +17,7 @@ def run_compilation():
 def compare_output(target_output, target_exit_code, repaired_target_output, repaired_target_exit_code):
     Emitter.sub_sub_title("before transplantation")
     Emitter.program_output(target_output)
-    Emitter.normal("\t\t\t exit code: " + str(target_exit_code))
+    Emitter.normal("\t\t exit code: " + str(target_exit_code))
     Emitter.sub_sub_title("after transplantation")
     Emitter.program_output(repaired_target_output)
     Emitter.normal("\t\t exit code: " + str(repaired_target_exit_code))
