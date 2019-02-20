@@ -190,12 +190,13 @@ def filter_best_candidate_function(function_list, best_score):
 
 
 def filter_best_candidate_loc(loc_list, best_score):
-    best_candidate = None
+    best_candidate = 0
     for loc in loc_list:
         score = loc_list[loc]
         if score == best_score:
             if best_candidate is None:
-                best_candidate = loc
+                best_candidate = int(loc)
             else:
-                error_exit("More than ONE best candidate loc")
-    return best_candidate
+                if best_candidate > loc:
+                    best_candidate = int(loc)
+    return best_candidate + 1

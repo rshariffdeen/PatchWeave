@@ -147,7 +147,7 @@ def identify_insertion_points(candidate_function):
     var_map = function_info['var-map']
     # don't include the last line (possible crash line)
     best_score = 0
-    print(var_map.values())
+    # print(var_map.values())
     for exec_line in exec_line_list:
         # if exec_line == last_line:
         #     continue
@@ -156,9 +156,14 @@ def identify_insertion_points(candidate_function):
                                                              start_line,
                                                              exec_line,
                                                              True)
-        print(exec_line)
-        print(available_var_list)
-        score = len(list(set(available_var_list).intersection(var_map.values())))
+        unique_var_name_list = list()
+        for (var_name, line_num) in available_var_list:
+            if var_name not in unique_var_name_list:
+                unique_var_name_list.append(var_name)
+
+        # print(exec_line)
+        # print(unique_var_name_list)
+        score = len(list(set(unique_var_name_list).intersection(var_map.values())))
         insertion_point_list[source_path + ":" + str(exec_line)] = score
         if score > best_score:
             best_score = score
