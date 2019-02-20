@@ -218,71 +218,67 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
         Emitter.success("\n\t\tBest candidate function: " + function_name + '\n')
         Emitter.sub_sub_title("generating candidate insertion point list")
         insertion_loc_list, loc_best_score = Identifier.identify_insertion_points(best_candidate_function)
-        print(insertion_loc_list)
         best_candidate_insertion_loc = Filter.filter_best_candidate_loc(insertion_loc_list, loc_best_score)
-        Emitter.success("Best candidate location: " + function_name + ":" + best_candidate_insertion_loc + '\n')
+        Emitter.success("\n\t\tBest candidate location: " + function_name + ":" + str(best_candidate_insertion_loc) + '\n')
         ast_script_c = list()
         Emitter.sub_sub_title("generating patch for insertion point")
         ast_map_a = ASTGenerator.get_ast_json(source_path_a)
         ast_map_b = ASTGenerator.get_ast_json(source_path_b)
 
-        for insertion_loc in insertion_loc_list:
-            Emitter.normal("\t\t" + insertion_loc)
-            source_path_c, line_number_c = insertion_loc.split(":")
-            ast_map_c = ASTGenerator.get_ast_json(source_path_c)
-            source_path_d = source_path_c.replace(path_c, path_d)
-            function_node = Finder.search_function_node_by_loc(ast_map_c,
-                                                               int(line_number_c),
-                                                               source_path_c)
+        Emitter.normal("\t\t" + best_candidate_insertion_loc)
+        source_path_c, line_number_c = best_candidate_insertion_loc.split(":")
+        ast_map_c = ASTGenerator.get_ast_json(source_path_c)
+        source_path_d = source_path_c.replace(path_c, path_d)
+        function_node = Finder.search_function_node_by_loc(ast_map_c,
+                                                           int(line_number_c),
+                                                           source_path_c)
 
-            position_c = Finder.find_ast_node_position(function_node,
-                                                       int(line_number_c))
-            Emitter.normal("\t\t\tgenerating AST script")
-            for script_line in ast_script:
-                inserting_node_str = script_line.split(" into ")[0]
-                inserting_node_id = int((inserting_node_str.split("(")[1]).split(")")[0])
-                inserting_node = Finder.search_ast_node_by_id(ast_map_b,
-                                                              inserting_node_id)
-                translated_command = inserting_node_str + " into " + position_c + "\n"
-                missing_function_list = Identifier.identify_missing_functions(ast_map_c,
-                                                      inserting_node,
-                                                      source_path_b,
-                                                      source_path_d,
-                                                      skip_line_list)
+        position_c = Finder.find_ast_node_position(function_node, int(line_number_c))
+        Emitter.normal("\t\t\tgenerating AST script")
+        for script_line in ast_script:
+            inserting_node_str = script_line.split(" into ")[0]
+            inserting_node_id = int((inserting_node_str.split("(")[1]).split(")")[0])
+            inserting_node = Finder.search_ast_node_by_id(ast_map_b, inserting_node_id)
+            translated_command = inserting_node_str + " into " + position_c + "\n"
+            missing_function_list = Identifier.identify_missing_functions(ast_map_c,
+                                                                          inserting_node,
+                                                                          source_path_b,
+                                                                          source_path_d,
+                                                                          skip_line_list)
 
-                # Identifier.identify_missing_macros(inserting_node,
-                #                                    source_path_b,
-                #                                    source_path_d)
-                ast_script_c.append(translated_command)
-            Writer.write_ast_script(ast_script_c, ast_script_file)
-            Emitter.sub_sub_title("computing symbolic expressions for target")
-            Generator.generate_symbolic_expressions(source_path_c,
-                                                    line_number_c,
-                                                    line_number_c,
-                                                    bit_size,
-                                                    sym_poc_path,
-                                                    var_log_c,
-                                                    False
-                                                    )
+            # Identifier.identify_missing_macros(inserting_node,
+            #                                    source_path_b,
+            #                                    source_path_d)
+            ast_script_c.append(translated_command)
+        Writer.write_ast_script(ast_script_c, ast_script_file)
+        Emitter.sub_sub_title("computing symbolic expressions for target")
+        Generator.generate_symbolic_expressions(source_path_c,
+                                                line_number_c,
+                                                line_number_c,
+                                                bit_size,
+                                                sym_poc_path,
+                                                var_log_c,
+                                                False
+                                                )
 
-            var_expr_map_c = Collector.collect_symbolic_expressions(var_log_c)
-            # print(var_expr_map_b)
-            # print(var_expr_map_c)
-            Emitter.sub_sub_title("generating variable mapping from donor to target")
-            var_map = Mapper.map_variable(var_expr_map_b, var_expr_map_c)
+        var_expr_map_c = Collector.collect_symbolic_expressions(var_log_c)
+        # print(var_expr_map_b)
+        # print(var_expr_map_c)
+        Emitter.sub_sub_title("generating variable mapping from donor to target")
+        var_map = Mapper.map_variable(var_expr_map_b, var_expr_map_c)
 
-            # print(var_map)
-            # print(ast_script_c)
-            Emitter.emit_var_map(var_map)
-            Emitter.emit_ast_script(ast_script_c)
-            Writer.write_var_map(var_map, var_map_file)
-            ret_code = execute_ast_transformation(source_path_b,
+        # print(var_map)
+        # print(ast_script_c)
+        Emitter.emit_var_map(var_map)
+        Emitter.emit_ast_script(ast_script_c)
+        Writer.write_var_map(var_map, var_map_file)
+        ret_code = execute_ast_transformation(source_path_b,
                                                   source_path_d,
                                                   out_file_info)
-            if ret_code == 0:
-                if source_path_d not in modified_source_list:
-                    modified_source_list.append(source_path_d)
-                break
+        if ret_code == 0:
+            if source_path_d not in modified_source_list:
+                modified_source_list.append(source_path_d)
+
     elif operation == 'modify':
         start_line_a, end_line_a = diff_loc_info['old-lines']
         start_line_b, end_line_b = diff_loc_info['new-lines']
@@ -309,88 +305,103 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
 
         var_expr_map_a = Collector.collect_symbolic_expressions(var_log_a)
         # print(var_expr_map_a)
-        insertion_loc_list = Identifier.identify_insertion_points(estimate_loc,
-                                                                  var_expr_map_a,
-                                                                  bit_size,
-                                                                  sym_poc_path,
-                                                                  trace_list,
-                                                                  var_log_a
-                                                                  )
+
+        insertion_function_list, function_best_score = Generator.generate_candidate_function_list(estimate_loc,
+                                                                                                  var_expr_map_a,
+                                                                                                  bit_size,
+                                                                                                  sym_poc_path,
+                                                                                                  trace_list,
+                                                                                                  var_log_a
+                                                                                                  )
+        best_candidate_function_id = Filter.filter_best_candidate_function(insertion_function_list,
+                                                                           function_best_score
+                                                                           )
+
+        best_candidate_function_info = insertion_function_list[best_candidate_function_id]
+        best_candidate_function = best_candidate_function_id, best_candidate_function_info
+        source_path, function_name = best_candidate_function_id.split(":")
+        Emitter.success("\n\t\tBest candidate function: " + function_name + '\n')
+        Emitter.sub_sub_title("generating candidate insertion point list")
+        insertion_loc_list, loc_best_score = Identifier.identify_insertion_points(best_candidate_function)
+        best_candidate_insertion_loc = Filter.filter_best_candidate_loc(insertion_loc_list, loc_best_score)
+        Emitter.success(
+            "\n\t\tBest candidate location: " + function_name + ":" + str(best_candidate_insertion_loc) + '\n')
+
         # print(insertion_loc_list)
         ast_script_c = list()
-        for insertion_loc in insertion_loc_list:
-            Emitter.normal("\t\t" + insertion_loc)
-            source_path_c, line_number_c = insertion_loc.split(":")
-            source_path_d = source_path_c.replace(path_c, path_d)
-            ast_map_c = ASTGenerator.get_ast_json(source_path_c)
-            # print(insertion_loc)
-            function_node = Finder.search_function_node_by_loc(ast_map_c,
-                                                               int(line_number_c),
-                                                               source_path_c)
 
-            position_c = Finder.find_ast_node_position(function_node,
-                                                       int(line_number_c))
+        Emitter.normal("\t\t" + best_candidate_insertion_loc)
+        source_path_c, line_number_c = best_candidate_insertion_loc.split(":")
+        source_path_d = source_path_c.replace(path_c, path_d)
+        ast_map_c = ASTGenerator.get_ast_json(source_path_c)
+        # print(insertion_loc)
+        function_node = Finder.search_function_node_by_loc(ast_map_c,
+                                                           int(line_number_c),
+                                                           source_path_c)
 
-            Generator.generate_symbolic_expressions(source_path_c,
-                                                    line_number_c,
-                                                    line_number_c,
-                                                    bit_size,
-                                                    sym_poc_path,
-                                                    var_log_c,
-                                                    False)
+        position_c = Finder.find_ast_node_position(function_node,
+                                                   int(line_number_c))
 
-            var_expr_map_c = Collector.collect_symbolic_expressions(var_log_c)
-            var_map_ac = Mapper.map_variable(var_expr_map_a, var_expr_map_c)
-            var_map_bc = Mapper.map_variable(var_expr_map_b, var_expr_map_c)
-            ast_map_b = ASTGenerator.get_ast_json(source_path_b)
-            ast_map_a = ASTGenerator.get_ast_json(source_path_a)
-            for script_line in ast_script:
-                translated_command = script_line
-                if "Insert" in script_line:
-                    inserting_node_str = script_line.split(" into ")[0]
-                    inserting_node_id = int((inserting_node_str.split("(")[1]).split(")")[0])
-                    inserting_node = Finder.search_ast_node_by_id(ast_map_b, inserting_node_id)
-                    translated_command = inserting_node_str + " into " + position_c
-                    missing_function_list = Identifier.identify_missing_functions(ast_map_c,
-                                                                                  inserting_node,
-                                                                                  source_path_b,
-                                                                                  source_path_d,
-                                                                                  skip_line_list)
+        Generator.generate_symbolic_expressions(source_path_c,
+                                                line_number_c,
+                                                line_number_c,
+                                                bit_size,
+                                                sym_poc_path,
+                                                var_log_c,
+                                                False)
 
-                    # identify_missing_macros(inserting_node, source_path_b, source_path_d)
+        var_expr_map_c = Collector.collect_symbolic_expressions(var_log_c)
+        var_map_ac = Mapper.map_variable(var_expr_map_a, var_expr_map_c)
+        var_map_bc = Mapper.map_variable(var_expr_map_b, var_expr_map_c)
+        ast_map_b = ASTGenerator.get_ast_json(source_path_b)
+        ast_map_a = ASTGenerator.get_ast_json(source_path_a)
+        for script_line in ast_script:
+            translated_command = script_line
+            if "Insert" in script_line:
+                inserting_node_str = script_line.split(" into ")[0]
+                inserting_node_id = int((inserting_node_str.split("(")[1]).split(")")[0])
+                inserting_node = Finder.search_ast_node_by_id(ast_map_b, inserting_node_id)
+                translated_command = inserting_node_str + " into " + position_c
+                missing_function_list = Identifier.identify_missing_functions(ast_map_c,
+                                                                              inserting_node,
+                                                                              source_path_b,
+                                                                              source_path_d,
+                                                                              skip_line_list)
+
+                # identify_missing_macros(inserting_node, source_path_b, source_path_d)
+                ast_script_c.append(translated_command)
+            elif "Replace" in script_line:
+                replacing_node_str = (script_line.split(" with ")[0]).replace("Replace ", "")
+                replacing_node_id = (replacing_node_str.split("(")[1]).split(")")[0]
+                replacing_node = Finder.search_ast_node_by_id(ast_map_a, int(replacing_node_id))
+                target_node_str = Finder.search_matching_node(function_node, replacing_node, var_map_ac)
+                if target_node_str is None:
+                    continue
+                elif "Macro" in target_node_str:
+                    print("inside macro")
+                    target_node_id = int((target_node_str.split("(")[1]).split(")")[0])
+                    target_node = Finder.search_ast_node_by_id(ast_map_c, target_node_id)
                     ast_script_c.append(translated_command)
-                elif "Replace" in script_line:
-                    replacing_node_str = (script_line.split(" with ")[0]).replace("Replace ", "")
-                    replacing_node_id = (replacing_node_str.split("(")[1]).split(")")[0]
-                    replacing_node = Finder.search_ast_node_by_id(ast_map_a, int(replacing_node_id))
-                    target_node_str = Finder.search_matching_node(function_node, replacing_node, var_map_ac)
-                    if target_node_str is None:
-                        continue
-                    elif "Macro" in target_node_str:
-                        print("inside macro")
-                        target_node_id = int((target_node_str.split("(")[1]).split(")")[0])
-                        target_node = Finder.search_ast_node_by_id(ast_map_c, target_node_id)
-                        ast_script_c.append(translated_command)
-                        start_line = target_node["start line"]
-                        end_line = target_node["end line"]
-                        original_patch = ""
-                        for i in range(int(start_line), int(end_line + 1)):
-                            original_patch += get_code(source_path_b, int(i)) + "\n"
-                            print(original_patch)
-                        translated_patch = translate_code(original_patch, var_map_ac)
-                        print(translated_patch)
-                        insert_code(translated_patch, source_path_c, line_number_c)
-                    else:
-                        translated_command = script_line.replace(replacing_node_str, target_node_str)
-                        ast_script_c.append(translated_command)
-            # print(var_map_ac)
-            Writer.write_var_map(var_map_ac, var_map_file)
-            Writer.write_ast_script(ast_script_c, ast_script_file)
-            ret_code = execute_ast_transformation(source_path_b,
-                                                  source_path_d,
-                                                  out_file_info)
-            if ret_code == 0:
-                if source_path_d not in modified_source_list:
-                    modified_source_list.append(source_path_d)
-                break
+                    start_line = target_node["start line"]
+                    end_line = target_node["end line"]
+                    original_patch = ""
+                    for i in range(int(start_line), int(end_line + 1)):
+                        original_patch += get_code(source_path_b, int(i)) + "\n"
+                        print(original_patch)
+                    translated_patch = translate_code(original_patch, var_map_ac)
+                    print(translated_patch)
+                    insert_code(translated_patch, source_path_c, line_number_c)
+                else:
+                    translated_command = script_line.replace(replacing_node_str, target_node_str)
+                    ast_script_c.append(translated_command)
+        # print(var_map_ac)
+        Writer.write_var_map(var_map_ac, var_map_file)
+        Writer.write_ast_script(ast_script_c, ast_script_file)
+        ret_code = execute_ast_transformation(source_path_b,
+                                              source_path_d,
+                                              out_file_info)
+        if ret_code == 0:
+            if source_path_d not in modified_source_list:
+                modified_source_list.append(source_path_d)
+
     return modified_source_list, missing_function_list
