@@ -18,6 +18,7 @@ import Collector
 import Emitter
 import Writer
 import Finder
+import Filter
 import Extractor
 
 
@@ -199,14 +200,27 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
 
         var_expr_map_b = Collector.collect_symbolic_expressions(var_log_b)
         # print(var_expr_map_b)
-        insertion_loc_list = Identifier.identify_insertion_points(estimate_loc,
-                                                                  var_expr_map_b,
-                                                                  bit_size,
-                                                                  sym_poc_path,
-                                                                  trace_list,
-                                                                  var_log_c
-                                                                  )
+        Emitter.sub_sub_title("generating candidate function list")
+        insertion_function_list, function_best_score = Generator.generate_candidate_function_list(estimate_loc,
+                                                                                                  var_expr_map_b,
+                                                                                                  bit_size,
+                                                                                                  sym_poc_path,
+                                                                                                  trace_list,
+                                                                                                  var_log_c
+                                                                                                  )
+        best_candidate_function_id = Filter.filter_best_candidate_function(insertion_function_list,
+                                                                           function_best_score
+                                                                           )
 
+        best_candidate_function_info = insertion_function_list[best_candidate_function_id]
+        best_candidate_function = best_candidate_function_id, best_candidate_function_info
+        source_path, function_name = best_candidate_function_id.split(":")
+        Emitter.success("\n\t\tBest candidate function: " + function_name + '\n')
+        Emitter.sub_sub_title("generating candidate insertion point list")
+        insertion_loc_list, loc_best_score = Identifier.identify_insertion_points(best_candidate_function)
+        print(insertion_loc_list)
+        best_candidate_insertion_loc = Filter.filter_best_candidate_loc(insertion_loc_list, loc_best_score)
+        Emitter.success("Best candidate location: " + function_name + ":" + best_candidate_insertion_loc + '\n')
         ast_script_c = list()
         Emitter.sub_sub_title("generating patch for insertion point")
         ast_map_a = ASTGenerator.get_ast_json(source_path_a)

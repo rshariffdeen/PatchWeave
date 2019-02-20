@@ -135,32 +135,35 @@ def identify_missing_macros(function_node, source_file, target_file):
     return missing_macro_list
 
 
-def identify_insertion_points(estimated_loc, var_expr_map,
-                              bit_size, sym_poc_path,
-                              trace_list, var_expr_log):
+def identify_insertion_points(candidate_function):
+
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    insertion_point_list = list()
-    function_list = Generator.generate_candidate_function_list(estimated_loc,
-                                                               var_expr_map,
-                                                               bit_size,
-                                                               sym_poc_path,
-                                                               trace_list,
-                                                               var_expr_log
-                                                               )
-    Emitter.sub_sub_title("generating candidate insertion point list")
-    for function_id in function_list:
-        source_path, function_name = function_id.split(":")
-        info = function_list[function_id]
-        start_line = int(info['begin-line'])
-        last_line = int(info['last-line'])
-        exec_line_list = info['exec-lines']
-        # don't include the last line (possible crash line)
-        for exec_line in exec_line_list:
-            # if exec_line == last_line:
-            #     continue
-            Emitter.special("\t\t" + source_path + "-" + function_name + ":" + str(exec_line))
-            insertion_point_list.append(source_path + ":" + str(exec_line))
-    return insertion_point_list
+    insertion_point_list = dict()
+    function_id, function_info = candidate_function
+    source_path, function_name = function_id.split(":")
+    start_line = int(function_info['begin-line'])
+    last_line = int(function_info['last-line'])
+    exec_line_list = function_info['exec-lines']
+    var_map = function_info['var-map']
+    # don't include the last line (possible crash line)
+    best_score = 0
+    print(var_map.values())
+    for exec_line in exec_line_list:
+        # if exec_line == last_line:
+        #     continue
+        Emitter.special("\t\t" + source_path + "-" + function_name + ":" + str(exec_line))
+        available_var_list = Extractor.extract_variable_list(source_path,
+                                                             start_line,
+                                                             exec_line,
+                                                             True)
+        print(exec_line)
+        print(available_var_list)
+        score = len(list(set(available_var_list).intersection(var_map.values())))
+        insertion_point_list[source_path + ":" + str(exec_line)] = score
+        if score > best_score:
+            best_score = score
+
+    return insertion_point_list, best_score
 
 
 def identify_divergent_point(byte_list, sym_path_list, trace_list):

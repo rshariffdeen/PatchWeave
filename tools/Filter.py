@@ -7,6 +7,7 @@ import Finder
 import Emitter
 import Extractor
 import Logger
+from common.Utilities import error_exit
 
 
 def filter_trace_list_by_loc(trace_list, estimate_loc):
@@ -173,3 +174,28 @@ def filter_ast_script_by_skip_line(ast_script, ast_node_a, ast_node_b, skip_line
             else:
                 filtered_ast_script.append(script_line)
     return filtered_ast_script
+
+
+def filter_best_candidate_function(function_list, best_score):
+    best_candidate = None
+    for function_id in function_list:
+        info = function_list[function_id]
+        score = info['score']
+        if score == best_score:
+            if best_candidate is None:
+                best_candidate = function_id
+            else:
+                error_exit("More than ONE best candidate function")
+    return best_candidate
+
+
+def filter_best_candidate_loc(loc_list, best_score):
+    best_candidate = None
+    for loc in loc_list:
+        score = loc_list[loc]
+        if score == best_score:
+            if best_candidate is None:
+                best_candidate = loc
+            else:
+                error_exit("More than ONE best candidate loc")
+    return best_candidate

@@ -68,7 +68,6 @@ def generate_candidate_function_list(estimate_loc, var_expr_map,
                                      bit_size, sym_poc_path,
                                      trace_list, var_expr_log):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Emitter.sub_sub_title("generating candidate insertion function list")
     Emitter.normal("\t\tgenerating candidate function list")
     filtered_trace_list = Filter.filter_trace_list_by_loc(trace_list, estimate_loc)
     source_list_c = Extractor.extract_source_list(filtered_trace_list)
@@ -77,6 +76,7 @@ def generate_candidate_function_list(estimate_loc, var_expr_map,
                                                                   filtered_trace_list)
     # print(trace_function_list)
     candidate_function_list = dict()
+    best_score = 0
     for function_id in trace_function_list:
         Emitter.special("\t" + function_id)
         source_path, function_name = str(function_id).split(":")
@@ -105,9 +105,12 @@ def generate_candidate_function_list(estimate_loc, var_expr_map,
         info['begin-line'] = begin_line
         info['last-line'] = last_line
         info['exec-lines'] = function_info['lines']
-        info['score'] = len(var_map)
+        score = len(var_map)
+        info['score'] = score
+        if score > best_score:
+            best_score = score
         candidate_function_list[function_id] = info
-    return candidate_function_list
+    return candidate_function_list, best_score
 
 
 def generate_z3_code_for_expr(var_expr, var_name, bit_size):

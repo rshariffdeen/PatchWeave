@@ -150,7 +150,7 @@ def set_values():
 
 def weave():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Emitter.title("repairing bug")
+    Emitter.title("Repairing vulnerability")
     set_values()
     safe_exec(transplant_code, "transplanting code")
     safe_exec(transplant_missing_functions, "transplanting functions")
