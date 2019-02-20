@@ -20,20 +20,21 @@ def map_variable(var_map_a, var_map_b):
     for var_a in var_map_a:
         # print(var_a)
         sym_expr_a = Generator.generate_z3_code_for_var(var_map_a[var_a], var_a)
-        # print(sym_expr)
+        # print(sym_expr_a)
         input_bytes_a = Extractor.extract_input_bytes_used(sym_expr_a)
         # print(input_bytes_a)
         candidate_list = list()
         for var_b in var_map_b:
             # print(var_b)
             sym_expr_b = Generator.generate_z3_code_for_var(var_map_b[var_b], var_b)
-            # print(sym_expr)
+            # print(sym_expr_b)
             input_bytes_b = Extractor.extract_input_bytes_used(sym_expr_b)
             # print(input_bytes_b)
             if input_bytes_a and (input_bytes_a == input_bytes_b):
                 z3_eq_code = Generator.generate_z3_code_for_equivalence(sym_expr_a, sym_expr_b)
                 if Oracle.is_var_expr_equal(z3_eq_code):
                     candidate_list.append(var_b)
+            # print(candidate_list)
         if len(candidate_list) == 1:
             var_map[var_a] = candidate_list[0]
         elif len(candidate_list) > 1:

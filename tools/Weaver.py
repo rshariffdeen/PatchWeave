@@ -286,7 +286,7 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
         Writer.write_skip_list(skip_line_list, skip_list_file)
         line_range_a = (start_line_a, end_line_a)
         line_range_b = (start_line_b, end_line_b)
-
+        Emitter.sub_sub_title("computing symbolic expressions for Donor")
         Generator.generate_symbolic_expressions(source_path_b,
                                                 start_line_b,
                                                 end_line_b,
@@ -305,13 +305,13 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
 
         var_expr_map_a = Collector.collect_symbolic_expressions(var_log_a)
         # print(var_expr_map_a)
-
+        Emitter.sub_sub_title("generating candidate function list")
         insertion_function_list, function_best_score = Generator.generate_candidate_function_list(estimate_loc,
                                                                                                   var_expr_map_a,
                                                                                                   bit_size,
                                                                                                   sym_poc_path,
                                                                                                   trace_list,
-                                                                                                  var_log_a
+                                                                                                  var_log_c
                                                                                                   )
         best_candidate_function_id = Filter.filter_best_candidate_function(insertion_function_list,
                                                                            function_best_score
@@ -329,8 +329,6 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
 
         # print(insertion_loc_list)
         ast_script_c = list()
-
-        Emitter.normal("\t\t" + str(best_candidate_insertion_loc))
         line_number_c = best_candidate_insertion_loc
         source_path_d = source_path_c.replace(path_c, path_d)
         ast_map_c = ASTGenerator.get_ast_json(source_path_c)
@@ -342,6 +340,7 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
         position_c = Finder.find_ast_node_position(function_node,
                                                    int(line_number_c))
 
+        Emitter.sub_sub_title("computing symbolic expressions for target")
         Generator.generate_symbolic_expressions(source_path_c,
                                                 line_number_c,
                                                 line_number_c,
@@ -352,6 +351,8 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
 
         var_expr_map_c = Collector.collect_symbolic_expressions(var_log_c)
         Emitter.sub_sub_title("generating variable mapping from donor to target")
+        # print(var_expr_map_a)
+        # print(var_expr_map_c)
         var_map_ac = Mapper.map_variable(var_expr_map_a, var_expr_map_c)
         var_map_bc = Mapper.map_variable(var_expr_map_b, var_expr_map_c)
         ast_map_b = ASTGenerator.get_ast_json(source_path_b)

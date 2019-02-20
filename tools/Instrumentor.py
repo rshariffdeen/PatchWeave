@@ -14,21 +14,29 @@ import Extractor
 def instrument_klee_var_expr(source_path, start_line, end_line, only_in_range):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Emitter.normal("\t\t\tinstrumenting source code")
-    variable_list = Extractor.extract_variable_list(source_path, start_line, end_line, only_in_range)
-
+    orig_variable_list = Extractor.extract_variable_list(source_path, start_line, end_line, only_in_range)
     if not only_in_range:
         syntax_format_command = "clang-tidy " + source_path + " -fix -checks=\"readability-braces-around-statements\""
         ret_code = execute_command(syntax_format_command)
         if int(ret_code) != 0:
             error_exit("SYNTAX FORMAT ERROR IN INSTRUMENTATION")
-    print(variable_list)
+    formatted_variable_list = Extractor.extract_variable_list(source_path, start_line, end_line, False)
+    # print(variable_list)
     insert_code = dict()
     instrument_code = ""
-    for variable, line_number in variable_list:
-        if line_number in insert_code.keys():
-            insert_code[line_number] += "klee_print_expr(\"[var-expr] " + variable + "\", " + variable + ");\n"
+    index = 0
+    # TODO: very expensive loop, need to optimize
+    for variable, line_number in orig_variable_list:
+        insert_line_number = 0
+        for formatted_pair in formatted_variable_list:
+            form_variable, form_line_number = formatted_pair
+            if form_variable == variable:
+                insert_line_number = form_line_number
+                formatted_variable_list.remove(formatted_pair)
+        if insert_line_number in insert_code.keys():
+            insert_code[insert_line_number] += "klee_print_expr(\"[var-expr] " + variable + "\", " + variable + ");\n"
         else:
-            insert_code[line_number] = "klee_print_expr(\"[var-expr] " + variable + "\", " + variable + ");\n"
+            insert_code[insert_line_number] = "klee_print_expr(\"[var-expr] " + variable + "\", " + variable + ");\n"
 
     sorted_insert_code = collections.OrderedDict(sorted(insert_code.items(), reverse=True))
     # print(sorted_insert_code)

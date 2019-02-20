@@ -194,7 +194,7 @@ def filter_best_candidate_function(function_list, best_score):
 def filter_best_candidate_loc(loc_list, best_score):
     best_candidate = 0
     for loc in loc_list:
-        print(loc)
+        # print(loc)
         score = loc_list[loc]
         if score == best_score:
             if best_candidate == 0:
