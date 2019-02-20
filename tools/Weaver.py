@@ -351,6 +351,7 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                                                 False)
 
         var_expr_map_c = Collector.collect_symbolic_expressions(var_log_c)
+        Emitter.sub_sub_title("generating variable mapping from donor to target")
         var_map_ac = Mapper.map_variable(var_expr_map_a, var_expr_map_c)
         var_map_bc = Mapper.map_variable(var_expr_map_b, var_expr_map_c)
         ast_map_b = ASTGenerator.get_ast_json(source_path_b)
@@ -395,6 +396,9 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                     translated_command = script_line.replace(replacing_node_str, target_node_str)
                     ast_script_c.append(translated_command)
         # print(var_map_ac)
+
+        Emitter.emit_var_map(var_map_ac)
+        Emitter.emit_ast_script(ast_script_c)
         Writer.write_var_map(var_map_ac, var_map_file)
         Writer.write_ast_script(ast_script_c, ast_script_file)
         ret_code = execute_ast_transformation(source_path_b,
@@ -403,5 +407,5 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
         if ret_code == 0:
             if source_path_d not in modified_source_list:
                 modified_source_list.append(source_path_d)
-
+                exit(2)
     return modified_source_list, missing_function_list

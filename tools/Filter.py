@@ -161,8 +161,7 @@ def filter_ast_script_by_skip_line(ast_script, ast_node_a, ast_node_b, skip_line
             node_type_b = node_b['type']
             node_line_start = int(node_b['start line'])
             node_line_end = int(node_b['end line']) + 1
-            if node_line_start in skip_lines:
-                continue
+            # print(node_line_start)
             if node_type_b in ["IfStmt"]:
                 body_node = node_b['children'][1]
                 count = 0
@@ -173,6 +172,9 @@ def filter_ast_script_by_skip_line(ast_script, ast_node_a, ast_node_b, skip_line
                     filtered_ast_script.append(script_line)
             else:
                 filtered_ast_script.append(script_line)
+
+            if node_line_start in skip_lines:
+                continue
     return filtered_ast_script
 
 
