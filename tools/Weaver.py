@@ -225,8 +225,8 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
         ast_map_a = ASTGenerator.get_ast_json(source_path_a)
         ast_map_b = ASTGenerator.get_ast_json(source_path_b)
 
-        Emitter.normal("\t\t" + str(best_candidate_insertion_loc))
-        source_path_c, line_number_c = best_candidate_insertion_loc.split(":")
+        source_path_c = source_path
+        line_number_c = best_candidate_insertion_loc
         ast_map_c = ASTGenerator.get_ast_json(source_path_c)
         source_path_d = source_path_c.replace(path_c, path_d)
         function_node = Finder.search_function_node_by_loc(ast_map_c,
