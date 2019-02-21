@@ -8,6 +8,7 @@ from common.Utilities import execute_command, error_exit
 import Emitter
 import Logger
 import collections
+import Finder
 import Extractor
 
 
@@ -17,12 +18,25 @@ def instrument_klee_var_expr(source_path, start_line, end_line, only_in_range):
     orig_variable_list = Extractor.extract_variable_list(source_path, start_line, end_line, only_in_range)
     insert_code = dict()
     instrument_code = ""
+    # print(source_path, start_line, end_line, only_in_range)
     if not only_in_range:
+
+        orig_line_count = 0
+        with open(source_path, 'r') as source_file:
+            orig_line_count = len(source_file.readlines())
+
         syntax_format_command = "clang-tidy " + source_path + " -fix -checks=\"readability-braces-around-statements\""
         ret_code = execute_command(syntax_format_command)
         if int(ret_code) != 0:
             error_exit("SYNTAX FORMAT ERROR IN INSTRUMENTATION")
-        formatted_variable_list = Extractor.extract_variable_list(source_path, start_line, end_line, False)
+
+        form_line_count = 0
+        with open(source_path, 'r') as source_file:
+            form_line_count = len(source_file.readlines())
+
+        line_diff = form_line_count - orig_line_count
+        formatted_variable_list = Extractor.extract_variable_list(source_path, start_line, end_line + line_diff, False)
+
         # print(formatted_variable_list)
         # print(orig_variable_list)
         for variable, line_number in orig_variable_list:
