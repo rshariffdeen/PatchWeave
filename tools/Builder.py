@@ -125,12 +125,15 @@ def build_normal():
 def build_verify():
     global CC, CXX, CXX_FLAGS, C_FLAGS, LD_FLAGS
     Emitter.sub_sub_title("building projects")
-    CXX_FLAGS = "'-g -O0 -static -DNDEBUG -ftrapv'"
-    C_FLAGS = "'-g -O0 -static -DNDEBUG -ftrapv'"
+    CXX_FLAGS = "'-g -O0 -static -DNDEBUG -fsanitize=" + Values.ASAN_FLAG + "'"
+    C_FLAGS = "'-g -O0 -static -DNDEBUG -fsanitize=" + Values.ASAN_FLAG + "'"
     Emitter.normal("\t\t" + Values.Project_D.path)
+    clean_project(Values.Project_D.path)
     if not Values.BUILD_COMMAND_C:
+        config_project(Values.Project_D.path, False)
         build_project(Values.Project_D.path)
     else:
+        config_project(Values.Project_D.path, False)
         build_project(Values.Project_D.path, Values.BUILD_COMMAND_C)
 
 
