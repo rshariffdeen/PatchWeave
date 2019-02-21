@@ -79,20 +79,20 @@ def run_exploit(target_trace_info, exploit_command, project_path, poc_path,
                            )
             Emitter.error("\n\tprogram crashed with exit code " + str(target_exit_code))
 
-        if runtime_error_count_c <= runtime_error_count_d:
-            compare_output(target_output,
-                           target_exit_code,
-                           repaired_target_output,
-                           repaired_target_exit_code
-                           )
-            Emitter.error("\n\tprogram was not repaired!!")
-        elif runtime_error_count_d == 0:
+        if runtime_error_count_d == 0:
             compare_output(target_output,
                            target_exit_code,
                            repaired_target_output,
                            repaired_target_exit_code
                            )
             Emitter.error("\n\tprogram was repaired!!")
+        elif runtime_error_count_c <= runtime_error_count_d:
+            compare_output(target_output,
+                           target_exit_code,
+                           repaired_target_output,
+                           repaired_target_exit_code
+                           )
+            Emitter.error("\n\tprogram was not repaired!!")
         else:
             compare_output(target_output,
                            target_exit_code,
