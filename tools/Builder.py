@@ -18,6 +18,10 @@ LD_FLAGS = ""
 
 def config_project(project_path, is_llvm):
     dir_command = "cd " + project_path + ";"
+    if os.path.exists(project_path + "/" + "aclocal.m4"):
+        pre_config_command = "rm aclocal.m4;aclocal"
+        execute_command(pre_config_command)
+
     if os.path.exists(project_path + "/configure"):
         config_command = "CC=" + CC + " "
         config_command += "CXX=" + CXX + " "
@@ -234,6 +238,12 @@ def build_instrumented_code(source_directory):
     Emitter.normal("\t\t\tbuilding instrumented code")
     CXX_FLAGS = "'-g -O0 -static -DNDEBUG -ftrapv'"
     C_FLAGS = "'-g -O0 -static -ftrapv -L/home/rshariffdeen/workspace/klee/build-rshariffdeen/lib -lkleeRuntest'"
+
+    if os.path.exists(source_directory + "/" + "aclocal.m4"):
+        pre_config_command = "cd " + source_directory + ";"
+        pre_config_command += "rm aclocal.m4;aclocal"
+        execute_command(pre_config_command)
+
     build_command = "cd " + source_directory + ";"
     build_command += "make CFLAGS=" + C_FLAGS + " "
     build_command += "CXXFLAGS=" + CXX_FLAGS + " > " + Definitions.FILE_MAKE_LOG
