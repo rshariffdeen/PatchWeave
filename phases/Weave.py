@@ -101,19 +101,24 @@ def transplant_code():
                                                        Concolic.sym_path_c,
                                                        Trace.list_trace_c
                                                        )
-        identified_modified_source_list, identified_missing_function_list = Weaver.weave_code(diff_loc,
-                                                                        diff_loc_info,
-                                                                        path_a,
-                                                                        path_b,
-                                                                        path_c,
-                                                                        path_d,
-                                                                        bit_size,
-                                                                        sym_poc_path,
-                                                                        file_info,
-                                                                        trace_list,
-                                                                        estimate_loc
-                                                                        )
-        missing_function_list = missing_function_list.update(identified_missing_function_list)
+        identified_modified_source_list, \
+        identified_missing_function_list = Weaver.weave_code(diff_loc,
+                                                             diff_loc_info,
+                                                             path_a,
+                                                             path_b,
+                                                             path_c,
+                                                             path_d,
+                                                             bit_size,
+                                                             sym_poc_path,
+                                                             file_info,
+                                                             trace_list,
+                                                             estimate_loc
+                                                             )
+        if missing_function_list:
+            missing_function_list = missing_function_list.update(identified_missing_function_list)
+        else:
+            missing_function_list = identified_missing_function_list
+
         modified_source_list = modified_source_list + identified_modified_source_list
 
 
