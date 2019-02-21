@@ -65,18 +65,22 @@ def get_sym_path_cond(source_location):
 
 def transplant_missing_header():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Weaver.weave_headers(missing_header_list)
+    global modified_source_list, missing_header_list
+    modified_source_list = Weaver.weave_headers(missing_header_list, modified_source_list)
 
 
 def transplant_missing_macros():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Weaver.weave_macros(missing_macro_list)
+    global modified_source_list, missing_macro_list
+    modified_source_list = Weaver.weave_macros(missing_macro_list, modified_source_list)
 
 
 def transplant_missing_functions():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    global missing_header_list, missing_macro_list
-    missing_header_list, missing_macro_list = Weaver.weave_functions(missing_function_list)
+    global missing_header_list, missing_macro_list, modified_source_list
+    missing_header_list, \
+    missing_macro_list, modified_source_list = Weaver.weave_functions(missing_function_list,
+                                                                     modified_source_list)
 
 
 def transplant_code():
@@ -101,7 +105,7 @@ def transplant_code():
                                                        Concolic.sym_path_c,
                                                        Trace.list_trace_c
                                                        )
-        identified_modified_source_list, \
+        modified_source_list, \
         identified_missing_function_list = Weaver.weave_code(diff_loc,
                                                              diff_loc_info,
                                                              path_a,
@@ -112,14 +116,16 @@ def transplant_code():
                                                              sym_poc_path,
                                                              file_info,
                                                              trace_list,
-                                                             estimate_loc
+                                                             estimate_loc,
+                                                             modified_source_list
                                                              )
+        # print(identified_missing_function_list)
         if missing_function_list:
-            missing_function_list = missing_function_list.update(identified_missing_function_list)
+            if identified_missing_function_list:
+                missing_function_list = missing_function_list.update(identified_missing_function_list)
         else:
             missing_function_list = identified_missing_function_list
-
-        modified_source_list = modified_source_list + identified_modified_source_list
+        # print(missing_function_list)
 
 
 def safe_exec(function_def, title, *args):
