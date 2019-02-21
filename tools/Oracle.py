@@ -73,12 +73,17 @@ def is_function_important(source_path, function_call_node, sym_path_list):
     ast_tree = ASTGenerator.get_ast_json(source_path)
     function_ref_node = function_call_node['children'][0]
     function_name = function_ref_node['value']
+    # print(function_name)
     function_def_node = Finder.search_function_node_by_name(ast_tree, function_name)
+    # print(function_def_node)
     function_node, file_path = Extractor.extract_complete_function_node(function_def_node, source_path)
+    # print(file_path)
+    # print(function_node)
     file_path = os.path.abspath(file_path)
     start_line = function_node['start line']
     end_line = function_node['end line']
     line_numbers = set(range(int(start_line), int(end_line) + 1))
+    # print(line_numbers)
     for line_number in line_numbers:
         loc_id = file_path + ":" + str(line_number)
         if loc_id in sym_path_list:

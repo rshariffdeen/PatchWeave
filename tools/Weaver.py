@@ -240,12 +240,12 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
             inserting_node_id = int((inserting_node_str.split("(")[1]).split(")")[0])
             inserting_node = Finder.search_ast_node_by_id(ast_map_b, inserting_node_id)
             translated_command = inserting_node_str + " into " + position_c + "\n"
-            missing_function_list = Identifier.identify_missing_functions(ast_map_c,
+            identified_missing_function_list = Identifier.identify_missing_functions(ast_map_c,
                                                                           inserting_node,
                                                                           source_path_b,
                                                                           source_path_d,
                                                                           skip_line_list)
-
+            missing_function_list = missing_function_list.update(identified_missing_function_list)
             # Identifier.identify_missing_macros(inserting_node,
             #                                    source_path_b,
             #                                    source_path_d)
@@ -364,12 +364,13 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                 inserting_node_id = int((inserting_node_str.split("(")[1]).split(")")[0])
                 inserting_node = Finder.search_ast_node_by_id(ast_map_b, inserting_node_id)
                 translated_command = inserting_node_str + " into " + position_c
-                missing_function_list = Identifier.identify_missing_functions(ast_map_c,
+                identified_missing_function_list = Identifier.identify_missing_functions(ast_map_c,
                                                                               inserting_node,
                                                                               source_path_b,
                                                                               source_path_d,
                                                                               skip_line_list)
-
+                # print(identified_missing_function_list)
+                missing_function_list = missing_function_list.update(identified_missing_function_list)
                 # identify_missing_macros(inserting_node, source_path_b, source_path_d)
                 ast_script_c.append(translated_command)
             elif "Replace" in script_line:
