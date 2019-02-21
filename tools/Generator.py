@@ -107,6 +107,7 @@ def generate_candidate_function_list(estimate_loc, var_expr_map,
         info['exec-lines'] = function_info['lines']
         score = len(var_map)
         info['score'] = score
+        Emitter.normal("\t\tscore: " + str(score))
         if score > best_score:
             best_score = score
         candidate_function_list[function_id] = info
