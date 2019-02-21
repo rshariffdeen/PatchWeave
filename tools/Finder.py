@@ -78,7 +78,7 @@ def search_function_node_by_name(ast_node, function_name):
             child_node_identifier = child_node['identifier']
             if child_node_identifier == function_name:
                 function_node = child_node
-    return child_node
+    return function_node
 
 
 def search_function_node_by_loc(ast_node, line_number, source_path):
