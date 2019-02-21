@@ -31,6 +31,7 @@ def identify_missing_functions(ast_map, ast_node, source_path_b, source_path_d, 
         if line_number in skip_list:
             continue
         function_node = Finder.search_function_node_by_name(ast_map, function_name)
+        # print(function_node)
         if function_node is not None:
             # print(function_node)
             if function_name not in missing_function_list.keys():

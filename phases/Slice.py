@@ -62,4 +62,6 @@ def slice():
     Emitter.title("Slicing code")
     safe_exec(remove_code, "slicing code not in trace")
     safe_exec(remove_func_calls, "slicing function calls")
+    # print(Analyse.diff_info)
+    # exit(1)
 
