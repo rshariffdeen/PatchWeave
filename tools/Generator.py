@@ -139,28 +139,50 @@ def generate_z3_code_for_var(var_expr, var_name):
     var_name = str(var_name).replace("]", "-")
     count_64 = int(var_expr.count("64)"))
     count_bracket = int(var_expr.count(")"))
-    extend_count = int(var_expr.count("extend 32)"))
+    extend_32_count = int(var_expr.count("extend 32)"))
+    extend_56_count = int(var_expr.count("extend 56)"))
 
     if count_bracket == 1:
         if count_64 == 1:
             code = generate_z3_code_for_expr(var_expr, var_name, 64)
         else:
             code = generate_z3_code_for_expr(var_expr, var_name, 32)
-    elif extend_count > 0:
+
+    elif extend_56_count > 0:
+        code = generate_z3_code_for_expr(var_expr, var_name, 64)
+
+    elif extend_32_count > 0:
         if "extend 32" in var_expr.split(") ")[0]:
+            code = generate_z3_code_for_expr(var_expr, var_name, 64)
+        elif " 64" in var_expr.split(") ")[0]:
             code = generate_z3_code_for_expr(var_expr, var_name, 64)
         else:
             # print(var_expr)
-            code = generate_z3_code_for_expr(var_expr, var_name, 32)
-    else:
+            var_expr = "((_ zero_extend 32) " + var_expr + " )"
+            code = generate_z3_code_for_expr(var_expr, var_name, 64)
 
+    else:
         try:
-            code = generate_z3_code_for_expr(var_expr, var_name, 32)
+            var_expr_new = "((_ zero_extend 32) " + var_expr + " )"
+            code = generate_z3_code_for_expr(var_expr_new, var_name, 64)
             parser = SmtLibParser()
             script = parser.get_script(cStringIO(code))
             formula = script.get_last_formula()
         except Exception as exception:
             code = generate_z3_code_for_expr(var_expr, var_name, 64)
+
+
+
+    # else:
+    #
+    #     try:
+    #         code = generate_z3_code_for_expr(var_expr, var_name, 32)
+    #         parser = SmtLibParser()
+    #         script = parser.get_script(cStringIO(code))
+    #         formula = script.get_last_formula()
+    #     except Exception as exception:
+    #         code = generate_z3_code_for_expr(var_expr, var_name, 64)
+
     return code
 
 
