@@ -139,11 +139,18 @@ def generate_z3_code_for_var(var_expr, var_name):
     var_name = str(var_name).replace("]", "-")
     count_64 = int(var_expr.count("64)"))
     count_bracket = int(var_expr.count(")"))
+    extend_count = int(var_expr.count("extend 32)"))
 
     if count_bracket == 1:
         if count_64 == 1:
             code = generate_z3_code_for_expr(var_expr, var_name, 64)
         else:
+            code = generate_z3_code_for_expr(var_expr, var_name, 32)
+    elif extend_count > 0:
+        if "extend 32" in var_expr.split(") ")[0]:
+            code = generate_z3_code_for_expr(var_expr, var_name, 64)
+        else:
+            # print(var_expr)
             code = generate_z3_code_for_expr(var_expr, var_name, 32)
     else:
 

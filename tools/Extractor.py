@@ -299,6 +299,7 @@ def extract_keys_from_model(model):
 def extract_input_bytes_used(sym_expr):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     # print(sym_expr)
+    model_a = ""
     try:
         model_a = Generator.generate_model(sym_expr)
     except Exception:
