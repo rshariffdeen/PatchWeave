@@ -76,7 +76,7 @@ def search_function_node_by_name(ast_node, function_name):
         child_node_type = child_node['type']
         if child_node_type == "FunctionDecl":
             child_node_identifier = child_node['identifier']
-            print(child_node_identifier, function_name)
+            # print(child_node_identifier, function_name)
             if child_node_identifier == function_name:
                 function_node = child_node
     return function_node
