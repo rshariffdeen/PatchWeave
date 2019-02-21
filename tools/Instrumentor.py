@@ -10,6 +10,7 @@ import Logger
 import collections
 import Finder
 import Extractor
+from ast import ASTGenerator
 
 
 def instrument_klee_var_expr(source_path, start_line, end_line, only_in_range):
@@ -20,25 +21,26 @@ def instrument_klee_var_expr(source_path, start_line, end_line, only_in_range):
     instrument_code = ""
     # print(source_path, start_line, end_line, only_in_range)
     if not only_in_range:
-
-        orig_line_count = 0
-        with open(source_path, 'r') as source_file:
-            orig_line_count = len(source_file.readlines())
-
+        ast_map = ASTGenerator.get_ast_json(source_path)
+        function_node = Finder.search_function_node_by_loc(ast_map, start_line, source_path)
+        function_name = function_node['identifier']
         syntax_format_command = "clang-tidy " + source_path + " -fix -checks=\"readability-braces-around-statements\""
         ret_code = execute_command(syntax_format_command)
         if int(ret_code) != 0:
             error_exit("SYNTAX FORMAT ERROR IN INSTRUMENTATION")
 
-        form_line_count = 0
-        with open(source_path, 'r') as source_file:
-            form_line_count = len(source_file.readlines())
-
-        line_diff = form_line_count - orig_line_count
-        formatted_variable_list = Extractor.extract_variable_list(source_path, start_line, end_line + line_diff, False)
+        form_ast_map = ASTGenerator.get_ast_json(source_path)
+        form_function_node = Finder.search_function_node_by_name(form_ast_map, function_name)
+        format_start_line = form_function_node['start line']
+        format_end_line = form_function_node['end line']
+        # print(source_path, start_line, end_line)
+        # print(source_path, format_start_line, format_end_line)
+        formatted_variable_list = Extractor.extract_variable_list(source_path, format_start_line, format_end_line, False)
 
         # print(formatted_variable_list)
         # print(orig_variable_list)
+
+        # TODO: very expensive loop, need to optimize
         for variable, line_number in orig_variable_list:
             insert_line_number = 0
             for formatted_pair in formatted_variable_list:
@@ -64,7 +66,7 @@ def instrument_klee_var_expr(source_path, start_line, end_line, only_in_range):
                 insert_code[
                     line_number] = "klee_print_expr(\"[var-expr] " + variable + "\", " + variable + ");\n"
 
-    # TODO: very expensive loop, need to optimize
+
 
     sorted_insert_code = collections.OrderedDict(sorted(insert_code.items(), reverse=True))
     # print(sorted_insert_code)
