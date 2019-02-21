@@ -106,6 +106,20 @@ def search_function_node_by_loc(ast_node, line_number, source_path):
     return None
 
 
+def search_node_by_loc(ast_node, line_number):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    for child_node in ast_node['children']:
+        child_node_start_line = int(child_node['start line'])
+        child_node_end_line = int(child_node['end line'])
+        if child_node_start_line == line_number:
+            return child_node
+        if child_node_start_line == line_number:
+            return child_node
+        if line_number in range(child_node_start_line, child_node_end_line + 1):
+            return search_node_by_loc(child_node, line_number)
+    return None
+
+
 def find_definition_insertion_point(source_path):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     file_name = source_path.split("/")[-1]
