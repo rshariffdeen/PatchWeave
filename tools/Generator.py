@@ -7,7 +7,7 @@ from common import Values
 from ast import ASTGenerator
 from six.moves import cStringIO
 from pysmt.smtlib.parser import SmtLibParser
-from common.Utilities import backup_file, restore_file, reset_git
+from common.Utilities import backup_file, restore_file, reset_git, error_exit
 from pysmt.shortcuts import get_model
 import Logger
 import Emitter
@@ -76,6 +76,7 @@ def generate_candidate_function_list(estimate_loc, var_expr_map,
                                                                   filtered_trace_list)
     # print(trace_function_list)
     candidate_function_list = dict()
+    expected_score = len(var_expr_map)
     best_score = 0
     for function_id in trace_function_list:
         Emitter.special("\t" + function_id)
@@ -100,18 +101,23 @@ def generate_candidate_function_list(estimate_loc, var_expr_map,
         sym_expr_map = Collector.collect_symbolic_expressions(var_expr_log)
         var_map = Mapper.map_variable(var_expr_map, sym_expr_map)
         function_id = source_path + ":" + function_name
-        info = dict()
-        info['var-map'] = var_map
-        info['begin-line'] = begin_line
-        info['last-line'] = last_line
-        info['exec-lines'] = function_info['lines']
         score = len(var_map)
-        info['score'] = score
         Emitter.normal("\t\tscore: " + str(score))
-        if score > best_score:
+        if best_score < score:
             best_score = score
-        candidate_function_list[function_id] = info
-    return candidate_function_list, best_score
+        if expected_score == score:
+            info = dict()
+            info['var-map'] = var_map
+            info['begin-line'] = begin_line
+            info['last-line'] = last_line
+            info['exec-lines'] = function_info['lines']
+            info['score'] = score
+            candidate_function_list[function_id] = info
+
+    if not candidate_function_list:
+        Emitter.error("best score is " + str(best_score))
+        error_exit("no candidate function")
+    return candidate_function_list
 
 
 def generate_z3_code_for_expr(var_expr, var_name, bit_size):

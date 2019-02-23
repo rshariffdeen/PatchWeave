@@ -204,16 +204,14 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
         var_expr_map_b = Collector.collect_symbolic_expressions(var_log_b)
         # print(var_expr_map_b)
         Emitter.sub_sub_title("generating candidate function list")
-        insertion_function_list, function_best_score = Generator.generate_candidate_function_list(estimate_loc,
+        insertion_function_list = Generator.generate_candidate_function_list(estimate_loc,
                                                                                                   var_expr_map_b,
                                                                                                   bit_size,
                                                                                                   sym_poc_path,
                                                                                                   trace_list,
                                                                                                   var_log_c
                                                                                                   )
-        best_candidate_function_id = Filter.filter_best_candidate_function(insertion_function_list,
-                                                                           function_best_score
-                                                                           )
+        best_candidate_function_id = Filter.filter_best_candidate_function(insertion_function_list)
 
         best_candidate_function_info = insertion_function_list[best_candidate_function_id]
         best_candidate_function = best_candidate_function_id, best_candidate_function_info
@@ -308,16 +306,14 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
         var_expr_map_a = Collector.collect_symbolic_expressions(var_log_a)
         # print(var_expr_map_a)
         Emitter.sub_sub_title("generating candidate function list")
-        insertion_function_list, function_best_score = Generator.generate_candidate_function_list(estimate_loc,
+        insertion_function_list = Generator.generate_candidate_function_list(estimate_loc,
                                                                                                   var_expr_map_a,
                                                                                                   bit_size,
                                                                                                   sym_poc_path,
                                                                                                   trace_list,
                                                                                                   var_log_c
                                                                                                   )
-        best_candidate_function_id = Filter.filter_best_candidate_function(insertion_function_list,
-                                                                           function_best_score
-                                                                           )
+        best_candidate_function_id = Filter.filter_best_candidate_function(insertion_function_list)
 
         best_candidate_function_info = insertion_function_list[best_candidate_function_id]
         best_candidate_function = best_candidate_function_id, best_candidate_function_info
