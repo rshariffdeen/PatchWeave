@@ -134,7 +134,7 @@ def collect_stack_info(trace_file_path):
                         function_name = str(read_line.split(" in ")[1]).split(" (")[0]
                         if source_path not in stack_map.keys():
                             stack_map[source_path] = dict()
-                        stack_map[source_path][function_name] = line_number
+                        stack_map[source_path][function_name] = line_number.strip()
                 if "Stack:" in read_line:
                     is_stack = True
                     continue
