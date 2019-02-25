@@ -17,6 +17,7 @@ def instrument_klee_var_expr(source_path, start_line, end_line, only_in_range):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Emitter.normal("\t\t\tinstrumenting source code")
     orig_variable_list = Extractor.extract_variable_list(source_path, start_line, end_line, only_in_range)
+    print(orig_variable_list)
     insert_code = dict()
     instrument_code = ""
     # print(source_path, start_line, end_line, only_in_range)
@@ -78,6 +79,9 @@ def instrument_klee_var_expr(source_path, start_line, end_line, only_in_range):
                 line_number] = "klee_print_expr(\"[var-expr] " + variable + "\", " + variable + ");\n"
 
     sorted_insert_code = collections.OrderedDict(sorted(insert_code.items(), reverse=True))
+
+
+    #
     # print(sorted_insert_code)
     #
     # insert_line = 0
@@ -85,6 +89,10 @@ def instrument_klee_var_expr(source_path, start_line, end_line, only_in_range):
     #     insert_line = int(start_line) - 1
     # else:
     #     insert_line = int(end_line) - 1
+
+    ast_map = ASTGenerator.get_ast_json(source_path)
+    function_node = Finder.search_function_node_by_loc(ast_map, start_line, source_path)
+    return_line_list = Extractor.extract_return_line_list(function_node)
 
     if os.path.exists(source_path):
         with open(source_path, 'r') as source_file:
@@ -95,6 +103,10 @@ def instrument_klee_var_expr(source_path, start_line, end_line, only_in_range):
                     instrument_code += "exit(1);\n"
                 existing_line = content[insert_line-1]
                 content[insert_line-1] = existing_line + instrument_code
+            for return_line in return_line_list:
+                instrument_code = "exit(1);\n"
+                existing_line = content[return_line - 1]
+                content[return_line - 1] = instrument_code + existing_line
 
     with open(source_path, 'w') as source_file:
         source_file.writelines(content)
