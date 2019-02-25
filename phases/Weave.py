@@ -95,6 +95,7 @@ def transplant_code():
     out_file_info = FILE_SKIP_LIST, FILE_AST_SCRIPT, FILE_VAR_MAP
     file_info = out_file_info, log_file_info
     trace_list = Trace.list_trace_c
+    stack_info_c = Trace.stack_c
     for diff_loc in Analyse.diff_info.keys():
         Emitter.normal(diff_loc)
         diff_loc_info = Analyse.diff_info[diff_loc]
@@ -103,8 +104,11 @@ def transplant_code():
         estimate_loc = Solver.estimate_divergent_point(div_sym_path_cond,
                                                        last_sym_path_cond,
                                                        Concolic.sym_path_c,
-                                                       Trace.list_trace_c
+                                                       Trace.list_trace_c,
+                                                       stack_info_c
                                                        )
+        if not estimate_loc:
+            error_exit("No estimation for divergent point")
         modified_source_list, \
         identified_missing_function_list = Weaver.weave_code(diff_loc,
                                                              diff_loc_info,

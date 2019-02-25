@@ -9,7 +9,7 @@ import Extractor
 import Identifier
 
 
-def estimate_divergent_point(path_cond_a, path_cond_b, target_sym_path, target_trace):
+def estimate_divergent_point(path_cond_a, path_cond_b, target_sym_path, target_trace, stack_info):
     Emitter.sub_sub_title("estimating divergent point in Pc")
     Emitter.normal("\textracting input bytes from div point in Pa")
     # print(path_cond_a)
@@ -23,7 +23,8 @@ def estimate_divergent_point(path_cond_a, path_cond_b, target_sym_path, target_t
     Emitter.normal("\testimating divergent point")
     estimate_loc = Identifier.identify_divergent_point(byte_list,
                                                        target_sym_path,
-                                                       target_trace
+                                                       target_trace,
+                                                       stack_info
                                                        )
     Emitter.special("\testimated divergent point:" + estimate_loc)
     return estimate_loc

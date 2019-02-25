@@ -176,7 +176,7 @@ def identify_insertion_points(candidate_function):
     return insertion_point_list, best_score
 
 
-def identify_divergent_point(byte_list, sym_path_list, trace_list):
+def identify_divergent_point(byte_list, sym_path_list, trace_list, stack_info):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Emitter.normal("\tfinding similar location in recipient")
     length = len(sym_path_list) - 1
@@ -196,18 +196,42 @@ def identify_divergent_point(byte_list, sym_path_list, trace_list):
             candidate_list.append(key)
     length = len(trace_list) - 1
     grab_nearest = False
+    # print(candidate_list)
+    # print(stack_info)
     for n in range(length, 0, -1):
-        path = trace_list[n]
-        path = os.path.abspath(path)
+        trace_loc = trace_list[n]
+        source_path, line_number = trace_loc.split(":")
+        source_path = os.path.abspath(source_path)
+        trace_loc = source_path + ":" + line_number
         if grab_nearest:
-            if ".c" in path:
-                estimated_loc = path
+            # print(trace_loc)
+            if source_path in stack_info.keys():
+                info = stack_info[source_path]
+                # print(info)
+                found_in_stack = False
+                for func_name in info:
+                    line_number_stack = info[func_name]
+                    if int(line_number_stack) == int(line_number):
+                        found_in_stack = True
+                        break
+                if not found_in_stack:
+                        estimated_loc = trace_loc
+                        break
+            elif ".c" in trace_loc:
+                estimated_loc = trace_loc
                 break
         else:
-            if path in candidate_list:
-                if ".h" in path:
+            if trace_loc in candidate_list:
+                if source_path in stack_info.keys():
+                    info = stack_info[source_path]
+                    for func_name in info:
+                        line_number_stack = info[func_name]
+                        if int(line_number_stack) == int(line_number):
+                            grab_nearest = True
+                elif ".h" in source_path:
                     grab_nearest = True
                 else:
-                    estimated_loc = path
+                    estimated_loc = trace_loc
                     break
+
     return estimated_loc
