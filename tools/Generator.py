@@ -76,10 +76,15 @@ def generate_candidate_function_list(estimate_loc, var_expr_map,
                                                                   filtered_trace_list)
     # print(trace_function_list)
     candidate_function_list = dict()
-    expected_score = len(var_expr_map)
+    expected_score = 0
+    for var_name in var_expr_map:
+        var_expr = var_expr_map[var_name]
+        if "A-data" in var_expr:
+            expected_score += 1
     best_score = 0
+    Emitter.warning("\t\texpected score: " + str(expected_score))
     for function_id in trace_function_list:
-        Emitter.special("\t" + function_id)
+        Emitter.special("\t\t" + function_id)
         source_path, function_name = str(function_id).split(":")
         function_info = trace_function_list[function_id]
         begin_line = function_info['begin']

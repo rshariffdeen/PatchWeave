@@ -205,12 +205,12 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
         # print(var_expr_map_b)
         Emitter.sub_sub_title("generating candidate function list")
         insertion_function_list = Generator.generate_candidate_function_list(estimate_loc,
-                                                                                                  var_expr_map_b,
-                                                                                                  bit_size,
-                                                                                                  sym_poc_path,
-                                                                                                  trace_list,
-                                                                                                  var_log_c
-                                                                                                  )
+                                                                             var_expr_map_b,
+                                                                             bit_size,
+                                                                             sym_poc_path,
+                                                                             trace_list,
+                                                                             var_log_c
+                                                                             )
         best_candidate_function_id = Filter.filter_best_candidate_function(insertion_function_list)
 
         best_candidate_function_info = insertion_function_list[best_candidate_function_id]

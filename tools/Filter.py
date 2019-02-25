@@ -109,7 +109,7 @@ def merge_ast_script(ast_script, ast_node_a, ast_node_b, mapping_ba):
 
 def filter_ast_script(ast_script, info_a, info_b, mapping_ba):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Emitter.normal("\t\tfiltering AST script")
+    Emitter.normal("\t\tfiltering AST script by merging and grouping")
     source_path_a, line_range_a, ast_node_a = info_a
     source_path_b, line_range_b, ast_node_b = info_b
     filtered_ast_script = list()
@@ -155,7 +155,7 @@ def filter_ast_script(ast_script, info_a, info_b, mapping_ba):
 
 def filter_ast_script_by_skip_line(ast_script, ast_node_a, ast_node_b, skip_lines):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Emitter.normal("filtering AST script")
+    Emitter.normal("filtering AST script using skip lines")
     filtered_ast_script = list()
     for script_line in ast_script:
         if "Insert" in script_line:
