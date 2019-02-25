@@ -69,6 +69,12 @@ def fix_return_type(source_file, source_location):
         replace_code(new_statement, source_file, start_line)
         backup_file_path = Definitions.DIRECTORY_BACKUP + "/" + FILENAME_BACKUP
         show_partial_diff(backup_file_path, source_file)
+    elif function_return_type.strip() == "int":
+        new_statement = "return -1;\n"
+        backup_file(source_file, FILENAME_BACKUP)
+        replace_code(new_statement, source_file, start_line)
+        backup_file_path = Definitions.DIRECTORY_BACKUP + "/" + FILENAME_BACKUP
+        show_partial_diff(backup_file_path, source_file)
     else:
         error_exit("NEW RETURN TYPE!")
     # check_syntax_errors()
