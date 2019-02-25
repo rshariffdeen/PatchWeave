@@ -109,6 +109,9 @@ def convert_binary_to_llvm(binary_path):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     binary_name = str(binary_path).split("/")[-1]
     binary_directory = "/".join(str(binary_path).split("/")[:-1])
+    remove_command = "rm " + binary_path + ".bc"
+    # print(remove_command)
+    execute_command(remove_command)
     extract_command = BINARY_CONVERTER + " " + binary_path
     # print(extract_command)
     execute_command(extract_command)

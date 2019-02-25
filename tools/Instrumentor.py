@@ -93,7 +93,8 @@ def instrument_klee_var_expr(source_path, start_line, end_line, only_in_range):
     ast_map = ASTGenerator.get_ast_json(source_path)
     function_node = Finder.search_function_node_by_loc(ast_map, start_line, source_path)
     return_line_list = Extractor.extract_return_line_list(function_node)
-
+    # print(sorted_insert_code)
+    # print(return_line_list)
     if os.path.exists(source_path):
         with open(source_path, 'r') as source_file:
             content = source_file.readlines()
@@ -114,6 +115,8 @@ def instrument_klee_var_expr(source_path, start_line, end_line, only_in_range):
     ret_code = 1
     while ret_code != 0:
         syntax_fix_command = "clang-tidy --fix-errors " + source_path
+        # print(syntax_fix_command)
         execute_command(syntax_fix_command)
         syntax_check_command = "clang-tidy " + source_path
+        # print(syntax_check_command)
         ret_code = int(execute_command(syntax_check_command))

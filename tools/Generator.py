@@ -34,24 +34,30 @@ def generate_symbolic_expressions(source_path, start_line, end_line,
     if Values.PATH_A in source_path:
         binary_path = Values.PATH_A + Values.EXPLOIT_A.split(" ")[0]
         binary_args = " ".join(Values.EXPLOIT_A.split(" ")[1:])
+        source_directory = Values.PATH_A
     elif Values.PATH_B in source_path:
         binary_path = Values.PATH_B + Values.EXPLOIT_A.split(" ")[0]
         binary_args = " ".join(Values.EXPLOIT_A.split(" ")[1:])
+        source_directory = Values.PATH_B
     elif Values.PATH_C in source_path:
         binary_path = Values.PATH_C + Values.EXPLOIT_C.split(" ")[0]
         binary_args = " ".join(Values.EXPLOIT_C.split(" ")[1:])
+        source_directory = Values.PATH_C
     else:
         binary_path = Values.Project_D.path + Values.EXPLOIT_C.split(" ")[0]
         binary_args = " ".join(Values.EXPLOIT_C.split(" ")[1:])
+        source_directory = Values.Project_D.path
 
     binary_name = str(binary_path).split("/")[-1]
     binary_directory = "/".join(str(binary_path).split("/")[:-1])
-    backup_file(binary_path, "original-bitcode")
+    # backup_file(binary_path, "original-bitcode")
     Instrumentor.instrument_klee_var_expr(source_path,
                                           start_line,
                                           end_line,
                                           only_in_range)
+
     Builder.build_instrumented_code(source_directory)
+    # print(binary_path)
     Converter.convert_binary_to_llvm(binary_path)
 
     KleeExecutor.generate_var_expressions(binary_args,
@@ -60,7 +66,7 @@ def generate_symbolic_expressions(source_path, start_line, end_line,
                                           bit_size,
                                           sym_poc_path,
                                           output_log)
-    restore_file("original-bitcode", binary_path)
+    # restore_file("original-bitcode", binary_path)
     reset_git(source_directory)
 
 
@@ -105,6 +111,7 @@ def generate_candidate_function_list(estimate_loc, var_expr_map,
                                       False)
 
         sym_expr_map = Collector.collect_symbolic_expressions(var_expr_log)
+        # print(sym_expr_map)
         var_map = Mapper.map_variable(var_expr_map, sym_expr_map)
         function_id = source_path + ":" + function_name
         score = len(var_map)
