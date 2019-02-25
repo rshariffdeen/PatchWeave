@@ -144,6 +144,21 @@ def extract_var_dec_list(ast_node, start_line, end_line, only_in_range):
     return list(set(var_list))
 
 
+def extract_return_line_list(ast_node):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    return_line_list = list()
+    child_count = len(ast_node['children'])
+    node_type = ast_node['type']
+    if node_type == "ReturnStmt":
+        return_line_list.append(ast_node['start line'])
+    else:
+        if len(ast_node['children']) > 0:
+            for child_node in ast_node['children']:
+                child_return_list = extract_return_line_list(child_node)
+                return_line_list = return_line_list + child_return_list
+    return return_line_list
+
+
 def extract_var_ref_list(ast_node, start_line, end_line, only_in_range):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     var_list = list()
