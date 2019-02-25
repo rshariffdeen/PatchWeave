@@ -46,11 +46,14 @@ def generate_var_expressions(binary_arguments, binary_dir, binary_name, bit_size
         error_exit("CONCOLIC EXECUTION FAILED with code " + ret_code)
 
 
-def generate_trace(exploit_command, binary_path, binary_name, poc_path, log_path):
+def generate_trace(exploit_command, binary_path, binary_name, poc_path, log_path, no_exit=False):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Emitter.normal("\tgenerating trace for exploit")
     trace_command = "cd " + binary_path + ";"
-    trace_command += SYMBOLIC_ENGINE + SYMBOLIC_ARGUMENTS_FOR_TRACE + " " + binary_name + ".bc "\
+    sym_args = SYMBOLIC_ARGUMENTS_FOR_TRACE
+    if no_exit:
+        sym_args = " --no-exit-on-error " + sym_args
+    trace_command += SYMBOLIC_ENGINE + sym_args + " " + binary_name + ".bc "\
                      + exploit_command.replace("$POC", poc_path) + "  > " + log_path + \
                     " 2>&1"
     # print(trace_command)

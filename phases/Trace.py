@@ -68,7 +68,8 @@ def trace_donor():
                                     binary_dir,
                                     binary_name,
                                     poc_path,
-                                    FILE_TRACE_LOG_B)
+                                    FILE_TRACE_LOG_B,
+                                    True)
 
     list_trace_b = Collector.collect_trace(FILE_TRACE_LOG_B,
                                            project_path_b,
