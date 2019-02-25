@@ -85,7 +85,7 @@ def run_exploit(target_trace_info, exploit_command, project_path, poc_path,
                            repaired_target_output,
                            repaired_target_exit_code
                            )
-            Emitter.error("\n\tprogram was repaired!!")
+            Emitter.success("\n\tprogram was repaired!!")
         elif runtime_error_count_c <= runtime_error_count_d:
             compare_output(target_output,
                            target_exit_code,
