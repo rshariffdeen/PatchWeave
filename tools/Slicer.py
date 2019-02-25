@@ -3,12 +3,13 @@
 
 
 import sys
-from common.Utilities import get_code
+from common.Utilities import get_code, error_exit
 from ast import ASTGenerator
 import Extractor
 import Oracle
 import Logger
 import Filter
+import Emitter
 
 
 def slice_code_from_trace(diff_info, trace_list, path_a, path_b):
@@ -46,7 +47,12 @@ def slice_skipped_diff_locs(diff_info):
             skip_lines = diff_loc_info['skip-lines']
             if set(line_numbers) == set(skip_lines):
                 continue
+        ast_script = diff_loc_info['ast-script']
+        if not ast_script:
+            continue
         filtered_diff_info[diff_loc] = diff_loc_info
+    if not filtered_diff_info:
+        error_exit("no AST changes to be transplanted")
     return filtered_diff_info
 
 
