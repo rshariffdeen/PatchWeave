@@ -109,6 +109,7 @@ def generate_candidate_function_list(estimate_loc, var_expr_map,
         function_id = source_path + ":" + function_name
         score = len(var_map)
         Emitter.normal("\t\tscore: " + str(score))
+        Emitter.emit_var_map(var_map)
         if best_score < score:
             best_score = score
         if expected_score == score:
