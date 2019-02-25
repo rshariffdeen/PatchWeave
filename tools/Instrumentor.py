@@ -17,7 +17,7 @@ def instrument_klee_var_expr(source_path, start_line, end_line, only_in_range):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Emitter.normal("\t\t\tinstrumenting source code")
     orig_variable_list = Extractor.extract_variable_list(source_path, start_line, end_line, only_in_range)
-    print(orig_variable_list)
+    # print(orig_variable_list)
     insert_code = dict()
     instrument_code = ""
     # print(source_path, start_line, end_line, only_in_range)

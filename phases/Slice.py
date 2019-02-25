@@ -22,8 +22,6 @@ def remove_code():
     diff_info = Analyse.diff_info
 
     diff_info = Slicer.slice_code_from_trace(diff_info, trace_list, path_a, path_b)
-    print(Analyse.diff_info)
-    exit(1)
     diff_info = Slicer.slice_ast_script(diff_info, Values.PATH_A, Values.PATH_B)
     Analyse.diff_info = Slicer.slice_skipped_diff_locs(diff_info)
 
@@ -66,4 +64,3 @@ def slice():
     Emitter.title("Slicing code")
     safe_exec(remove_code, "slicing code not in trace")
     safe_exec(remove_func_calls, "slicing function calls")
-
