@@ -34,6 +34,7 @@ def filter_function_list_using_trace(source_function_map, trace_list):
         function_list = source_function_map[source_path]
         trace_line_list = source_line_map[source_path]
         for line_number in trace_line_list:
+            order = 1
             for function_name, begin_line, finish_line in function_list:
                 if line_number in range(begin_line, finish_line):
                     function_id = source_path + ":" + function_name
@@ -44,7 +45,9 @@ def filter_function_list_using_trace(source_function_map, trace_list):
                         trace_function_info[function_id]['last'] = int(line_number)
                         trace_function_info[function_id]['begin'] = int(line_number)
                         trace_function_info[function_id]['lines'] = list()
+                        trace_function_info[function_id]['order'] = order
                         trace_function_info[function_id]['lines'].append(line_number)
+                        order += 1
                     else:
                         if line_number not in trace_function_info[function_id]['lines']:
                             trace_function_info[function_id]['lines'].append(line_number)
@@ -178,16 +181,18 @@ def filter_ast_script_by_skip_line(ast_script, ast_node_a, ast_node_b, skip_line
     return filtered_ast_script
 
 
-def filter_best_candidate_function(function_list, best_score):
+def filter_best_candidate_function(function_list):
     best_candidate = None
+    if not function_list:
+        Emitter.error("No candidate function")
+        error_exit("no suitable function to insert")
+    min_order = 1000
     for function_id in function_list:
         info = function_list[function_id]
-        score = info['score']
-        if score == best_score:
-            if best_candidate is None:
-                best_candidate = function_id
-            else:
-                error_exit("More than ONE best candidate function")
+        order = info['order']
+        if min_order > order:
+            min_order = order
+            best_candidate = function_id
     return best_candidate
 
 

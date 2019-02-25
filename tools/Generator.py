@@ -84,6 +84,7 @@ def generate_candidate_function_list(estimate_loc, var_expr_map,
         function_info = trace_function_list[function_id]
         begin_line = function_info['begin']
         last_line = function_info['last']
+        trace_order = function_info['order']
         ast_map_c = ASTGenerator.get_ast_json(source_path)
         # print(int(last_line), source_path)
         function_node = Finder.search_function_node_by_loc(ast_map_c,
@@ -112,6 +113,7 @@ def generate_candidate_function_list(estimate_loc, var_expr_map,
             info['last-line'] = last_line
             info['exec-lines'] = function_info['lines']
             info['score'] = score
+            info['order'] = trace_order
             candidate_function_list[function_id] = info
 
     if not candidate_function_list:
