@@ -208,3 +208,25 @@ def filter_best_candidate_loc(loc_list, best_score):
                 if best_candidate > loc:
                     best_candidate = int(loc)
     return best_candidate
+
+
+def filter_line_range(initial_range, skip_list):
+    start_loc, end_loc = initial_range
+    filtered_start = start_loc
+    filtered_end = end_loc
+    for num in range(start_loc, end_loc + 1, 1):
+        if num in skip_list:
+            continue
+        else:
+            filtered_start = num
+            break
+
+    for num in range(end_loc, start_loc - 1, -1):
+        if num in skip_list:
+            continue
+        else:
+            filtered_end = num
+            break
+
+    # print(filtered_start, filtered_end)
+    return filtered_start, filtered_end

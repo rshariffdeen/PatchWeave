@@ -96,6 +96,7 @@ def transplant_code():
     file_info = out_file_info, log_file_info
     trace_list = Trace.list_trace_c
     stack_info_c = Trace.stack_c
+    # print(Analyse.diff_info)
     for diff_loc in Analyse.diff_info.keys():
         Emitter.normal(diff_loc)
         diff_loc_info = Analyse.diff_info[diff_loc]

@@ -280,12 +280,15 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                 modified_source_list.append(source_path_d)
 
     elif operation == 'modify':
-        start_line_a, end_line_a = diff_loc_info['old-lines']
-        start_line_b, end_line_b = diff_loc_info['new-lines']
+        old_line_range = diff_loc_info['old-lines']
+        new_line_range = diff_loc_info['new-lines']
         skip_line_list = diff_loc_info['skip-lines']
+
         Writer.write_skip_list(skip_line_list, skip_list_file)
-        line_range_a = (start_line_a, end_line_a)
-        line_range_b = (start_line_b, end_line_b)
+        start_line_b, end_line_b = Filter.filter_line_range(new_line_range, skip_line_list)
+        start_line_a, end_line_a = old_line_range
+        # line_range_a = (start_line_a, end_line_a)
+
         Emitter.sub_sub_title("computing symbolic expressions for Donor")
         Generator.generate_symbolic_expressions(source_path_b,
                                                 start_line_b,
@@ -307,12 +310,12 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
         # print(var_expr_map_a)
         Emitter.sub_sub_title("generating candidate function list")
         insertion_function_list = Generator.generate_candidate_function_list(estimate_loc,
-                                                                                                  var_expr_map_a,
-                                                                                                  bit_size,
-                                                                                                  sym_poc_path,
-                                                                                                  trace_list,
-                                                                                                  var_log_c
-                                                                                                  )
+                                                                             var_expr_map_b,
+                                                                             bit_size,
+                                                                             sym_poc_path,
+                                                                             trace_list,
+                                                                             var_log_c
+                                                                             )
         best_candidate_function_id = Filter.filter_best_candidate_function(insertion_function_list)
 
         best_candidate_function_info = insertion_function_list[best_candidate_function_id]
