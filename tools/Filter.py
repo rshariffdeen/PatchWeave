@@ -67,7 +67,7 @@ def merge_ast_script(ast_script, ast_node_a, ast_node_b, mapping_ba):
     deleted_node_list = list()
     # print(ast_script)
     for script_line in ast_script:
-        print(script_line)
+        # print(script_line)
         if "Insert" in script_line:
             node_id_a = int(((script_line.split(" into ")[0]).split("(")[1]).split(")")[0])
             node_id_b = int(((script_line.split(" into ")[1]).split("(")[1]).split(")")[0])
@@ -126,9 +126,9 @@ def filter_ast_script(ast_script, info_a, info_b, mapping_ba):
     line_range_start_b, line_range_end_b = line_range_b
     line_numbers_a = set(range(int(line_range_start_a), int(line_range_end_a) + 1))
     line_numbers_b = set(range(int(line_range_start_b), int(line_range_end_b) + 1))
-    print(ast_script)
+    # print(ast_script)
     merged_ast_script = merge_ast_script(ast_script, ast_node_a, ast_node_b, mapping_ba)
-    print(merged_ast_script)
+    # print(merged_ast_script)
     for script_line in merged_ast_script:
         if "Insert" in script_line:
             node_id_b = int(((script_line.split(" into ")[0]).split("(")[1]).split(")")[0])
