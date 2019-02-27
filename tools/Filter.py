@@ -67,7 +67,7 @@ def merge_ast_script(ast_script, ast_node_a, ast_node_b, mapping_ba):
     deleted_node_list = list()
     # print(ast_script)
     for script_line in ast_script:
-        # print(script_line)
+        print(script_line)
         if "Insert" in script_line:
             node_id_a = int(((script_line.split(" into ")[0]).split("(")[1]).split(")")[0])
             node_id_b = int(((script_line.split(" into ")[1]).split("(")[1]).split(")")[0])
@@ -93,17 +93,26 @@ def merge_ast_script(ast_script, ast_node_a, ast_node_b, mapping_ba):
             target_node_id_b = int(((script_line.split(" into ")[1]).split("(")[1]).split(")")[0])
             if target_node_id_b in inserted_node_list:
                 continue
+            # print(move_node_type)
             target_node_id_a = mapping_ba[target_node_id_b]
+            # print(target_node_id_a)
             target_node_a = Finder.search_ast_node_by_id(ast_node_a, target_node_id_a)
-            replacing_node = target_node_a['children'][move_position]
-            replacing_node_id = replacing_node['id']
-            replacing_node_str = replacing_node['type'] + "(" + str(replacing_node['id']) + ")"
-            script_line = "Replace " + replacing_node_str + " with " + move_node_str
+            target_node_str = target_node_a['type'] + "(" + str(target_node_a['id']) + ")"
+            # print(target_node_a)
+
+            if len(target_node_a['children']) <= move_position:
+                script_line = "Insert " + move_node_str + " into " + move_node_str + " at " + str(move_position)
+            else:
+                replacing_node = target_node_a['children'][move_position]
+                replacing_node_id = replacing_node['id']
+                replacing_node_str = replacing_node['type'] + "(" + str(replacing_node['id']) + ")"
+                script_line = "Replace " + replacing_node_str + " with " + move_node_str
+                deleted_node_list.append(replacing_node_id)
+                child_id_list = Extractor.extract_child_id_list(replacing_node)
+                deleted_node_list = deleted_node_list + child_id_list
 
             merged_ast_script.append(script_line)
-            deleted_node_list.append(replacing_node_id)
-            child_id_list = Extractor.extract_child_id_list(replacing_node)
-            deleted_node_list = deleted_node_list + child_id_list
+
     return merged_ast_script
 
 
@@ -117,8 +126,9 @@ def filter_ast_script(ast_script, info_a, info_b, mapping_ba):
     line_range_start_b, line_range_end_b = line_range_b
     line_numbers_a = set(range(int(line_range_start_a), int(line_range_end_a) + 1))
     line_numbers_b = set(range(int(line_range_start_b), int(line_range_end_b) + 1))
+    print(ast_script)
     merged_ast_script = merge_ast_script(ast_script, ast_node_a, ast_node_b, mapping_ba)
-    # print(merged_ast_script)
+    print(merged_ast_script)
     for script_line in merged_ast_script:
         if "Insert" in script_line:
             node_id_b = int(((script_line.split(" into ")[0]).split("(")[1]).split(")")[0])
