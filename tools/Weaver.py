@@ -234,6 +234,7 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                                                            int(line_number_c),
                                                            source_path_c)
 
+        start_line_c = function_node['start line']
         position_c = Finder.find_ast_node_position(function_node, int(line_number_c))
         Emitter.normal("\t\t\tgenerating AST script")
         for script_line in ast_script:
@@ -253,12 +254,11 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
         Writer.write_ast_script(ast_script_c, ast_script_file)
         Emitter.sub_sub_title("computing symbolic expressions for target")
         Generator.generate_symbolic_expressions(source_path_c,
-                                                line_number_c,
+                                                start_line_c,
                                                 line_number_c,
                                                 bit_size,
                                                 sym_poc_path,
-                                                var_log_c,
-                                                False
+                                                var_log_c
                                                 )
 
         var_expr_map_c = Collector.collect_symbolic_expressions(var_log_c)
@@ -339,12 +339,13 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                                                            int(line_number_c),
                                                            source_path_c)
 
+        start_line_c = function_node['start line']
         position_c = Finder.find_ast_node_position(function_node,
                                                    int(line_number_c))
 
         Emitter.sub_sub_title("computing symbolic expressions for target")
         Generator.generate_symbolic_expressions(source_path_c,
-                                                line_number_c,
+                                                start_line_c,
                                                 line_number_c,
                                                 bit_size,
                                                 sym_poc_path,
