@@ -293,7 +293,15 @@ def extract_variable_list(source_path, start_line, end_line, only_in_range):
         # else:
         variable_list = list(set(variable_list + child_var_ref_list + child_var_dec_list))
     # print(variable_list)
-    return variable_list
+    filtered_list = list()
+    # print(str(start_line), str(end_line))
+    for var in variable_list:
+        var_name, line_num = var
+        if int(start_line) <= int(line_num) <= int(end_line):
+            filtered_list.append(var)
+    # print(variable_list)
+    # print(filtered_list)
+    return filtered_list
 
 
 def extract_keys_from_model(model):
