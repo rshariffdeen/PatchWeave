@@ -103,12 +103,12 @@ def generate_candidate_function_list(estimate_loc, var_expr_map,
                                                            source_path)
         # print(function_node)
         generate_symbolic_expressions(source_path,
-                                      last_line,
+                                      begin_line,
                                       last_line,
                                       bit_size,
                                       sym_poc_path,
-                                      var_expr_log,
-                                      False)
+                                      var_expr_log
+                                      )
 
         sym_expr_map = Collector.collect_symbolic_expressions(var_expr_log)
         # print(sym_expr_map)
