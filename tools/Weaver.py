@@ -269,6 +269,7 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
 
         # print(var_map)
         # print(ast_script_c)
+        Emitter.sub_sub_title("transplanting code")
         Emitter.emit_var_map(var_map)
         Emitter.emit_ast_script(ast_script_c)
         Writer.write_var_map(var_map, var_map_file)
@@ -358,6 +359,7 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
         var_map_bc = Mapper.map_variable(var_expr_map_b, var_expr_map_c)
         ast_map_b = ASTGenerator.get_ast_json(source_path_b)
         ast_map_a = ASTGenerator.get_ast_json(source_path_a)
+        Emitter.sub_sub_title("transplanting code")
         for script_line in ast_script:
             translated_command = script_line
             if "Insert" in script_line:
