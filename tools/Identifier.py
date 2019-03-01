@@ -167,7 +167,7 @@ def identify_insertion_points(candidate_function):
     insertion_point_list = dict()
     function_id, function_info = candidate_function
     source_path, function_name = function_id.split(":")
-    start_line = int(function_info['begin-line'])
+    start_line = int(function_info['start-line'])
     last_line = int(function_info['last-line'])
     exec_line_list = function_info['exec-lines']
     var_map = function_info['var-map']

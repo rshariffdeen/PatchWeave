@@ -126,6 +126,7 @@ def generate_candidate_function_list(estimate_loc, var_expr_map,
         if expected_score == score:
             info = dict()
             info['var-map'] = var_map
+            info['start-line'] = start_line
             info['begin-line'] = begin_line
             info['last-line'] = last_line
             info['exec-lines'] = function_info['lines']
