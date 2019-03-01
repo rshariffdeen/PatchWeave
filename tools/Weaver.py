@@ -184,9 +184,11 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
     source_path_a, line_number_a = diff_loc.split(":")
     source_path_b = str(source_path_a).replace(path_a, path_b)
     missing_function_list = dict()
+    missing_var_list = dict()
 
     if operation == 'insert':
         start_line_b, end_line_b = diff_loc_info['new-lines']
+        start_line_a, end_line_a = diff_loc_info['old-lines']
         skip_line_list = diff_loc_info['skip-lines']
         Writer.write_skip_list(skip_line_list, skip_list_file)
         line_range_b = (start_line_b, end_line_b)
@@ -230,12 +232,15 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
         line_number_c = best_candidate_insertion_loc
         ast_map_c = ASTGenerator.get_ast_json(source_path_c)
         source_path_d = source_path_c.replace(path_c, path_d)
-        function_node = Finder.search_function_node_by_loc(ast_map_c,
-                                                           int(line_number_c),
-                                                           source_path_c)
+        function_node_a = Finder.search_function_node_by_loc(ast_map_a,
+                                                             int(start_line_a),
+                                                             source_path_a)
+        function_node_c = Finder.search_function_node_by_loc(ast_map_c,
+                                                             int(line_number_c),
+                                                             source_path_c)
 
-        start_line_c = function_node['start line']
-        position_c = Finder.find_ast_node_position(function_node, int(line_number_c))
+        start_line_c = function_node_c['start line']
+        position_c = Finder.find_ast_node_position(function_node_c, int(line_number_c))
         Emitter.normal("\t\t\tgenerating AST script")
         for script_line in ast_script:
             inserting_node_str = script_line.split(" into ")[0]
@@ -247,6 +252,13 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                                                                           source_path_b,
                                                                           source_path_d,
                                                                           skip_line_list)
+
+            missing_var_list = Identifier.identify_missing_var(function_node_a,
+                                                               inserting_node,
+                                                               skip_line_list
+                                                               )
+            print(missing_var_list)
+            exit(1)
             # Identifier.identify_missing_macros(inserting_node,
             #                                    source_path_b,
             #                                    source_path_d)

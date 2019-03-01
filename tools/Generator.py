@@ -87,6 +87,9 @@ def generate_candidate_function_list(estimate_loc, var_expr_map,
         var_expr = var_expr_map[var_name]
         if "A-data" in var_expr:
             expected_score += 1
+
+    if expected_score == 0:
+        error_exit("No variable to map")
     best_score = 0
     Emitter.warning("\t\texpected score: " + str(expected_score))
     for function_id in trace_function_list:
