@@ -52,6 +52,29 @@ def identify_missing_functions(ast_map, ast_node, source_path_b, source_path_d, 
     return missing_function_list
 
 
+def identify_missing_var(function_node_a, insert_node_b, skip_list):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    Emitter.normal("\tidentifying missing variables")
+    missing_var_list = list()
+    ref_list = Extractor.extract_reference_node_list(insert_node_b)
+    dec_list = Extractor.extract_decl_list(function_node_a)
+    for ref_node in ref_list:
+        node_type = str(ref_node['type'])
+        node_start_line = int(ref_node['start line'])
+        if node_start_line in skip_list:
+            continue
+        if node_type == "DeclRefExpr":
+            ref_type = str(ref_node['ref_type'])
+            identifier = str(ref_node['value'])
+            if ref_type == "VarDecl":
+                if identifier not in dec_list:
+                    missing_var_list.append(identifier)
+            elif ref_type == "FunctionDecl":
+                if identifier in Values.STANDARD_FUNCTION_LIST:
+                    continue
+    return list(set(missing_var_list))
+
+
 def identify_missing_headers(function_node, target_file):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     missing_header_list = dict()
