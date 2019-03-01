@@ -228,11 +228,14 @@ def extract_var_ref_list(ast_node, start_line, end_line, only_in_range):
                     if ref_type == "VarDecl":
                         var_name = str(child_node['value'])
                         var_list.append((var_name, line_number))
-                if child_node_type == "MemberExpr":
+                elif child_node_type == "MemberExpr":
                     var_name, auxilary_list = Converter.convert_member_expr(child_node)
                     var_list.append((str(var_name), line_number))
                     for aux_var_name in auxilary_list:
                         var_list.append((str(aux_var_name), line_number))
+                else:
+                    child_var_list = extract_var_ref_list(child_node, start_line, end_line, only_in_range)
+                    var_list = var_list + child_var_list
         return var_list
     if child_count:
         for child_node in ast_node['children']:
