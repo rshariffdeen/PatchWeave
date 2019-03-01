@@ -104,9 +104,10 @@ def generate_candidate_function_list(estimate_loc, var_expr_map,
         function_node = Finder.search_function_node_by_loc(ast_map_c,
                                                            int(last_line),
                                                            source_path)
+        start_line = function_node['start line']
         # print(function_node)
         generate_symbolic_expressions(source_path,
-                                      begin_line,
+                                      start_line,
                                       last_line,
                                       bit_size,
                                       sym_poc_path,
