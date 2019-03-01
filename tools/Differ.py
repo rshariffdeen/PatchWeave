@@ -103,6 +103,7 @@ def diff_code(diff_file_path, output_file):
 
                         if operation == 'insert':
                             diff_info[diff_loc]['new-lines'] = (start_b, end_b)
+                            diff_info[diff_loc]['old-lines'] = (start_a, end_a)
                         elif operation == "delete":
                             diff_info[diff_loc]['remove-lines'] = (start_a, end_a)
                         elif operation == "modify":
