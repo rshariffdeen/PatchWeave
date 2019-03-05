@@ -185,7 +185,7 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
     source_path_b = str(source_path_a).replace(path_a, path_b)
     missing_function_list = dict()
     missing_var_list = dict()
-
+    position_c = 0
     if operation == 'insert':
         start_line_b, end_line_b = diff_loc_info['new-lines']
         start_line_a, end_line_a = diff_loc_info['old-lines']
@@ -235,6 +235,9 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
         function_node_a = Finder.search_function_node_by_loc(ast_map_a,
                                                              int(start_line_a),
                                                              source_path_a)
+        function_node_b = Finder.search_function_node_by_loc(ast_map_b,
+                                                             int(start_line_b),
+                                                             source_path_a)
         function_node_c = Finder.search_function_node_by_loc(ast_map_c,
                                                              int(line_number_c),
                                                              source_path_c)
@@ -254,11 +257,11 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                                                                           skip_line_list)
 
             missing_var_list = Identifier.identify_missing_var(function_node_a,
+                                                               function_node_b,
                                                                inserting_node,
                                                                skip_line_list
                                                                )
-            print(missing_var_list)
-            exit(1)
+
             # Identifier.identify_missing_macros(inserting_node,
             #                                    source_path_b,
             #                                    source_path_d)
@@ -301,7 +304,8 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
         start_line_b, end_line_b = Filter.filter_line_range(new_line_range, skip_line_list)
         start_line_a, end_line_a = old_line_range
         # line_range_a = (start_line_a, end_line_a)
-
+        ast_map_a = ASTGenerator.get_ast_json(source_path_a)
+        ast_map_b = ASTGenerator.get_ast_json(source_path_b)
         Emitter.sub_sub_title("computing symbolic expressions for Donor")
         Generator.generate_symbolic_expressions(source_path_b,
                                                 start_line_b,
@@ -347,12 +351,18 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
         source_path_d = source_path_c.replace(path_c, path_d)
         ast_map_c = ASTGenerator.get_ast_json(source_path_c)
         # print(insertion_loc)
-        function_node = Finder.search_function_node_by_loc(ast_map_c,
+        function_node_a = Finder.search_function_node_by_loc(ast_map_a,
+                                                             int(start_line_a),
+                                                             source_path_a)
+        function_node_b = Finder.search_function_node_by_loc(ast_map_b,
+                                                             int(start_line_b),
+                                                             source_path_a)
+        function_node_c = Finder.search_function_node_by_loc(ast_map_c,
                                                            int(line_number_c),
                                                            source_path_c)
 
-        start_line_c = function_node['start line']
-        position_c = Finder.find_ast_node_position(function_node,
+        start_line_c = function_node_c['start line']
+        position_c = Finder.find_ast_node_position(function_node_c,
                                                    int(line_number_c))
 
         Emitter.sub_sub_title("computing symbolic expressions for target")
@@ -385,13 +395,18 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                                                                               source_path_b,
                                                                               source_path_d,
                                                                               skip_line_list)
+                missing_var_list = Identifier.identify_missing_var(function_node_a,
+                                                                   function_node_b,
+                                                                   inserting_node,
+                                                                   skip_line_list
+                                                                   )
                 # identify_missing_macros(inserting_node, source_path_b, source_path_d)
                 ast_script_c.append(translated_command)
             elif "Replace" in script_line:
                 replacing_node_str = (script_line.split(" with ")[0]).replace("Replace ", "")
                 replacing_node_id = (replacing_node_str.split("(")[1]).split(")")[0]
                 replacing_node = Finder.search_ast_node_by_id(ast_map_a, int(replacing_node_id))
-                target_node_str = Finder.search_matching_node(function_node, replacing_node, var_map_ac)
+                target_node_str = Finder.search_matching_node(function_node_c, replacing_node, var_map_ac)
                 if target_node_str is None:
                     continue
                 elif "Macro" in target_node_str:
@@ -413,6 +428,13 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                     ast_script_c.append(translated_command)
         # print(var_map_ac)
 
+        for var in missing_var_list:
+            var_info = missing_var_list[var]
+            ast_node = var_info['ast-node']
+            ast_op = "Insert " + ast_node['type'] + "(" + str(ast_node['id']) + ")"
+            ast_op += " into " + position_c
+            ast_script_c.append(ast_op)
+        ast_script_c.reverse()
         Emitter.emit_var_map(var_map_ac)
         Emitter.emit_ast_script(ast_script_c)
         Writer.write_var_map(var_map_ac, var_map_file)
