@@ -436,6 +436,21 @@ def extract_decl_list(ast_node):
     return list(set(dec_list))
 
 
+def extract_decl_node_list(ast_node):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    dec_list = dict()
+    node_type = str(ast_node["type"])
+    if node_type in ["FunctionDecl", "VarDecl", "ParmVarDecl"]:
+        identifier = str(ast_node['identifier'])
+        dec_list[identifier] = ast_node
+
+    if len(ast_node['children']) > 0:
+        for child_node in ast_node['children']:
+            child_dec_list = extract_decl_node_list(child_node)
+            dec_list.update(child_dec_list)
+    return dec_list
+
+
 def extract_reference_node_list(ast_node):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     ref_node_list = list()
