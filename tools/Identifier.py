@@ -266,3 +266,12 @@ def identify_divergent_point(byte_list, sym_path_list, trace_list, stack_info):
                     break
 
     return estimated_loc
+
+
+def identify_fixed_errors(output_a, output_b):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    fixed_error_list = list()
+    error_list_a = Extractor.extract_error_list_from_output(output_a)
+    error_list_b = Extractor.extract_error_list_from_output(output_b)
+    fixed_error_list = [error for error in error_list_a if error not in error_list_b]
+    return fixed_error_list

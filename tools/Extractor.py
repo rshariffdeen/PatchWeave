@@ -477,3 +477,13 @@ def extract_source_lines_from_trace(trace_list):
         source_line_map[source_path].append(int(line_number))
     return source_line_map
 
+
+def extract_error_list_from_output(output):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    error_list = list()
+    for output_line in output:
+        if "runtime error" in output_line:
+            error = "runtime error: "
+            error += output_line.split(" runtime error: ")[1]
+            error_list.append(error)
+    return error_list
