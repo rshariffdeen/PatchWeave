@@ -52,12 +52,13 @@ def identify_missing_functions(ast_map, ast_node, source_path_b, source_path_d, 
     return missing_function_list
 
 
-def identify_missing_var(function_node_a, insert_node_b, skip_list):
+def identify_missing_var(function_node_a, function_node_b, insert_node_b, skip_list):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Emitter.normal("\tidentifying missing variables")
-    missing_var_list = list()
+    Emitter.normal("\t\tidentifying missing variables")
+    missing_var_list = dict()
     ref_list = Extractor.extract_reference_node_list(insert_node_b)
     dec_list = Extractor.extract_decl_list(function_node_a)
+    dec_node_list_b = Extractor.extract_decl_node_list(function_node_b)
     for ref_node in ref_list:
         node_type = str(ref_node['type'])
         node_start_line = int(ref_node['start line'])
@@ -68,11 +69,17 @@ def identify_missing_var(function_node_a, insert_node_b, skip_list):
             identifier = str(ref_node['value'])
             if ref_type == "VarDecl":
                 if identifier not in dec_list:
-                    missing_var_list.append(identifier)
+                    if identifier in missing_var_list.keys():
+                        missing_var_list.append(identifier)
+                    else:
+                        info = dict()
+                        info['ref_list'] = list()
+                        info['ast-node'] = dec_node_list_b[identifier]
+                        missing_var_list[identifier] = info
             elif ref_type == "FunctionDecl":
                 if identifier in Values.STANDARD_FUNCTION_LIST:
                     continue
-    return list(set(missing_var_list))
+    return missing_var_list
 
 
 def identify_missing_headers(function_node, target_file):
@@ -182,8 +189,8 @@ def identify_insertion_points(candidate_function):
                                                              start_line,
                                                              exec_line,
                                                              False)
-        print(source_path, start_line, exec_line, False)
-        print(available_var_list)
+        # print(source_path, start_line, exec_line, False)
+        # print(available_var_list)
         unique_var_name_list = list()
         for (var_name, line_num) in available_var_list:
             if var_name not in unique_var_name_list:
