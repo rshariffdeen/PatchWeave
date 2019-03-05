@@ -50,6 +50,8 @@ def sym_trace_donor():
         copy_command = "cp " + sym_file_path + " " + FILE_SYM_PATH_A
         execute_command(copy_command)
     sym_path_a = Collector.collect_symbolic_path(FILE_KLEE_LOG_A, project_path_a)
+    if not sym_path_a:
+        error_exit("No symbolic path for Pa")
 
     Emitter.normal(project_path_b)
     if not Values.SKIP_SYM_TRACE_GEN:
@@ -65,6 +67,8 @@ def sym_trace_donor():
         copy_command = "cp " + sym_file_path + " " + FILE_SYM_PATH_B
         execute_command(copy_command)
     sym_path_b = Collector.collect_symbolic_path(FILE_KLEE_LOG_B, project_path_b)
+    if not sym_path_b:
+        error_exit("No symbolic path for Pb")
 
 
 def sym_trace_target():
@@ -87,6 +91,8 @@ def sym_trace_target():
         copy_command = "cp " + sym_file_path + " " + FILE_SYM_PATH_C
         execute_command(copy_command)
     sym_path_c = Collector.collect_symbolic_path(FILE_KLEE_LOG_C, project_path_c)
+    if not sym_path_c:
+        error_exit("No symbolic path for Pc")
 
 
 def safe_exec(function_def, title, *args):
