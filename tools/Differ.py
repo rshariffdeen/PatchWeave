@@ -41,7 +41,7 @@ def diff_h_files(diff_file_path, project_path_a):
             diff_line = diff_line.split(" ")
             file_a = diff_line[1]
             file_b = diff_line[3]
-            ASTGenerator.parseAST(file_a, project_path_a, is_deckard=True, is_header=True)
+            # ASTGenerator.parse_ast(file_a, project_path_a, is_deckard=True, is_header=True)
             file_list.append(file_a)
             diff_line = diff_file.readline().strip()
 
