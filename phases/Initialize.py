@@ -97,6 +97,10 @@ def read_conf():
             Values.BUILD_FLAGS_A = configuration.replace(Definitions.CONF_FLAGS_A, '')
         elif Definitions.CONF_FLAGS_C in configuration:
             Values.BUILD_FLAGS_C = configuration.replace(Definitions.CONF_FLAGS_C, '')
+        elif Definitions.CONF_CONFIG_COMMAND_A in configuration:
+            Values.CONFIG_COMMAND_A = configuration.replace(Definitions.CONF_CONFIG_COMMAND_A, '')
+        elif Definitions.CONF_CONFIG_COMMAND_C in configuration:
+            Values.CONFIG_COMMAND_C = configuration.replace(Definitions.CONF_CONFIG_COMMAND_C, '')
         elif Definitions.CONF_BUILD_COMMAND_A in configuration:
             Values.BUILD_COMMAND_A = configuration.replace(Definitions.CONF_BUILD_COMMAND_A, '')
         elif Definitions.CONF_BUILD_COMMAND_C in configuration:
