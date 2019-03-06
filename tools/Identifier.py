@@ -273,5 +273,6 @@ def identify_fixed_errors(output_a, output_b):
     fixed_error_list = list()
     error_list_a = Extractor.extract_error_list_from_output(output_a)
     error_list_b = Extractor.extract_error_list_from_output(output_b)
-    fixed_error_list = [error for error in error_list_a if error not in error_list_b]
+    fixed_error_list = [error for error in error_list_a if (error not in error_list_b)
+                        and (error not in fixed_error_list)]
     return fixed_error_list
