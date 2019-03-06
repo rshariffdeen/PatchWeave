@@ -16,13 +16,16 @@ CXX_FLAGS = "-g -O0 -ftrapv -fPIC"
 LD_FLAGS = ""
 
 
-def config_project(project_path, is_llvm):
+def config_project(project_path, is_llvm, custom_config_command=None):
     dir_command = "cd " + project_path + ";"
     if os.path.exists(project_path + "/" + "aclocal.m4"):
         pre_config_command = "rm aclocal.m4;aclocal"
         execute_command(pre_config_command)
 
-    if os.path.exists(project_path + "/configure"):
+    if custom_config_command is not None:
+        config_command = custom_config_command
+
+    elif os.path.exists(project_path + "/configure"):
         config_command = "CC=" + CC + " "
         config_command += "CXX=" + CXX + " "
         config_command += "./configure "
@@ -39,13 +42,15 @@ def config_project(project_path, is_llvm):
 
     elif os.path.exists(project_path + "/CMakeLists.txt"):
         config_command = "cmake -DCMAKE_CC=" + CC + " "
-        config_command += "-DCMAKE_CXX="  + CXX + " "
+        config_command += "-DCMAKE_CXX=" + CXX + " "
         config_command += "-DCMAKE_C_FLAGS=" + C_FLAGS + " "
         config_command += "-DCMAKE_CXX_FLAGS=" + CXX_FLAGS + " . "
+
     if is_llvm:
         config_command = "LLVM_COMPILER=clang;" + config_command
 
     config_command = dir_command + config_command
+    # print(config_command)
     ret_code = execute_command(config_command)
     if int(ret_code) != 0:
         Emitter.error(config_command)
@@ -97,21 +102,28 @@ def config_all(is_llvm=False):
     Emitter.sub_sub_title("configuring projects")
 
     Emitter.normal("\t" + Values.Project_A.path)
-    if not Values.BUILD_COMMAND_A:
+    if not Values.CONFIG_COMMAND_A:
         config_project(Values.Project_A.path, is_llvm)
+    else:
+        config_project(Values.Project_A.path, is_llvm, Values.CONFIG_COMMAND_A)
 
     Emitter.normal("\t" + Values.Project_B.path)
-    if not Values.BUILD_COMMAND_A:
+    if not Values.CONFIG_COMMAND_A:
         config_project(Values.Project_B.path, is_llvm)
+    else:
+        config_project(Values.Project_B.path, is_llvm, Values.CONFIG_COMMAND_A)
 
     Emitter.normal("\t" + Values.Project_C.path)
-    if not Values.BUILD_COMMAND_C:
+    if not Values.CONFIG_COMMAND_C:
         config_project(Values.Project_C.path, is_llvm)
+    else:
+        config_project(Values.Project_C.path, is_llvm, Values.CONFIG_COMMAND_C)
 
     Emitter.normal("\t" + Values.Project_D.path)
-    if not Values.BUILD_COMMAND_C:
+    if not Values.CONFIG_COMMAND_C:
         config_project(Values.Project_D.path, is_llvm)
-
+    else:
+        config_project(Values.Project_D.path, is_llvm, Values.CONFIG_COMMAND_C)
 
 def build_normal():
     global CC, CXX, CXX_FLAGS, C_FLAGS, LD_FLAGS
