@@ -23,7 +23,10 @@ def config_project(project_path, is_llvm, custom_config_command=None):
         execute_command(pre_config_command)
 
     if custom_config_command is not None:
-        config_command = custom_config_command
+        if custom_config_command == "skip":
+            return
+        else:
+            config_command = custom_config_command
 
     elif os.path.exists(project_path + "/configure"):
         config_command = "CC=" + CC + " "
@@ -57,13 +60,38 @@ def config_project(project_path, is_llvm, custom_config_command=None):
         error_exit("CONFIGURATION FAILED!!\nExit Code: " + str(ret_code))
 
 
+def apply_flags(build_command):
+    command = build_command.replace("make", "bear make")
+    c_flags = C_FLAGS
+    if "CFLAGS" in build_command:
+        c_flags_old = (build_command.split("CFLAGS='")[1]).split("'")[0]
+        if "-fPIC" in c_flags_old:
+            c_flags = c_flags.replace("-static", "")
+        c_flags_new = c_flags.replace("'", "") + " " + c_flags_old
+        command = command.replace(c_flags_old, c_flags_new)
+    else:
+        new_command = "make CFLAGS=" + c_flags + " "
+        command = command.replace("make", new_command)
+
+    if "CC" in build_command:
+        cc_old = (build_command.split("CC='")[1]).split("'")[0]
+        command = command.replace(cc_old, CC)
+    else:
+        new_command = "make CC=" + CC + " "
+        command = command.replace("make", new_command)
+
+    return command
+
+
 def build_project(project_path, build_command=None):
     dir_command = "cd " + project_path + ";"
     if build_command is None:
         build_command = "bear make CFLAGS=" + C_FLAGS + " "
         build_command += "CXXFLAGS=" + CXX_FLAGS + " > " + Definitions.FILE_MAKE_LOG
+    else:
+        build_command = apply_flags(build_command)
     build_command = dir_command + build_command
-    # print(build_command)
+    print(build_command)
     ret_code = execute_command(build_command)
     if int(ret_code) != 0:
         Emitter.error(build_command)
@@ -124,6 +152,7 @@ def config_all(is_llvm=False):
         config_project(Values.Project_D.path, is_llvm)
     else:
         config_project(Values.Project_D.path, is_llvm, Values.CONFIG_COMMAND_C)
+
 
 def build_normal():
     global CC, CXX, CXX_FLAGS, C_FLAGS, LD_FLAGS
