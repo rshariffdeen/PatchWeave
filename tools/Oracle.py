@@ -76,6 +76,8 @@ def is_function_important(source_path, function_call_node, sym_path_list):
     # print(function_name)
     function_def_node = Finder.search_function_node_by_name(ast_tree, function_name)
     # print(function_def_node)
+    if function_def_node is None:
+        return False
     function_node, file_path = Extractor.extract_complete_function_node(function_def_node, source_path)
     # print(file_path)
     # print(function_node)
