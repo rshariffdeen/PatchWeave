@@ -170,6 +170,8 @@ def build_normal():
 def build_verify():
     global CC, CXX, CXX_FLAGS, C_FLAGS, LD_FLAGS
     Emitter.sub_sub_title("building projects")
+    CC = "clang"
+    CXX = "clang++"
     CXX_FLAGS = "'-g -O0 -static -DNDEBUG -fsanitize=" + Values.ASAN_FLAG + "'"
     C_FLAGS = "'-g -O0 -static -DNDEBUG -fsanitize=" + Values.ASAN_FLAG + "'"
     Emitter.normal("\t\t" + Values.Project_D.path)
@@ -178,7 +180,7 @@ def build_verify():
         config_project(Values.Project_D.path, False)
         build_project(Values.Project_D.path)
     else:
-        config_project(Values.Project_D.path, False)
+        config_project(Values.Project_D.path, False, Values.CONFIG_COMMAND_C)
         build_project(Values.Project_D.path, Values.BUILD_COMMAND_C)
 
 
@@ -277,6 +279,7 @@ def clean_all():
 def build_instrumented_code(source_directory):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Emitter.normal("\t\t\tbuilding instrumented code")
+    global CXX_FLAGS, C_FLAGS
     CXX_FLAGS = "'-g -O0 -static -DNDEBUG -ftrapv'"
     C_FLAGS = "'-g -O0 -static -ftrapv -L/home/rshariffdeen/workspace/klee/build-rshariffdeen/lib -lkleeRuntest'"
 
@@ -286,8 +289,24 @@ def build_instrumented_code(source_directory):
         execute_command(pre_config_command)
 
     build_command = "cd " + source_directory + ";"
-    build_command += "make CFLAGS=" + C_FLAGS + " "
-    build_command += "CXXFLAGS=" + CXX_FLAGS + " > " + Definitions.FILE_MAKE_LOG
+    custom_build_command = ""
+    if (Values.PATH_A in source_directory) or (Values.PATH_B in source_directory):
+        if Values.BUILD_COMMAND_A is not None:
+            custom_build_command = Values.BUILD_COMMAND_A
+
+    if Values.PATH_C in source_directory:
+        if Values.BUILD_COMMAND_C is not None:
+            custom_build_command = Values.BUILD_COMMAND_C
+
+    # print("custom command is " + custom_build_command)
+
+    if not custom_build_command:
+        build_command += "make CFLAGS=" + C_FLAGS + " "
+        build_command += "CXXFLAGS=" + CXX_FLAGS + " > " + Definitions.FILE_MAKE_LOG
+    else:
+        build_command_with_flags = apply_flags(custom_build_command)
+        build_command += build_command_with_flags
+
     # print(build_command)
     ret_code = execute_command(build_command)
     if int(ret_code) == 2:
