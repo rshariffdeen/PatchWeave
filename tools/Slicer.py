@@ -33,6 +33,7 @@ def slice_code_from_trace(diff_info, trace_list, path_a, path_b):
                         skip_lines.append(line_number)
         diff_loc_info['skip-lines'] = skip_lines
         diff_info[diff_loc] = diff_loc_info
+    print(diff_info)
     return diff_info
 
 
@@ -78,6 +79,7 @@ def slice_ast_script(diff_info, project_path_a, project_path_b):
                                                                     ast_map_b,
                                                                     skip_lines
                                                                     )
+        # print(filtered_ast_script)
         diff_loc_info['ast-script'] = filtered_ast_script
         filtered_diff_info[diff_loc] = diff_loc_info
         # print(filtered_ast_script)
