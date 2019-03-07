@@ -91,7 +91,7 @@ def build_project(project_path, build_command=None):
     else:
         build_command = apply_flags(build_command)
     build_command = dir_command + build_command
-    print(build_command)
+    # print(build_command)
     ret_code = execute_command(build_command)
     if int(ret_code) != 0:
         Emitter.error(build_command)
