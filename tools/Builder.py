@@ -170,8 +170,8 @@ def build_normal():
 def build_verify():
     global CC, CXX, CXX_FLAGS, C_FLAGS, LD_FLAGS
     Emitter.sub_sub_title("building projects")
-    CC = "clang"
-    CXX = "clang++"
+    CC = "clang-7"
+    CXX = "clang++-7"
     CXX_FLAGS = "'-g -O0 -static -DNDEBUG -fsanitize=" + Values.ASAN_FLAG + "'"
     C_FLAGS = "'-g -O0 -static -DNDEBUG -fsanitize=" + Values.ASAN_FLAG + "'"
     Emitter.normal("\t\t" + Values.Project_D.path)
@@ -187,8 +187,8 @@ def build_verify():
 def build_asan():
     global CC, CXX, CXX_FLAGS, C_FLAGS, LD_FLAGS
     clean_all()
-    CC = "clang"
-    CXX = "clang++"
+    CC = "clang-7"
+    CXX = "clang++-7"
     CXX_FLAGS = "'-g -O0 -static'"
     C_FLAGS = "'-g -O0 -static'"
     config_all()
@@ -279,7 +279,9 @@ def clean_all():
 def build_instrumented_code(source_directory):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Emitter.normal("\t\t\tbuilding instrumented code")
-    global CXX_FLAGS, C_FLAGS
+    global CXX_FLAGS, C_FLAGS, CC, CXX
+    CC = "clang"
+    CXX = "clang++"
     CXX_FLAGS = "'-g -O0 -static -DNDEBUG -ftrapv'"
     C_FLAGS = "'-g -O0 -static -ftrapv -L/home/rshariffdeen/workspace/klee/build-rshariffdeen/lib -lkleeRuntest'"
 
