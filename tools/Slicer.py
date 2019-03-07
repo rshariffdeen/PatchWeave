@@ -33,7 +33,7 @@ def slice_code_from_trace(diff_info, trace_list, path_a, path_b):
                         skip_lines.append(line_number)
         diff_loc_info['skip-lines'] = skip_lines
         diff_info[diff_loc] = diff_loc_info
-    print(diff_info)
+    # print(diff_info)
     return diff_info
 
 
