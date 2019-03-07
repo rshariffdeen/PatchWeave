@@ -105,10 +105,10 @@ def merge_ast_script(ast_script, ast_node_a, ast_node_b, mapping_ba):
             # print(move_node_type_a)
             # print(move_node_type_b)
             if len(target_node_a['children']) <= move_position:
-                script_line = "Insert " + move_node_str + " into " + move_node_str + " at " + str(move_position)
+                script_line = "Insert " + move_node_str + " into " + target_node_str + " at " + str(move_position)
 
             elif move_node_type_a != move_node_type_b:
-                script_line = "Insert " + move_node_str + " into " + move_node_str + " at " + str(move_position)
+                script_line = "Insert " + move_node_str + " into " + target_node_str + " at " + str(move_position)
             else:
                 replacing_node = target_node_a['children'][move_position]
                 replacing_node_id = replacing_node['id']
