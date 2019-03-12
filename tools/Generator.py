@@ -24,7 +24,8 @@ import Converter
 
 def generate_symbolic_expressions(source_path, start_line, end_line,
                                   bit_size, sym_poc_path,
-                                  output_log, only_in_range=True):
+                                  output_log, stack_info,
+                                  only_in_range=True):
 
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Emitter.normal("\t\tgenerating symbolic expressions for variables")
@@ -51,10 +52,11 @@ def generate_symbolic_expressions(source_path, start_line, end_line,
     binary_name = str(binary_path).split("/")[-1]
     binary_directory = "/".join(str(binary_path).split("/")[:-1])
     # backup_file(binary_path, "original-bitcode")
-    Instrumentor.instrument_klee_var_expr(source_path,
-                                          start_line,
-                                          end_line,
-                                          only_in_range)
+    is_error_on_exit = Instrumentor.instrument_klee_var_expr(source_path,
+                                                             start_line,
+                                                             end_line,
+                                                             stack_info,
+                                                             only_in_range)
 
     Builder.build_instrumented_code(source_directory)
     # print(binary_path)
@@ -65,14 +67,15 @@ def generate_symbolic_expressions(source_path, start_line, end_line,
                                           binary_name,
                                           bit_size,
                                           sym_poc_path,
-                                          output_log)
+                                          output_log,
+                                          is_error_on_exit)
     # restore_file("original-bitcode", binary_path)
     reset_git(source_directory)
 
 
 def generate_candidate_function_list(estimate_loc, var_expr_map,
                                      bit_size, sym_poc_path,
-                                     trace_list, var_expr_log):
+                                     trace_list, var_expr_log, stack_info):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Emitter.normal("\t\tgenerating candidate function list")
     filtered_trace_list = Filter.filter_trace_list_by_loc(trace_list, estimate_loc)
@@ -83,10 +86,13 @@ def generate_candidate_function_list(estimate_loc, var_expr_map,
     # print(trace_function_list)
     candidate_function_list = dict()
     expected_score = 0
+    print(var_expr_map)
     for var_name in var_expr_map:
-        var_expr = var_expr_map[var_name]
-        if "A-data" in var_expr:
-            expected_score += 1
+        var_expr_list = var_expr_map[var_name]
+        for var_expr in var_expr_list:
+            if "A-data" in var_expr:
+                expected_score += 1
+                break
 
     if expected_score == 0:
         error_exit("No variable to map")
@@ -111,7 +117,8 @@ def generate_candidate_function_list(estimate_loc, var_expr_map,
                                       last_line,
                                       bit_size,
                                       sym_poc_path,
-                                      var_expr_log
+                                      var_expr_log,
+                                      stack_info
                                       )
 
         sym_expr_map = Collector.collect_symbolic_expressions(var_expr_log)
