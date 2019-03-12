@@ -18,7 +18,10 @@ def collect_symbolic_expressions(trace_file_path):
                 if '[var-expr]' in line:
                     line = line.replace("[var-expr] ", "")
                     var_name, var_expr = line.split(":")
-                    var_expr_map[var_name] = var_expr.replace("\n", "")
+                    var_expr = var_expr.replace("\n", "")
+                    if var_name not in var_expr_map.keys():
+                        var_expr_map[var_name] = list()
+                    var_expr_map[var_name].append(var_expr)
     return var_expr_map
 
 
