@@ -64,7 +64,7 @@ def slice_ast_script(diff_info, project_path_a, project_path_b):
         diff_loc_info = diff_info[diff_loc]
         # print(diff_loc)
         # print(diff_loc_info)
-
+        Emitter.special("\t" + diff_loc)
         skip_lines = diff_loc_info['skip-lines']
         # print(skip_lines)
         ast_script = diff_loc_info['ast-script']
