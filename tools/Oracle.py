@@ -5,8 +5,8 @@
 import sys
 import os
 from ast import ASTGenerator
-from common import Definitions
-from common.Utilities import  error_exit
+from common import Definitions, Values
+from common.Utilities import error_exit
 from six.moves import cStringIO
 from pysmt.smtlib.parser import SmtLibParser
 from pysmt.shortcuts import is_sat
@@ -111,4 +111,15 @@ def did_program_crash(program_output):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     if any(crash_word in str(program_output).lower() for crash_word in Definitions.crash_word_list):
         return True
+    return False
+
+
+def is_loc_on_stack(source_path, function_name, line_number, stack_info):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    if source_path in stack_info.keys():
+        source_info = stack_info[source_path]
+        if function_name in source_info.keys():
+            line_list = source_info[function_name]
+            if line_number in line_list:
+                return True
     return False
