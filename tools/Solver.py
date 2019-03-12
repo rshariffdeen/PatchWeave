@@ -26,7 +26,7 @@ def estimate_divergent_point(path_cond_a, path_cond_b, target_sym_path, target_t
                                                        target_trace,
                                                        stack_info
                                                        )
-    Emitter.special("\testimated divergent point:" + estimate_loc)
+    Emitter.highlight("\testimated divergent point:" + estimate_loc)
     return estimate_loc
 
 
