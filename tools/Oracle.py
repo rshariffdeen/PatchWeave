@@ -116,10 +116,15 @@ def did_program_crash(program_output):
 
 def is_loc_on_stack(source_path, function_name, line_number, stack_info):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    # print(source_path, function_name, line_number)
     if source_path in stack_info.keys():
+        # print(source_path)
         source_info = stack_info[source_path]
         if function_name in source_info.keys():
+            # print(function_name)
             line_list = source_info[function_name]
-            if line_number in line_list:
+            # print(line_list)
+            if str(line_number) in line_list:
+                # print(line_number)
                 return True
     return False
