@@ -99,7 +99,7 @@ def program_output(output_message):
 def emit_var_map(var_map):
     write("\t\tVar Map:", WHITE)
     for var_a in var_map:
-        special("\t\t\t " + var_a + " -> " + var_map[var_a])
+        special("\t\t\t " + var_a + " ==> " + var_map[var_a])
 
 
 def emit_ast_script(ast_script):
