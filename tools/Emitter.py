@@ -14,6 +14,7 @@ CYAN = '\x1b[1;36m'
 WHITE = '\t\x1b[1;37m'
 
 PROG_OUTPUT_COLOR = '\t\x1b[0;30;47m'
+STAT_COLOR = '\t\x1b[0;32;47m'
 
 
 def write(print_message, print_color, new_line=True):
@@ -56,6 +57,10 @@ def normal(message, jump_line=True):
     # Logger.output(message)
 
 
+def highlight(message, jump_line=True):
+    write(message, WHITE, jump_line)
+
+
 def information(message, jump_line=True):
     if Values.DEBUG:
         write(message, GREY, jump_line)
@@ -63,7 +68,7 @@ def information(message, jump_line=True):
 
 
 def statistics(message):
-    write(message, WHITE)
+    write(message, GREY)
     Logger.output(message)
 
 
