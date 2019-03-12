@@ -172,8 +172,8 @@ def weave_functions(missing_function_list, modified_source_list):
 
 
 def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
-               bit_size, sym_poc_path,
-               file_info, trace_list, estimate_loc, modified_source_list):
+               bit_size, sym_poc_path, file_info, trace_list,
+               estimate_loc, modified_source_list, stack_info_a, stack_info_c):
 
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     out_file_info, log_file_info = file_info
@@ -200,18 +200,20 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                                                 end_line_b,
                                                 bit_size,
                                                 sym_poc_path,
-                                                var_log_b
+                                                var_log_b,
+                                                stack_info_a
                                                 )
 
         var_expr_map_b = Collector.collect_symbolic_expressions(var_log_b)
-        # print(var_expr_map_b)
+        print(var_expr_map_b)
         Emitter.sub_sub_title("generating candidate function list")
         insertion_function_list = Generator.generate_candidate_function_list(estimate_loc,
                                                                              var_expr_map_b,
                                                                              bit_size,
                                                                              sym_poc_path,
                                                                              trace_list,
-                                                                             var_log_c
+                                                                             var_log_c,
+                                                                             stack_info_c
                                                                              )
         best_candidate_function_id = Filter.filter_best_candidate_function(insertion_function_list)
 
@@ -273,7 +275,8 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                                                 line_number_c,
                                                 bit_size,
                                                 sym_poc_path,
-                                                var_log_c
+                                                var_log_c,
+                                                stack_info_c
                                                 )
 
         var_expr_map_c = Collector.collect_symbolic_expressions(var_log_c)
@@ -312,7 +315,8 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                                                 end_line_b,
                                                 bit_size,
                                                 sym_poc_path,
-                                                var_log_b)
+                                                var_log_b,
+                                                stack_info_a)
         var_expr_map_b = Collector.collect_symbolic_expressions(var_log_b)
         # print(var_expr_map_b)
 
@@ -321,7 +325,8 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                                                 end_line_a,
                                                 bit_size,
                                                 sym_poc_path,
-                                                var_log_a)
+                                                var_log_a,
+                                                stack_info_a)
 
         var_expr_map_a = Collector.collect_symbolic_expressions(var_log_a)
         # print(var_expr_map_a)
@@ -331,7 +336,8 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                                                                              bit_size,
                                                                              sym_poc_path,
                                                                              trace_list,
-                                                                             var_log_c
+                                                                             var_log_c,
+                                                                             stack_info_c
                                                                              )
         best_candidate_function_id = Filter.filter_best_candidate_function(insertion_function_list)
 
@@ -372,6 +378,7 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                                                 bit_size,
                                                 sym_poc_path,
                                                 var_log_c,
+                                                stack_info_c,
                                                 False)
 
         var_expr_map_c = Collector.collect_symbolic_expressions(var_log_c)
