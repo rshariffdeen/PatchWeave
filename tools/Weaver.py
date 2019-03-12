@@ -205,7 +205,7 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                                                 )
 
         var_expr_map_b = Collector.collect_symbolic_expressions(var_log_b)
-        print(var_expr_map_b)
+        # print(var_expr_map_b)
         Emitter.sub_sub_title("generating candidate function list")
         insertion_function_list = Generator.generate_candidate_function_list(estimate_loc,
                                                                              var_expr_map_b,

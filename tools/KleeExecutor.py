@@ -42,6 +42,7 @@ def generate_var_expressions(binary_arguments, binary_dir, binary_name, bit_size
     # print(trace_command)
     ret_code = execute_command(trace_command)
     if int(ret_code) != 0:
+        print("Log Path: " + log_path)
         error_exit("CONCOLIC EXECUTION FAILED with code " + ret_code)
 
 
