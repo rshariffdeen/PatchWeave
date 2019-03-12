@@ -95,6 +95,7 @@ def transplant_code():
     out_file_info = FILE_SKIP_LIST, FILE_AST_SCRIPT, FILE_VAR_MAP
     file_info = out_file_info, log_file_info
     trace_list = Trace.list_trace_c
+    stack_info_a = Trace.stack_a
     stack_info_c = Trace.stack_c
     # print(Analyse.diff_info)
     for diff_loc in Analyse.diff_info.keys():
@@ -122,7 +123,9 @@ def transplant_code():
                                                              file_info,
                                                              trace_list,
                                                              estimate_loc,
-                                                             modified_source_list
+                                                             modified_source_list,
+                                                             stack_info_a,
+                                                             stack_info_c
                                                              )
         # print(identified_missing_function_list)
         if missing_function_list:
