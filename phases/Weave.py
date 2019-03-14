@@ -90,6 +90,7 @@ def transplant_code():
     path_c = Values.PATH_C
     path_d = Values.Project_D.path
     sym_poc_path = Concolic.FILE_SYMBOLIC_POC
+    poc_path = Values.PATH_POC
     bit_size = Concolic.VALUE_BIT_SIZE
     log_file_info = FILE_VAR_EXPR_LOG_A, FILE_VAR_EXPR_LOG_B, FILE_VAR_EXPR_LOG_C
     out_file_info = FILE_SKIP_LIST, FILE_AST_SCRIPT, FILE_VAR_MAP
@@ -120,6 +121,7 @@ def transplant_code():
                                                              path_d,
                                                              bit_size,
                                                              sym_poc_path,
+                                                             poc_path,
                                                              file_info,
                                                              trace_list,
                                                              estimate_loc,
