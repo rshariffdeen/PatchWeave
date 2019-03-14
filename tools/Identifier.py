@@ -121,9 +121,37 @@ def identify_missing_definitions(function_node, missing_function_list):
     return list(set(missing_definition_list))
 
 
-def identify_missing_macros(function_node, source_file, target_file):
+def identify_missing_macros(ast_node, source_file, target_file):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Emitter.normal("\tidentifying missing macros")
+    Emitter.normal("\t\tidentifying missing macros")
+    missing_macro_list = dict()
+    ref_list = Extractor.extract_reference_node_list(ast_node)
+    for ref_node in ref_list:
+        node_type = str(ref_node['type'])
+        if node_type == "Macro":
+            identifier = str(ref_node['value'])
+            node_child_count = len(ref_node['children'])
+            if identifier in Values.STANDARD_MACRO_LIST:
+                continue
+            if node_child_count:
+                for child_node in ref_node['children']:
+                    identifier = str(child_node['value'])
+                    if identifier in Values.STANDARD_MACRO_LIST:
+                        continue
+
+                    if identifier not in missing_macro_list.keys():
+                        info = dict()
+                        info['source'] = source_file
+                        info['target'] = target_file
+                        missing_macro_list[identifier] = info
+                    else:
+                        error_exit("MACRO REQUIRED MULTIPLE TIMES!!")
+    return missing_macro_list
+
+
+def identify_missing_macros_in_func(function_node, source_file, target_file):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    Emitter.normal("\t\tidentifying missing macros")
     missing_macro_list = dict()
     ref_list = Extractor.extract_reference_node_list(function_node)
     dec_list = Extractor.extract_decl_list(function_node)
