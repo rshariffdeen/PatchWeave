@@ -17,31 +17,37 @@ def map_variable(var_map_a, var_map_b):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Emitter.normal("\t\tgenerating variable map")
     var_map = dict()
+    # print(var_map_a)
+    # print(var_map_b)
     for var_a in var_map_a:
         # print(var_a)
         sym_expr_list_a = var_map_a[var_a]["expr_list"]
         value_list_a = var_map_a[var_a]["value_list"]
+        # print(value_list_a)
         candidate_list = list()
         # print(sym_expr_list_a)
         for index_a, sym_expr_a in enumerate(sym_expr_list_a):
             sym_expr_code_a = Generator.generate_z3_code_for_var(sym_expr_a, var_a)
-            value_a = value_list_a[index_a]
             # print(sym_expr_a)
+            value_a = value_list_a[index_a]
+            # print(value_a)
             input_bytes_a = Extractor.extract_input_bytes_used(sym_expr_code_a)
             # print(input_bytes_a)
             for var_b in var_map_b:
                 # print(var_b)
                 sym_expr_list_b = var_map_b[var_b]["expr_list"]
                 value_list_b = var_map_b[var_b]["value_list"]
+                # print(value_list_b)
                 # print(sym_expr_list_b)
                 for index_b, sym_expr_b in enumerate(sym_expr_list_b):
                     sym_expr_code_b = Generator.generate_z3_code_for_var(sym_expr_b, var_b)
-                    value_b = value_list_b[index_b]
                     # print(sym_expr_b)
+                    value_b = value_list_b[index_b]
+                    # print(value_b)
                     input_bytes_b = Extractor.extract_input_bytes_used(sym_expr_code_b)
                     # print(input_bytes_b)
                     if input_bytes_a and (input_bytes_a == input_bytes_b):
-                        if var_a == var_b:
+                        if value_a == value_b:
                             z3_eq_code = Generator.generate_z3_code_for_equivalence(sym_expr_code_a, sym_expr_code_b)
                             if Oracle.is_var_expr_equal(z3_eq_code):
                                 if var_b not in candidate_list:
