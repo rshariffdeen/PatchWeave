@@ -19,28 +19,30 @@ def map_variable(var_map_a, var_map_b):
     var_map = dict()
     # print(var_map_a)
     # print(var_map_b)
-    for var_a in var_map_a:
+    for var_a_name in var_map_a:
         # print(var_a)
-        sym_expr_list_a = var_map_a[var_a]["expr_list"]
-        value_list_a = var_map_a[var_a]["value_list"]
+        sym_expr_list_a = var_map_a[var_a_name]["expr_list"]
+        value_list_a = var_map_a[var_a_name]["value_list"]
+        var_a_type = var_map_a[var_a_name]["data_type"]
         # print(value_list_a)
         candidate_list = list()
         # print(sym_expr_list_a)
         for index_a, sym_expr_a in enumerate(sym_expr_list_a):
-            sym_expr_code_a = Generator.generate_z3_code_for_var(sym_expr_a, var_a)
+            sym_expr_code_a = Generator.generate_z3_code_for_var(sym_expr_a, var_a_name)
             # print(sym_expr_a)
             value_a = value_list_a[index_a]
             # print(value_a)
             input_bytes_a = Extractor.extract_input_bytes_used(sym_expr_code_a)
             # print(input_bytes_a)
-            for var_b in var_map_b:
+            for var_b_name in var_map_b:
                 # print(var_b)
-                sym_expr_list_b = var_map_b[var_b]["expr_list"]
-                value_list_b = var_map_b[var_b]["value_list"]
+                sym_expr_list_b = var_map_b[var_b_name]["expr_list"]
+                value_list_b = var_map_b[var_b_name]["value_list"]
+                var_b_type = var_map_b[var_b_name]["data_type"]
                 # print(value_list_b)
                 # print(sym_expr_list_b)
                 for index_b, sym_expr_b in enumerate(sym_expr_list_b):
-                    sym_expr_code_b = Generator.generate_z3_code_for_var(sym_expr_b, var_b)
+                    sym_expr_code_b = Generator.generate_z3_code_for_var(sym_expr_b, var_b_name)
                     # print(sym_expr_b)
                     value_b = value_list_b[index_b]
                     # print(value_b)
@@ -50,24 +52,33 @@ def map_variable(var_map_a, var_map_b):
                         if value_a == value_b:
                             z3_eq_code = Generator.generate_z3_code_for_equivalence(sym_expr_code_a, sym_expr_code_b)
                             if Oracle.is_var_expr_equal(z3_eq_code):
-                                if var_b not in candidate_list:
-                                    candidate_list.append(var_b)
+                                if var_b_name not in candidate_list:
+                                    candidate_list.append((var_b_name, var_b_type))
+
         # print(candidate_list)
         if len(candidate_list) == 1:
-            var_map[var_a] = candidate_list[0]
+            var_b_name, var_b_type = candidate_list[0]
+            if var_b_type == var_a_type:
+                var_map[var_a_name] = var_b_name
+            else:
+                var_map[var_a_name] = "(" + var_a_type + ")" + var_b_name
         elif len(candidate_list) > 1:
             distance = 100
             best_candidate = ""
-            for var_b in candidate_list:
-                l_distance = Solver.levenshtein_distance(var_a, var_b)
+            for var_b_name, var_b_type in candidate_list:
+                l_distance = Solver.levenshtein_distance(var_a_name, var_b_name)
                 if l_distance < distance:
                     distance = l_distance
-                    best_candidate = var_b
+                    best_candidate = var_b_name, var_b_type
                 elif l_distance == distance:
                     print(best_candidate, distance)
-                    print(var_b, l_distance)
+                    print(var_b_name, var_b_type, l_distance)
                     error_exit("more than one candidate")
-            var_map[var_a] = best_candidate
+            var_b_name, var_b_type = best_candidate
+            if var_b_type == var_a_type:
+                var_map[var_a_name] = var_b_name
+            else:
+                var_map[var_a_name] = "(" + var_a_type + ")" + var_b_name
     return var_map
 
 
