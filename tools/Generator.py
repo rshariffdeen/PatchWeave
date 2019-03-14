@@ -20,6 +20,7 @@ import Mapper
 import Finder
 import Collector
 import Converter
+import Merger
 
 
 def generate_symbolic_expressions(source_path, start_line, end_line,
@@ -126,8 +127,8 @@ def generate_variable_values(source_path, start_line, end_line,
     reset_git(source_directory)
 
 
-def generate_candidate_function_list(estimate_loc, var_expr_map,
-                                     bit_size, sym_poc_path,
+def generate_candidate_function_list(estimate_loc, var_info_a,
+                                     bit_size, sym_poc_path, poc_path,
                                      trace_list, var_expr_log, stack_info):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Emitter.normal("\t\tgenerating candidate function list")
@@ -140,8 +141,8 @@ def generate_candidate_function_list(estimate_loc, var_expr_map,
     candidate_function_list = dict()
     expected_score = 0
     # print(var_expr_map)
-    for var_name in var_expr_map:
-        var_expr_list = var_expr_map[var_name]
+    for var_name in var_info_a:
+        var_expr_list = var_info_a[var_name]['expr_list']
         for var_expr in var_expr_list:
             if "A-data" in var_expr:
                 expected_score += 1
@@ -165,6 +166,16 @@ def generate_candidate_function_list(estimate_loc, var_expr_map,
                                                            source_path)
         start_line = function_node['start line']
         # print(function_node)
+        generate_variable_values(source_path,
+                                 start_line,
+                                 last_line,
+                                 bit_size,
+                                 poc_path,
+                                 var_expr_log,
+                                 stack_info
+                                 )
+
+        var_value_map = Collector.collect_values(var_expr_log)
         generate_symbolic_expressions(source_path,
                                       start_line,
                                       last_line,
@@ -174,9 +185,10 @@ def generate_candidate_function_list(estimate_loc, var_expr_map,
                                       stack_info
                                       )
 
-        sym_expr_map = Collector.collect_symbolic_expressions(var_expr_log)
+        var_expr_map = Collector.collect_symbolic_expressions(var_expr_log)
+        var_info_b = Merger.merge_var_info(var_expr_map, var_value_map)
         # print(sym_expr_map)
-        var_map = Mapper.map_variable(var_expr_map, sym_expr_map)
+        var_map = Mapper.map_variable(var_info_a, var_info_b)
         function_id = source_path + ":" + function_name
         score = len(var_map)
         Emitter.normal("\t\tscore: " + str(score))
