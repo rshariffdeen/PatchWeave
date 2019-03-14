@@ -19,28 +19,33 @@ def map_variable(var_map_a, var_map_b):
     var_map = dict()
     for var_a in var_map_a:
         # print(var_a)
-        sym_expr_list_a = var_map_a[var_a]
+        sym_expr_list_a = var_map_a[var_a]["expr_list"]
+        value_list_a = var_map_a[var_a]["value_list"]
         candidate_list = list()
         # print(sym_expr_list_a)
-        for sym_expr_a in sym_expr_list_a:
+        for index_a, sym_expr_a in enumerate(sym_expr_list_a):
             sym_expr_code_a = Generator.generate_z3_code_for_var(sym_expr_a, var_a)
+            value_a = value_list_a[index_a]
             # print(sym_expr_a)
             input_bytes_a = Extractor.extract_input_bytes_used(sym_expr_code_a)
             # print(input_bytes_a)
             for var_b in var_map_b:
                 # print(var_b)
-                sym_expr_list_b = var_map_b[var_b]
+                sym_expr_list_b = var_map_b[var_b]["expr_list"]
+                value_list_b = var_map_b[var_b]["value_list"]
                 # print(sym_expr_list_b)
-                for sym_expr_b in sym_expr_list_b:
+                for index_b, sym_expr_b in enumerate(sym_expr_list_b):
                     sym_expr_code_b = Generator.generate_z3_code_for_var(sym_expr_b, var_b)
+                    value_b = value_list_b[index_b]
                     # print(sym_expr_b)
                     input_bytes_b = Extractor.extract_input_bytes_used(sym_expr_code_b)
                     # print(input_bytes_b)
                     if input_bytes_a and (input_bytes_a == input_bytes_b):
-                        z3_eq_code = Generator.generate_z3_code_for_equivalence(sym_expr_code_a, sym_expr_code_b)
-                        if Oracle.is_var_expr_equal(z3_eq_code):
-                            if var_b not in candidate_list:
-                                candidate_list.append(var_b)
+                        if var_a == var_b:
+                            z3_eq_code = Generator.generate_z3_code_for_equivalence(sym_expr_code_a, sym_expr_code_b)
+                            if Oracle.is_var_expr_equal(z3_eq_code):
+                                if var_b not in candidate_list:
+                                    candidate_list.append(var_b)
         # print(candidate_list)
         if len(candidate_list) == 1:
             var_map[var_a] = candidate_list[0]

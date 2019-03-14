@@ -242,9 +242,9 @@ def extract_var_ref_list(ast_node, start_line, end_line, only_in_range):
                         var_list.append((var_name, line_number, var_type))
                 elif child_node_type == "MemberExpr":
                     var_name, var_type, auxilary_list = Converter.convert_member_expr(child_node)
-                    var_list.append((str(var_name), line_number))
-                    for aux_var_name in auxilary_list:
-                        var_list.append((str(aux_var_name), line_number, var_type))
+                    var_list.append((str(var_name), line_number, var_type))
+                    for aux_var_name, aux_var_type in auxilary_list:
+                        var_list.append((str(aux_var_name), line_number, aux_var_type))
                 else:
                     child_var_list = extract_var_ref_list(child_node, start_line, end_line, only_in_range)
                     var_list = var_list + child_var_list
