@@ -12,6 +12,7 @@ SYMBOLIC_CONVERTER = "gen-bout"
 SYMBOLIC_ENGINE = "klee "
 SYMBOLIC_ARGUMENTS_FOR_PATH = "-print-path  -write-smt2s  --libc=uclibc --posix-runtime --external-calls=all --only-replay-seeds --seed-out=$KTEST"
 SYMBOLIC_ARGUMENTS_FOR_EXPR = " --resolve-path --libc=uclibc --posix-runtime --external-calls=all --only-replay-seeds --seed-out=$KTEST"
+SYMBOLIC_ARGUMENTS_FOR_VALUE = " --resolve-path --libc=uclibc --posix-runtime --external-calls=all"
 SYMBOLIC_ARGUMENTS_FOR_TRACE = "--posix-runtime --libc=uclibc --print-trace --print-stack "
 
 
@@ -39,6 +40,22 @@ def generate_var_expressions(binary_arguments, binary_dir, binary_name, bit_size
     trace_command += SYMBOLIC_ENGINE + sym_args.replace("$KTEST", sym_poc_path) + " " + binary_name + ".bc "\
                      + binary_arguments.replace("$POC", "A") + " --sym-files 1 " + str(bit_size) + "  > " + log_path + \
                     " 2>&1"
+    # print(trace_command)
+    ret_code = execute_command(trace_command)
+    if int(ret_code) != 0:
+        print("Log Path: " + log_path)
+        error_exit("CONCOLIC EXECUTION FAILED with code " + ret_code)
+
+
+def generate_values(binary_arguments, binary_dir, binary_name, bit_size, poc_path, log_path, is_error_on_exit):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    sym_args = ""
+    if not is_error_on_exit:
+        sym_args = "-no-exit-on-error "
+    trace_command = "cd " + binary_dir + ";"
+    sym_args += SYMBOLIC_ARGUMENTS_FOR_VALUE
+    trace_command += SYMBOLIC_ENGINE + sym_args + " " + binary_name + ".bc "\
+                     + binary_arguments.replace("$POC", poc_path) + "  > " + log_path + " 2>&1"
     # print(trace_command)
     ret_code = execute_command(trace_command)
     if int(ret_code) != 0:
