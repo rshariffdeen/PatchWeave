@@ -184,6 +184,15 @@ def extract_var_ref_list(ast_node, start_line, end_line, only_in_range):
             for var_name, line_number in operands_var_list:
                 var_list.append((str(var_name), insert_line_number))
             return var_list
+    if node_type == "UnaryOperator":
+        insert_line_number = int(ast_node['end line'])
+        node_value = ast_node['value']
+        if node_value == "&":
+            child_node = ast_node['children'][0]
+            child_var_list = extract_var_ref_list(child_node, start_line, end_line, only_in_range)
+            for var_name, line_number in child_var_list:
+                var_list.append(("&" + str(var_name), insert_line_number))
+            return var_list
     if node_type == "DeclRefExpr":
         line_number = int(ast_node['start line'])
         if hasattr(ast_node, "ref_type"):
