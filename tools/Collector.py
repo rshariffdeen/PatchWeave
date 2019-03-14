@@ -37,13 +37,15 @@ def collect_values(trace_file_path):
                     line = line.replace("[var-value] ", "")
                     var_name, var_value = line.split(":")
                     var_value = var_value.replace("\n", "")
+                    var_value = var_value.split(" ")[1]
                     if var_name not in var_value_map.keys():
                         var_value_map[var_name] = dict()
                         var_value_map[var_name]['value_list'] = list()
                     var_value_map[var_name]['value_list'].append(var_value)
                 if '[var-type]' in line:
                     line = line.replace("[var-type]: ", "")
-                    var_name, var_type = line.split(":")
+                    var_name = line.split(":")[0]
+                    var_type = line.split(":")[1]
                     var_type = var_type.replace("\n", "")
                     var_value_map[var_name]['data_type'] = var_type
     return var_value_map
