@@ -39,7 +39,8 @@ def map_variable(var_map_a, var_map_b):
                     if input_bytes_a and (input_bytes_a == input_bytes_b):
                         z3_eq_code = Generator.generate_z3_code_for_equivalence(sym_expr_code_a, sym_expr_code_b)
                         if Oracle.is_var_expr_equal(z3_eq_code):
-                            candidate_list.append(var_b)
+                            if var_b not in candidate_list:
+                                candidate_list.append(var_b)
         # print(candidate_list)
         if len(candidate_list) == 1:
             var_map[var_a] = candidate_list[0]
