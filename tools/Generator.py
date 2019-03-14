@@ -56,7 +56,8 @@ def generate_symbolic_expressions(source_path, start_line, end_line,
                                                              start_line,
                                                              end_line,
                                                              stack_info,
-                                                             only_in_range)
+                                                             only_in_range,
+                                                             True)
 
     Builder.build_instrumented_code(source_directory)
     # print(binary_path)
@@ -69,6 +70,58 @@ def generate_symbolic_expressions(source_path, start_line, end_line,
                                           sym_poc_path,
                                           output_log,
                                           is_error_on_exit)
+    # restore_file("original-bitcode", binary_path)
+    reset_git(source_directory)
+
+
+def generate_variable_values(source_path, start_line, end_line,
+                                  bit_size, poc_path,
+                                  output_log, stack_info,
+                                  only_in_range=True):
+
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    Emitter.normal("\t\tgenerating concrete values for variables")
+    source_file_name = str(source_path).split("/")[-1]
+    source_directory = "/".join(str(source_path).split("/")[:-1])
+
+    if Values.PATH_A in source_path:
+        binary_path = Values.PATH_A + Values.EXPLOIT_A.split(" ")[0]
+        binary_args = " ".join(Values.EXPLOIT_A.split(" ")[1:])
+        source_directory = Values.PATH_A
+    elif Values.PATH_B in source_path:
+        binary_path = Values.PATH_B + Values.EXPLOIT_A.split(" ")[0]
+        binary_args = " ".join(Values.EXPLOIT_A.split(" ")[1:])
+        source_directory = Values.PATH_B
+    elif Values.PATH_C in source_path:
+        binary_path = Values.PATH_C + Values.EXPLOIT_C.split(" ")[0]
+        binary_args = " ".join(Values.EXPLOIT_C.split(" ")[1:])
+        source_directory = Values.PATH_C
+    else:
+        binary_path = Values.Project_D.path + Values.EXPLOIT_C.split(" ")[0]
+        binary_args = " ".join(Values.EXPLOIT_C.split(" ")[1:])
+        source_directory = Values.Project_D.path
+
+    binary_name = str(binary_path).split("/")[-1]
+    binary_directory = "/".join(str(binary_path).split("/")[:-1])
+    # backup_file(binary_path, "original-bitcode")
+    is_error_on_exit = Instrumentor.instrument_klee_var_expr(source_path,
+                                                             start_line,
+                                                             end_line,
+                                                             stack_info,
+                                                             only_in_range,
+                                                             False)
+
+    Builder.build_instrumented_code(source_directory)
+    # print(binary_path)
+    Converter.convert_binary_to_llvm(binary_path)
+
+    KleeExecutor.generate_values(binary_args,
+                                 binary_directory,
+                                 binary_name,
+                                 bit_size,
+                                 poc_path,
+                                 output_log,
+                                 is_error_on_exit)
     # restore_file("original-bitcode", binary_path)
     reset_git(source_directory)
 
