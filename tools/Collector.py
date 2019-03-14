@@ -20,9 +20,33 @@ def collect_symbolic_expressions(trace_file_path):
                     var_name, var_expr = line.split(":")
                     var_expr = var_expr.replace("\n", "")
                     if var_name not in var_expr_map.keys():
-                        var_expr_map[var_name] = list()
-                    var_expr_map[var_name].append(var_expr)
+                        var_expr_map[var_name] = dict()
+                        var_expr_map[var_name]['expr_list'] = list()
+                    var_expr_map[var_name]['expr_list'] .append(var_expr)
     return var_expr_map
+
+
+def collect_values(trace_file_path):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    Emitter.normal("\t\t\tcollecting variable values")
+    var_value_map = dict()
+    if os.path.exists(trace_file_path):
+        with open(trace_file_path, 'r') as trace_file:
+            for line in trace_file:
+                if '[var-value]' in line:
+                    line = line.replace("[var-value] ", "")
+                    var_name, var_value = line.split(":")
+                    var_value = var_value.replace("\n", "")
+                    if var_name not in var_value_map.keys():
+                        var_value_map[var_name] = dict()
+                        var_value_map[var_name]['value_list'] = list()
+                    var_value_map[var_name]['value_list'].append(var_value)
+                if '[var-type]' in line:
+                    line = line.replace("[var-type]: ", "")
+                    var_name, var_type = line.split(":")
+                    var_type = var_type.replace("\n", "")
+                    var_value_map[var_name]['data_type'] = var_type
+    return var_value_map
 
 
 def collect_symbolic_path(file_path, project_path):
