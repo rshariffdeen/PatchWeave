@@ -15,7 +15,7 @@ from common import Values
 from ast import ASTGenerator
 
 
-def instrument_klee_var_expr(source_path, start_line, end_line, stack_info, only_in_range):
+def instrument_klee_var_expr(source_path, start_line, end_line, stack_info, only_in_range, is_symbolic):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Emitter.normal("\t\t\tinstrumenting source code")
     is_error_on_exit = True
@@ -23,21 +23,26 @@ def instrument_klee_var_expr(source_path, start_line, end_line, stack_info, only
     # print(orig_variable_list)
     insert_code = dict()
     instrument_code = ""
-
-    for variable, line_number in orig_variable_list:
+    # print(orig_variable_list)
+    for variable, line_number, data_type in orig_variable_list:
+        if is_symbolic:
+            print_code = "klee_print_expr(\"[var-expr] " + variable + "\", " + variable + ");\n"
+        else:
+            print_code = "klee_print_expr(\"[var-value] " + variable + "\", " + variable + ");\n"
+        type_print_code = "printf(\"[var-type]: " + variable + ":" + data_type + "\\n\");\n"
+        print_code = print_code + type_print_code
         if line_number in insert_code.keys():
             insert_code[
-                line_number] += "klee_print_expr(\"[var-expr] " + variable + "\", " + variable + ");\n"
+                line_number] += print_code
         else:
             insert_code[
-                line_number] = "klee_print_expr(\"[var-expr] " + variable + "\", " + variable + ");\n"
+                line_number] = print_code
 
     sorted_insert_code = collections.OrderedDict(sorted(insert_code.items(), reverse=True))
-
     ast_map = ASTGenerator.get_ast_json(source_path)
     function_node = Finder.search_function_node_by_loc(ast_map, start_line, source_path)
     function_name = function_node['identifier']
-
+    # print(sorted_insert_code)
     if os.path.exists(source_path):
         with open(source_path, 'r') as source_file:
             content = source_file.readlines()
