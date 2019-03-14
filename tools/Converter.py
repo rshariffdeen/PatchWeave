@@ -18,16 +18,17 @@ def convert_cast_expr(ast_node, only_string=False):
     var_list = list()
     type_node = ast_node['children'][0]
     type_value = type_node['value']
+    data_type = str(type_node['data_type'])
     param_node = ast_node['children'][1]
     param_node_type = param_node['type']
     if param_node_type == "MemberExpr":
-        param_node_var_name, param_node_aux_list = convert_member_expr(param_node)
+        param_node_var_name, param_node_data_type, param_node_aux_list = convert_member_expr(param_node)
         var_list = var_list + param_node_aux_list
         var_name = "(" + type_value + ") " + param_node_var_name + " " + var_name
     else:
         error_exit("Unhandled CStyleCAST")
     if only_string:
-        return var_name
+        return var_name, data_type
     return var_name, var_list
 
 
@@ -35,14 +36,15 @@ def convert_member_expr(ast_node, only_string=False):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     var_list = list()
     var_name = ""
+    var_data_type = ""
     if 'value' in ast_node.keys():
         node_value = ast_node['value']
         var_name = str(node_value.split(":")[-1])
+        var_data_type = str(ast_node['data_type'])
         if "union" in node_value:
             var_name = "." + var_name
         else:
             var_name = "->" + var_name
-
     child_node = ast_node['children'][0]
     while child_node:
         child_node_type = child_node['type']
@@ -52,10 +54,13 @@ def convert_member_expr(ast_node, only_string=False):
             iterating_var_node = child_node['children'][1]
             iterating_var_name = iterating_var_node['value']
             iterating_var_type = iterating_var_node['type']
+            iterating_var_data_type = iterating_var_node['data_type']
+            if var_data_type == "":
+                var_data_type = iterating_var_data_type
             if iterating_var_type == "DeclRefExpr":
                 iterating_var_ref_type = iterating_var_node['ref_type']
                 if iterating_var_ref_type in ["VarDecl", "ParmVarDecl"]:
-                    var_list.append(iterating_var_name)
+                    var_list.append((iterating_var_name, iterating_var_data_type))
                     if var_name[:2] == "->":
                         var_name = "." + var_name[2:]
                     var_name = "[" + iterating_var_name + "]" + var_name
@@ -65,19 +70,20 @@ def convert_member_expr(ast_node, only_string=False):
             param_node_var_name = ""
             param_node_aux_list = list()
             if param_node_type == "MemberExpr":
-                param_node_var_name, param_node_aux_list = convert_member_expr(param_node)
+                param_node_var_name, var_data_type, param_node_aux_list = convert_member_expr(param_node)
             elif param_node_type == "CStyleCastExpr":
-                param_node_var_name, param_node_aux_list = convert_cast_expr(param_node)
+                param_node_var_name, var_data_type, param_node_aux_list = convert_cast_expr(param_node)
             var_list = var_list + param_node_aux_list
             var_name = "(" + param_node_var_name + ")" + var_name
             break
         elif child_node_type == "CStyleCastExpr":
-            cast_var_name, cast_node_aux_list = convert_cast_expr(child_node)
+            cast_var_name, var_data_type, cast_node_aux_list = convert_cast_expr(child_node)
             var_list = var_list + cast_node_aux_list
             var_name = cast_var_name + var_name
             break
         elif child_node_type == "MemberExpr":
             child_node_value = child_node['value']
+            var_data_type = str(child_node['data_type'])
             if "union" in child_node_value:
                 var_name = "." + str(child_node_value.split(":")[-1]) + var_name
             else:
@@ -90,8 +96,8 @@ def convert_member_expr(ast_node, only_string=False):
         else:
             child_node = None
     if only_string:
-        return var_name
-    return var_name, var_list
+        return var_name, var_data_type
+    return var_name, var_data_type, var_list
 
 
 def convert_poc_to_ktest(poc_path, ktest_path):
