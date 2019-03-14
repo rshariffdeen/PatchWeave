@@ -34,6 +34,9 @@ ast_map_c = dict()
 FILE_VAR_EXPR_LOG_A = ""
 FILE_VAR_EXPR_LOG_B = ""
 FILE_VAR_EXPR_LOG_C = ""
+FILE_VAR_VALUE_LOG_A = ""
+FILE_VAR_VALUE_LOG_B = ""
+FILE_VAR_VALUE_LOG_C = ""
 FILE_VAR_MAP = ""
 FILE_SKIP_LIST = ""
 FILE_AST_SCRIPT = ""
@@ -94,7 +97,9 @@ def transplant_code():
     sym_poc_path = Concolic.FILE_SYMBOLIC_POC
     poc_path = Values.PATH_POC
     bit_size = Concolic.VALUE_BIT_SIZE
-    log_file_info = FILE_VAR_EXPR_LOG_A, FILE_VAR_EXPR_LOG_B, FILE_VAR_EXPR_LOG_C
+    log_expr_info = FILE_VAR_EXPR_LOG_A, FILE_VAR_EXPR_LOG_B, FILE_VAR_EXPR_LOG_C
+    log_value_info = FILE_VAR_VALUE_LOG_A, FILE_VAR_VALUE_LOG_B, FILE_VAR_VALUE_LOG_C
+    log_file_info = log_expr_info, log_value_info
     out_file_info = FILE_SKIP_LIST, FILE_AST_SCRIPT, FILE_VAR_MAP
     file_info = out_file_info, log_file_info
     trace_list = Trace.list_trace_c
@@ -167,12 +172,16 @@ def safe_exec(function_def, title, *args):
 
 def set_values():
     global FILE_VAR_EXPR_LOG_A, FILE_VAR_EXPR_LOG_B, FILE_VAR_EXPR_LOG_C
+    global FILE_VAR_VALUE_LOG_A, FILE_VAR_VALUE_LOG_B, FILE_VAR_VALUE_LOG_C
     global FILE_VAR_MAP, FILE_SKIP_LIST, FILE_AST_SCRIPT
     global FILE_TEMP_FIX, FILE_MACRO_DEF
 
     FILE_VAR_EXPR_LOG_A = Definitions.DIRECTORY_OUTPUT + "/log-sym-expr-a"
     FILE_VAR_EXPR_LOG_B = Definitions.DIRECTORY_OUTPUT + "/log-sym-expr-b"
     FILE_VAR_EXPR_LOG_C = Definitions.DIRECTORY_OUTPUT + "/log-sym-expr-c"
+    FILE_VAR_VALUE_LOG_A = Definitions.DIRECTORY_OUTPUT + "/log-value-a"
+    FILE_VAR_VALUE_LOG_B = Definitions.DIRECTORY_OUTPUT + "/log-value-b"
+    FILE_VAR_VALUE_LOG_C = Definitions.DIRECTORY_OUTPUT + "/log-value-c"
     FILE_VAR_MAP = Definitions.DIRECTORY_OUTPUT + "/var-map"
     FILE_SKIP_LIST = Definitions.DIRECTORY_OUTPUT + "/skip-list"
     FILE_AST_SCRIPT = Definitions.DIRECTORY_OUTPUT + "/gen-ast-script"

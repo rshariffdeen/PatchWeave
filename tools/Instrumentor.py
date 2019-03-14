@@ -15,9 +15,9 @@ from common import Values
 from ast import ASTGenerator
 
 
-def instrument_klee_var_expr(source_path, start_line, end_line, stack_info, only_in_range, is_symbolic):
+def instrument_klee_var_expr(source_path, start_line, end_line, stack_info, only_in_range):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Emitter.normal("\t\t\tinstrumenting source code")
+    Emitter.normal("\t\tinstrumenting source code")
     is_error_on_exit = True
     orig_variable_list = Extractor.extract_variable_list(source_path, start_line, end_line, only_in_range)
     # print(orig_variable_list)
@@ -25,10 +25,7 @@ def instrument_klee_var_expr(source_path, start_line, end_line, stack_info, only
     instrument_code = ""
     # print(orig_variable_list)
     for variable, line_number, data_type in orig_variable_list:
-        if is_symbolic:
-            print_code = "klee_print_expr(\"[var-expr] " + variable + "\", " + variable + ");\n"
-        else:
-            print_code = "klee_print_expr(\"[var-value] " + variable + "\", " + variable + ");\n"
+        print_code = "klee_print_expr(\"[var-expr] " + variable + "\", " + variable + ");\n"
         type_print_code = "printf(\"[var-type]: " + variable + ":" + data_type + "\\n\");\n"
         print_code = print_code + type_print_code
         if line_number in insert_code.keys():

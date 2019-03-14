@@ -24,12 +24,12 @@ import Merger
 
 
 def generate_symbolic_expressions(source_path, start_line, end_line,
-                                  bit_size, sym_poc_path,
-                                  output_log, stack_info,
+                                  bit_size, sym_poc_path, poc_path,
+                                  output_log_expr, output_log_value, stack_info,
                                   only_in_range=True):
 
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Emitter.normal("\t\tgenerating symbolic expressions for variables")
+    Emitter.normal("\tgenerating variable information")
     source_file_name = str(source_path).split("/")[-1]
     source_directory = "/".join(str(source_path).split("/")[:-1])
 
@@ -57,71 +57,27 @@ def generate_symbolic_expressions(source_path, start_line, end_line,
                                                              start_line,
                                                              end_line,
                                                              stack_info,
-                                                             only_in_range,
-                                                             True)
+                                                             only_in_range
+                                                             )
 
     Builder.build_instrumented_code(source_directory)
     # print(binary_path)
     Converter.convert_binary_to_llvm(binary_path)
-
+    Emitter.normal("\t\tgenerating symbolic expressions for variables")
     KleeExecutor.generate_var_expressions(binary_args,
                                           binary_directory,
                                           binary_name,
                                           bit_size,
                                           sym_poc_path,
-                                          output_log,
+                                          output_log_expr,
                                           is_error_on_exit)
-    # restore_file("original-bitcode", binary_path)
-    reset_git(source_directory)
-
-
-def generate_variable_values(source_path, start_line, end_line,
-                                  bit_size, poc_path,
-                                  output_log, stack_info,
-                                  only_in_range=True):
-
-    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Emitter.normal("\t\tgenerating concrete values for variables")
-    source_file_name = str(source_path).split("/")[-1]
-    source_directory = "/".join(str(source_path).split("/")[:-1])
-
-    if Values.PATH_A in source_path:
-        binary_path = Values.PATH_A + Values.EXPLOIT_A.split(" ")[0]
-        binary_args = " ".join(Values.EXPLOIT_A.split(" ")[1:])
-        source_directory = Values.PATH_A
-    elif Values.PATH_B in source_path:
-        binary_path = Values.PATH_B + Values.EXPLOIT_A.split(" ")[0]
-        binary_args = " ".join(Values.EXPLOIT_A.split(" ")[1:])
-        source_directory = Values.PATH_B
-    elif Values.PATH_C in source_path:
-        binary_path = Values.PATH_C + Values.EXPLOIT_C.split(" ")[0]
-        binary_args = " ".join(Values.EXPLOIT_C.split(" ")[1:])
-        source_directory = Values.PATH_C
-    else:
-        binary_path = Values.Project_D.path + Values.EXPLOIT_C.split(" ")[0]
-        binary_args = " ".join(Values.EXPLOIT_C.split(" ")[1:])
-        source_directory = Values.Project_D.path
-
-    binary_name = str(binary_path).split("/")[-1]
-    binary_directory = "/".join(str(binary_path).split("/")[:-1])
-    # backup_file(binary_path, "original-bitcode")
-    is_error_on_exit = Instrumentor.instrument_klee_var_expr(source_path,
-                                                             start_line,
-                                                             end_line,
-                                                             stack_info,
-                                                             only_in_range,
-                                                             False)
-
-    Builder.build_instrumented_code(source_directory)
-    # print(binary_path)
-    Converter.convert_binary_to_llvm(binary_path)
-
     KleeExecutor.generate_values(binary_args,
                                  binary_directory,
                                  binary_name,
                                  bit_size,
                                  poc_path,
-                                 output_log,
+                                 output_log_value,
                                  is_error_on_exit)
     # restore_file("original-bitcode", binary_path)
     reset_git(source_directory)
@@ -129,7 +85,7 @@ def generate_variable_values(source_path, start_line, end_line,
 
 def generate_candidate_function_list(estimate_loc, var_info_a,
                                      bit_size, sym_poc_path, poc_path,
-                                     trace_list, var_expr_log, stack_info):
+                                     trace_list, var_expr_log, var_value_log, stack_info):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Emitter.normal("\t\tgenerating candidate function list")
     filtered_trace_list = Filter.filter_trace_list_by_loc(trace_list, estimate_loc)
@@ -166,25 +122,19 @@ def generate_candidate_function_list(estimate_loc, var_info_a,
                                                            source_path)
         start_line = function_node['start line']
         # print(function_node)
-        generate_variable_values(source_path,
-                                 start_line,
-                                 last_line,
-                                 bit_size,
-                                 poc_path,
-                                 var_expr_log,
-                                 stack_info
-                                 )
 
-        var_value_map = Collector.collect_values(var_expr_log)
         generate_symbolic_expressions(source_path,
                                       start_line,
                                       last_line,
                                       bit_size,
                                       sym_poc_path,
+                                      poc_path,
                                       var_expr_log,
+                                      var_value_log,
                                       stack_info
                                       )
 
+        var_value_map = Collector.collect_values(var_value_log)
         var_expr_map = Collector.collect_symbolic_expressions(var_expr_log)
         var_info_b = Merger.merge_var_info(var_expr_map, var_value_map)
         # print(sym_expr_map)

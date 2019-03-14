@@ -278,7 +278,7 @@ def clean_all():
 
 def build_instrumented_code(source_directory):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Emitter.normal("\t\t\tbuilding instrumented code")
+    Emitter.normal("\t\tbuilding instrumented code")
     global CXX_FLAGS, C_FLAGS, CC, CXX
     CC = "clang"
     CXX = "clang++"

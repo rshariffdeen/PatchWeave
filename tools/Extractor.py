@@ -258,7 +258,7 @@ def extract_var_ref_list(ast_node, start_line, end_line, only_in_range):
 def extract_variable_list(source_path, start_line, end_line, only_in_range):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     # print(source_path, start_line, end_line)
-    Emitter.normal("\t\t\t\tgenerating variable(available) list")
+    Emitter.normal("\t\t\tgenerating variable(available) list")
     variable_list = list()
     ast_map = ASTGenerator.get_ast_json(source_path)
     func_node = Finder.search_function_node_by_loc(ast_map, int(end_line), source_path)
