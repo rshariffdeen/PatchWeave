@@ -9,7 +9,7 @@ from common import Definitions, Values
 import Concolic
 import Analyse
 import Trace
-from tools import Logger, Solver, Fixer, Emitter, Weaver
+from tools import Logger, Solver, Fixer, Emitter, Weaver, Merger
 
 function_list_a = list()
 function_list_b = list()
@@ -79,12 +79,14 @@ def transplant_missing_functions():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     global missing_header_list, missing_macro_list, modified_source_list
     missing_header_list, \
-    missing_macro_list, modified_source_list = Weaver.weave_functions(missing_function_list,
+    missing_macro_list_func, modified_source_list = Weaver.weave_functions(missing_function_list,
                                                                      modified_source_list)
+
+    missing_macro_list = Merger.merge_macro_info(missing_macro_list, missing_macro_list_func)
 
 
 def transplant_code():
-    global missing_function_list, modified_source_list
+    global missing_function_list, modified_source_list, missing_macro_list
     path_a = Values.PATH_A
     path_b = Values.PATH_B
     path_c = Values.PATH_C
@@ -113,22 +115,22 @@ def transplant_code():
         if not estimate_loc:
             error_exit("No estimation for divergent point")
         modified_source_list, \
-        identified_missing_function_list = Weaver.weave_code(diff_loc,
-                                                             diff_loc_info,
-                                                             path_a,
-                                                             path_b,
-                                                             path_c,
-                                                             path_d,
-                                                             bit_size,
-                                                             sym_poc_path,
-                                                             poc_path,
-                                                             file_info,
-                                                             trace_list,
-                                                             estimate_loc,
-                                                             modified_source_list,
-                                                             stack_info_a,
-                                                             stack_info_c
-                                                             )
+        identified_missing_function_list,\
+        identified_missing_macro_list = Weaver.weave_code(diff_loc,
+                                               diff_loc_info,
+                                               path_a,
+                                               path_b,
+                                               path_c,
+                                               path_d,
+                                               bit_size,
+                                               sym_poc_path,
+                                               poc_path,
+                                               file_info,
+                                               trace_list,
+                                               estimate_loc,
+                                               modified_source_list,
+                                               stack_info_a,
+                                               stack_info_c)
         # print(identified_missing_function_list)
         if missing_function_list:
             if identified_missing_function_list:
@@ -136,6 +138,11 @@ def transplant_code():
         else:
             missing_function_list = identified_missing_function_list
         # print(missing_function_list)
+        if missing_macro_list:
+            if identified_missing_macro_list:
+                missing_macro_list = Merger.merge_macro_info(missing_macro_list, identified_missing_macro_list)
+        else:
+            missing_macro_list = identified_missing_macro_list
 
 
 def safe_exec(function_def, title, *args):
