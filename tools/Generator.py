@@ -191,6 +191,7 @@ def generate_candidate_function_list(estimate_loc, var_info_a,
         var_map = Mapper.map_variable(var_info_a, var_info_b)
         function_id = source_path + ":" + function_name
         score = len(var_map)
+        # print(var_map)
         Emitter.normal("\t\tscore: " + str(score))
         Emitter.emit_var_map(var_map)
         if best_score < score:
