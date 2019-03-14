@@ -17,7 +17,7 @@ from ast import ASTGenerator
 
 def instrument_klee_var_expr(source_path, start_line, end_line, stack_info, only_in_range):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Emitter.normal("\t\tinstrumenting source code")
+    Emitter.normal("\t\t\tinstrumenting source code")
     is_error_on_exit = True
     orig_variable_list = Extractor.extract_variable_list(source_path, start_line, end_line, only_in_range)
     # print(orig_variable_list)

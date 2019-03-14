@@ -10,7 +10,7 @@ import Logger
 
 def collect_symbolic_expressions(trace_file_path):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Emitter.normal("\t\tcollecting symbolic expressions")
+    Emitter.normal("\t\t\tcollecting symbolic expressions")
     var_expr_map = dict()
     if os.path.exists(trace_file_path):
         with open(trace_file_path, 'r') as trace_file:
@@ -28,7 +28,7 @@ def collect_symbolic_expressions(trace_file_path):
 
 def collect_values(trace_file_path):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Emitter.normal("\t\tcollecting variable values")
+    Emitter.normal("\t\t\tcollecting variable values")
     var_value_map = dict()
     if os.path.exists(trace_file_path):
         with open(trace_file_path, 'r') as trace_file:

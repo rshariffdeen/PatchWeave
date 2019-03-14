@@ -29,7 +29,7 @@ def generate_symbolic_expressions(source_path, start_line, end_line,
                                   only_in_range=True):
 
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Emitter.normal("\tgenerating variable information")
+    Emitter.normal("\t\tgenerating variable information")
     source_file_name = str(source_path).split("/")[-1]
     source_directory = "/".join(str(source_path).split("/")[:-1])
 
@@ -63,7 +63,7 @@ def generate_symbolic_expressions(source_path, start_line, end_line,
     Builder.build_instrumented_code(source_directory)
     # print(binary_path)
     Converter.convert_binary_to_llvm(binary_path)
-    Emitter.normal("\t\tgenerating symbolic expressions for variables")
+    Emitter.normal("\t\t\tgenerating symbolic expressions for variables")
     KleeExecutor.generate_var_expressions(binary_args,
                                           binary_directory,
                                           binary_name,
@@ -71,7 +71,7 @@ def generate_symbolic_expressions(source_path, start_line, end_line,
                                           sym_poc_path,
                                           output_log_expr,
                                           is_error_on_exit)
-    Emitter.normal("\t\tgenerating concrete values for variables")
+    Emitter.normal("\t\t\tgenerating concrete values for variables")
     KleeExecutor.generate_values(binary_args,
                                  binary_directory,
                                  binary_name,
