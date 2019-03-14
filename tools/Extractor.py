@@ -134,8 +134,9 @@ def extract_var_dec_list(ast_node, start_line, end_line, only_in_range):
 
     if node_type in ["ParmVarDecl", "VarDecl"]:
         var_name = str(ast_node['identifier'])
+        var_type = str(ast_node['data_type'])
         line_number = int(ast_node['start line'])
-        var_list.append((var_name, line_number))
+        var_list.append((var_name, line_number, var_type))
         return var_list
 
     if child_count:
@@ -181,8 +182,8 @@ def extract_var_ref_list(ast_node, start_line, end_line, only_in_range):
             right_var_list = extract_var_ref_list(right_side, start_line, end_line, only_in_range)
             left_var_list = extract_var_ref_list(left_side, start_line, end_line, only_in_range)
             operands_var_list = right_var_list + left_var_list
-            for var_name, line_number in operands_var_list:
-                var_list.append((str(var_name), insert_line_number))
+            for var_name, line_number, var_type in operands_var_list:
+                var_list.append((str(var_name), insert_line_number, str(var_type)))
             return var_list
     if node_type == "UnaryOperator":
         insert_line_number = int(ast_node['end line'])
@@ -190,8 +191,8 @@ def extract_var_ref_list(ast_node, start_line, end_line, only_in_range):
         if node_value == "&":
             child_node = ast_node['children'][0]
             child_var_list = extract_var_ref_list(child_node, start_line, end_line, only_in_range)
-            for var_name, line_number in child_var_list:
-                var_list.append(("&" + str(var_name), insert_line_number))
+            for var_name, line_number, var_type in child_var_list:
+                var_list.append(("&" + str(var_name), insert_line_number, var_type))
             return var_list
     if node_type == "DeclRefExpr":
         line_number = int(ast_node['start line'])
@@ -200,13 +201,14 @@ def extract_var_ref_list(ast_node, start_line, end_line, only_in_range):
             if ref_type == "FunctionDecl":
                 return var_list
         var_name = str(ast_node['value'])
-        var_list.append((var_name, line_number))
+        var_type = str(ast_node['data_type'])
+        var_list.append((var_name, line_number, var_type))
     if node_type in ["MemberExpr"]:
-        var_name, auxilary_list = Converter.convert_member_expr(ast_node)
+        var_name, var_type, auxilary_list = Converter.convert_member_expr(ast_node)
         line_number = int(ast_node['start line'])
-        var_list.append((str(var_name), line_number))
-        for aux_var_name in auxilary_list:
-            var_list.append((str(aux_var_name), line_number))
+        var_list.append((str(var_name), line_number, var_type))
+        for aux_var_name, aux_var_type in auxilary_list:
+            var_list.append((str(aux_var_name), line_number, aux_var_type))
         return var_list
     if node_type in ["ForStmt"]:
         body_node = ast_node['children'][child_count - 1]
@@ -214,8 +216,8 @@ def extract_var_ref_list(ast_node, start_line, end_line, only_in_range):
         for i in range(0, child_count - 1):
             condition_node = ast_node['children'][i]
             condition_node_var_list = extract_var_ref_list(condition_node, start_line, end_line, only_in_range)
-            for var_name, line_number in condition_node_var_list:
-                var_list.append((str(var_name), insert_line))
+            for var_name, line_number, var_type in condition_node_var_list:
+                var_list.append((str(var_name), insert_line, var_type))
         var_list = var_list + extract_var_ref_list(body_node, start_line, end_line, only_in_range)
         return var_list
     if node_type in ["IfStmt"]:
@@ -223,8 +225,8 @@ def extract_var_ref_list(ast_node, start_line, end_line, only_in_range):
         body_node = ast_node['children'][1]
         insert_line = body_node['start line']
         condition_node_var_list = extract_var_ref_list(condition_node, start_line, end_line, only_in_range)
-        for var_name, line_number in condition_node_var_list:
-            var_list.append((str(var_name), insert_line))
+        for var_name, line_number, var_type in condition_node_var_list:
+            var_list.append((str(var_name), insert_line, var_type))
         var_list = var_list + extract_var_ref_list(body_node, start_line, end_line, only_in_range)
         return var_list
     if node_type in ["CallExpr"]:
@@ -236,12 +238,13 @@ def extract_var_ref_list(ast_node, start_line, end_line, only_in_range):
                     ref_type = child_node['ref_type']
                     if ref_type == "VarDecl":
                         var_name = str(child_node['value'])
-                        var_list.append((var_name, line_number))
+                        var_type = str(child_node['data_type'])
+                        var_list.append((var_name, line_number, var_type))
                 elif child_node_type == "MemberExpr":
-                    var_name, auxilary_list = Converter.convert_member_expr(child_node)
+                    var_name, var_type, auxilary_list = Converter.convert_member_expr(child_node)
                     var_list.append((str(var_name), line_number))
                     for aux_var_name in auxilary_list:
-                        var_list.append((str(aux_var_name), line_number))
+                        var_list.append((str(aux_var_name), line_number, var_type))
                 else:
                     child_var_list = extract_var_ref_list(child_node, start_line, end_line, only_in_range)
                     var_list = var_list + child_var_list
@@ -270,8 +273,9 @@ def extract_variable_list(source_path, start_line, end_line, only_in_range):
             child_node_type = child_node['type']
             if child_node_type == "ParmVarDecl":
                 var_name = str(child_node['identifier'])
+                var_type = str(child_node['data_type'])
                 if var_name not in variable_list:
-                    variable_list.append((var_name, line_number))
+                    variable_list.append((var_name, line_number, var_type))
 
     for child_node in compound_node['children']:
         child_node_type = child_node['type']
@@ -308,7 +312,7 @@ def extract_variable_list(source_path, start_line, end_line, only_in_range):
     filtered_list = list()
     # print(str(start_line), str(end_line))
     for var in variable_list:
-        var_name, line_num = var
+        var_name, line_num, var_type = var
         if int(start_line) <= int(line_num) <= int(end_line):
             filtered_list.append(var)
     # print(variable_list)
