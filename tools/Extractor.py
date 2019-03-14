@@ -502,5 +502,6 @@ def extract_error_list_from_output(output):
         elif "ERROR: AddressSanitizer" in output_line:
             error = "ERROR: "
             error += (output_line.split(" address ")[0]).split("ERROR: ")[1]
+            error += " address"
             error_list.append(error)
     return error_list
