@@ -153,7 +153,7 @@ def weave_functions(missing_function_list, modified_source_list):
         missing_def_list = Identifier.identify_missing_definitions(function_node, missing_function_list)
         def_insert_point = Finder.find_definition_insertion_point(source_path_d)
 
-        missing_macro_list = Identifier.identify_missing_macros(function_node, function_source_file, source_path_d)
+        missing_macro_list = Identifier.identify_missing_macros_in_func(function_node, function_source_file, source_path_d)
         missing_header_list = Identifier.identify_missing_headers(function_node, source_path_d)
         start_line = function_node["start line"]
         end_line = function_node["end line"]
@@ -279,9 +279,9 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                                                                skip_line_list
                                                                )
 
-            # Identifier.identify_missing_macros(inserting_node,
-            #                                    source_path_b,
-            #                                    source_path_d)
+            missing_macro_list = Identifier.identify_missing_macros(inserting_node,
+                                                                    source_path_b,
+                                                                    source_path_d)
             ast_script_c.append(translated_command)
         Writer.write_ast_script(ast_script_c, ast_script_file)
         Emitter.sub_sub_title("computing symbolic expressions for target")
@@ -486,6 +486,9 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                                                                    inserting_node,
                                                                    skip_line_list
                                                                    )
+                missing_macro_list = Identifier.identify_missing_macros(inserting_node,
+                                                                        source_path_b,
+                                                                        source_path_d)
                 # identify_missing_macros(inserting_node, source_path_b, source_path_d)
                 ast_script_c.append(translated_command)
             elif "Replace" in script_line:
@@ -531,4 +534,4 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
         if ret_code == 0:
             if source_path_d not in modified_source_list:
                 modified_source_list.append(source_path_d)
-    return modified_source_list, missing_function_list
+    return modified_source_list, missing_function_list, missing_macro_list
