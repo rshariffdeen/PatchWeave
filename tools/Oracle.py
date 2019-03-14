@@ -46,8 +46,8 @@ def is_node_equal(node_a, node_b, var_map):
         else:
             return False
     elif node_type_a == "MemberExpr":
-        node_value_a, discard_list = Converter.convert_member_expr(node_a)
-        node_value_b, discard_list = Converter.convert_member_expr(node_b)
+        node_value_a, node_type_a = Converter.convert_member_expr(node_a, True)
+        node_value_b, node_type_b = Converter.convert_member_expr(node_b, True)
         if node_value_a == node_value_b:
             return True
         else:
