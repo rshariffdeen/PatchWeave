@@ -20,6 +20,7 @@ import Writer
 import Finder
 import Filter
 import Extractor
+import Merger
 
 
 TOOL_AST_PATCH = "patchweave"
@@ -172,7 +173,7 @@ def weave_functions(missing_function_list, modified_source_list):
 
 
 def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
-               bit_size, sym_poc_path, file_info, trace_list,
+               bit_size, sym_poc_path, poc_path, file_info, trace_list,
                estimate_loc, modified_source_list, stack_info_a, stack_info_c):
 
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
@@ -195,6 +196,17 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
         line_range_a = (-1, -1)
 
         Emitter.sub_sub_title("computing symbolic expressions for Donor")
+        Generator.generate_variable_values(source_path_b,
+                                           start_line_b,
+                                           end_line_b,
+                                           bit_size,
+                                           poc_path,
+                                           var_log_b,
+                                           stack_info_a
+                                           )
+
+        var_value_map_b = Collector.collect_values(var_log_b)
+        # print(var_value_map_b)
         Generator.generate_symbolic_expressions(source_path_b,
                                                 start_line_b,
                                                 end_line_b,
@@ -206,11 +218,14 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
 
         var_expr_map_b = Collector.collect_symbolic_expressions(var_log_b)
         # print(var_expr_map_b)
+        var_info_b = Merger.merge_var_info(var_expr_map_b, var_value_map_b)
+        # print(var_info_b)
         Emitter.sub_sub_title("generating candidate function list")
         insertion_function_list = Generator.generate_candidate_function_list(estimate_loc,
-                                                                             var_expr_map_b,
+                                                                             var_info_b,
                                                                              bit_size,
                                                                              sym_poc_path,
+                                                                             poc_path,
                                                                              trace_list,
                                                                              var_log_c,
                                                                              stack_info_c
@@ -270,6 +285,18 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
             ast_script_c.append(translated_command)
         Writer.write_ast_script(ast_script_c, ast_script_file)
         Emitter.sub_sub_title("computing symbolic expressions for target")
+
+        Generator.generate_variable_values(source_path_c,
+                                           start_line_c,
+                                           line_number_c,
+                                           bit_size,
+                                           poc_path,
+                                           var_log_c,
+                                           stack_info_c
+                                           )
+
+        var_value_map_c = Collector.collect_values(var_log_c)
+        # print(var_value_map_c)
         Generator.generate_symbolic_expressions(source_path_c,
                                                 start_line_c,
                                                 line_number_c,
@@ -280,10 +307,14 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                                                 )
 
         var_expr_map_c = Collector.collect_symbolic_expressions(var_log_c)
+        # print(var_expr_map_c)
+        var_info_c = Merger.merge_var_info(var_expr_map_c, var_value_map_c)
+        # print(var_info_c)
+
         # print(var_expr_map_b)
         # print(var_expr_map_c)
         Emitter.sub_sub_title("generating variable mapping from donor to target")
-        var_map = Mapper.map_variable(var_expr_map_b, var_expr_map_c)
+        var_map = Mapper.map_variable(var_info_b, var_info_c)
 
         # print(var_map)
         # print(ast_script_c)
@@ -292,8 +323,8 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
         Emitter.emit_ast_script(ast_script_c)
         Writer.write_var_map(var_map, var_map_file)
         ret_code = execute_ast_transformation(source_path_b,
-                                                  source_path_d,
-                                                  out_file_info)
+                                              source_path_d,
+                                              out_file_info)
         if ret_code == 0:
             if source_path_d not in modified_source_list:
                 modified_source_list.append(source_path_d)
@@ -310,29 +341,60 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
         ast_map_a = ASTGenerator.get_ast_json(source_path_a)
         ast_map_b = ASTGenerator.get_ast_json(source_path_b)
         Emitter.sub_sub_title("computing symbolic expressions for Donor")
+        Generator.generate_variable_values(source_path_b,
+                                           start_line_b,
+                                           end_line_b,
+                                           bit_size,
+                                           poc_path,
+                                           var_log_b,
+                                           stack_info_a
+                                           )
+
+        var_value_map_b = Collector.collect_values(var_log_b)
+        # print(var_value_map_b)
         Generator.generate_symbolic_expressions(source_path_b,
                                                 start_line_b,
                                                 end_line_b,
                                                 bit_size,
                                                 sym_poc_path,
                                                 var_log_b,
-                                                stack_info_a)
+                                                stack_info_a
+                                                )
+
         var_expr_map_b = Collector.collect_symbolic_expressions(var_log_b)
         # print(var_expr_map_b)
+        var_info_b = Merger.merge_var_info(var_expr_map_b, var_value_map_b)
+        # print(var_info_b)
 
+        Generator.generate_variable_values(source_path_a,
+                                           start_line_a,
+                                           end_line_a,
+                                           bit_size,
+                                           poc_path,
+                                           var_log_a,
+                                           stack_info_a
+                                           )
+
+        var_value_map_a = Collector.collect_values(var_log_a)
+        # print(var_value_map_a)
         Generator.generate_symbolic_expressions(source_path_a,
                                                 start_line_a,
                                                 end_line_a,
                                                 bit_size,
                                                 sym_poc_path,
                                                 var_log_a,
-                                                stack_info_a)
+                                                stack_info_a
+                                                )
 
         var_expr_map_a = Collector.collect_symbolic_expressions(var_log_a)
         # print(var_expr_map_a)
+        var_info_a = Merger.merge_var_info(var_expr_map_a, var_value_map_a)
+        # print(var_info_a)
+
+
         Emitter.sub_sub_title("generating candidate function list")
         insertion_function_list = Generator.generate_candidate_function_list(estimate_loc,
-                                                                             var_expr_map_b,
+                                                                             var_info_b,
                                                                              bit_size,
                                                                              sym_poc_path,
                                                                              trace_list,
@@ -372,6 +434,18 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                                                    int(line_number_c))
 
         Emitter.sub_sub_title("computing symbolic expressions for target")
+        Generator.generate_variable_values(source_path_c,
+                                           start_line_c,
+                                           line_number_c,
+                                           bit_size,
+                                           poc_path,
+                                           var_log_c,
+                                           stack_info_c,
+                                           False
+                                           )
+
+        var_value_map_c = Collector.collect_values(var_log_c)
+        # print(var_value_map_c)
         Generator.generate_symbolic_expressions(source_path_c,
                                                 start_line_c,
                                                 line_number_c,
@@ -379,14 +453,19 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                                                 sym_poc_path,
                                                 var_log_c,
                                                 stack_info_c,
-                                                False)
+                                                False
+                                                )
 
         var_expr_map_c = Collector.collect_symbolic_expressions(var_log_c)
+        # print(var_expr_map_c)
+        var_info_c = Merger.merge_var_info(var_expr_map_c, var_value_map_c)
+        # print(var_info_c)
+
         Emitter.sub_sub_title("generating variable mapping from donor to target")
         # print(var_expr_map_a)
         # print(var_expr_map_c)
-        var_map_ac = Mapper.map_variable(var_expr_map_a, var_expr_map_c)
-        var_map_bc = Mapper.map_variable(var_expr_map_b, var_expr_map_c)
+        var_map_ac = Mapper.map_variable(var_info_a, var_info_c)
+        var_map_bc = Mapper.map_variable(var_info_b, var_info_c)
         ast_map_b = ASTGenerator.get_ast_json(source_path_b)
         ast_map_a = ASTGenerator.get_ast_json(source_path_a)
         Emitter.sub_sub_title("transplanting code")
