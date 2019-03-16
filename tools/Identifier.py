@@ -225,7 +225,12 @@ def identify_insertion_points(candidate_function):
     var_map = function_info['var-map']
     # don't include the last line (possible crash line)
     best_score = 0
-    # print(var_map.values())
+
+    target_var_list = list()
+    for var_a in var_map:
+        var_b = var_map[var_a]
+        target_var_list.append(")".join(var_b.split(")")[1:]))
+    # print(target_var_list)
     for exec_line in exec_line_list:
         # if exec_line == last_line:
         #     continue
@@ -242,12 +247,16 @@ def identify_insertion_points(candidate_function):
                 unique_var_name_list.append(var_name)
 
         # print(exec_line)
-        # print(unique_var_name_list)
-        score = len(list(set(unique_var_name_list).intersection(var_map.values())))
+
+        score = len(list(set(unique_var_name_list).intersection(target_var_list)))
         Emitter.normal("\t\t\t\tscore: " + str(score))
         insertion_point_list[exec_line] = score
         if score > best_score:
             best_score = score
+    if best_score == 0:
+        print(unique_var_name_list)
+        print(target_var_list)
+        error_exit("no matching line")
 
     return insertion_point_list, best_score
 
