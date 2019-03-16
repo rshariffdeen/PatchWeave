@@ -121,15 +121,20 @@ def identify_missing_definitions(function_node, missing_function_list):
     return list(set(missing_definition_list))
 
 
-def identify_missing_macros(ast_node, source_file, target_file):
+def identify_missing_macros(ast_node, source_file, target_file, skip_line_list):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Emitter.normal("\t\tidentifying missing macros")
     missing_macro_list = dict()
     ref_list = Extractor.extract_reference_node_list(ast_node)
+    # print(ref_list)
     for ref_node in ref_list:
         node_type = str(ref_node['type'])
         if node_type == "Macro":
+            # print(ref_node)
             identifier = str(ref_node['value'])
+            start_line = int(ref_node['start line'])
+            if start_line in skip_line_list:
+                continue
             node_child_count = len(ref_node['children'])
             if identifier in Values.STANDARD_MACRO_LIST:
                 continue
@@ -138,12 +143,24 @@ def identify_missing_macros(ast_node, source_file, target_file):
                     identifier = str(child_node['value'])
                     if identifier in Values.STANDARD_MACRO_LIST:
                         continue
-
                     if identifier not in missing_macro_list.keys():
                         info = dict()
                         info['source'] = source_file
                         info['target'] = target_file
                         missing_macro_list[identifier] = info
+                    else:
+                        error_exit("MACRO REQUIRED MULTIPLE TIMES!!")
+            else:
+
+                token_list = identifier.split(" ")
+                for token in token_list:
+                    if token in ["/", "+", "-"]:
+                        continue
+                    if identifier not in missing_macro_list.keys():
+                        info = dict()
+                        info['source'] = source_file
+                        info['target'] = target_file
+                        missing_macro_list[token] = info
                     else:
                         error_exit("MACRO REQUIRED MULTIPLE TIMES!!")
     return missing_macro_list
