@@ -172,15 +172,19 @@ def build_verify():
     Emitter.sub_sub_title("building projects")
     CC = "clang-7"
     CXX = "clang++-7"
-    CXX_FLAGS = "'-g -O0 -static -DNDEBUG -fsanitize=" + Values.ASAN_FLAG + "'"
-    C_FLAGS = "'-g -O0 -static -DNDEBUG -fsanitize=" + Values.ASAN_FLAG + "'"
+    CXX_FLAGS = "'-g -O0 -static -DNDEBUG'"
+    C_FLAGS = "'-g -O0 -static -DNDEBUG'"
     Emitter.normal("\t\t" + Values.Project_D.path)
     clean_project(Values.Project_D.path)
     if not Values.BUILD_COMMAND_C:
         config_project(Values.Project_D.path, False)
+        CXX_FLAGS = "'-g -O0 -static -DNDEBUG -fsanitize=" + Values.ASAN_FLAG + "'"
+        C_FLAGS = "'-g -O0 -static -DNDEBUG -fsanitize=" + Values.ASAN_FLAG + "'"
         build_project(Values.Project_D.path)
     else:
         config_project(Values.Project_D.path, False, Values.CONFIG_COMMAND_C)
+        CXX_FLAGS = "'-g -O0 -static -DNDEBUG -fsanitize=" + Values.ASAN_FLAG + "'"
+        C_FLAGS = "'-g -O0 -static -DNDEBUG -fsanitize=" + Values.ASAN_FLAG + "'"
         build_project(Values.Project_D.path, Values.BUILD_COMMAND_C)
 
 
@@ -280,8 +284,8 @@ def build_instrumented_code(source_directory):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Emitter.normal("\t\t\tbuilding instrumented code")
     global CXX_FLAGS, C_FLAGS, CC, CXX
-    CC = "clang"
-    CXX = "clang++"
+    CC = "wllvm"
+    CXX = "wllvm++"
     CXX_FLAGS = "'-g -O0 -static -DNDEBUG -ftrapv'"
     C_FLAGS = "'-g -O0 -static -ftrapv -L/home/rshariffdeen/workspace/klee/build-rshariffdeen/lib -lkleeRuntest'"
 
