@@ -32,7 +32,7 @@ def generate_symbolic_expressions(source_path, start_line, end_line,
     Emitter.normal("\t\tgenerating variable information")
     source_file_name = str(source_path).split("/")[-1]
     source_directory = "/".join(str(source_path).split("/")[:-1])
-
+    # print(sym_poc_path, poc_path)
     if Values.PATH_A in source_path:
         binary_path = Values.PATH_A + Values.EXPLOIT_A.split(" ")[0]
         binary_args = " ".join(Values.EXPLOIT_A.split(" ")[1:])
@@ -156,6 +156,7 @@ def generate_candidate_function_list(estimate_loc, var_info_a,
             info['score'] = score
             info['order'] = trace_order
             candidate_function_list[function_id] = info
+            return candidate_function_list
 
     if not candidate_function_list:
         Emitter.error("best score is " + str(best_score))
