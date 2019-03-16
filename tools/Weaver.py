@@ -277,7 +277,9 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
 
             missing_macro_list = Identifier.identify_missing_macros(inserting_node,
                                                                     source_path_b,
-                                                                    source_path_d)
+                                                                    source_path_d,
+                                                                    skip_line_list)
+            # print(missing_macro_list)
             ast_script_c.append(translated_command)
         Writer.write_ast_script(ast_script_c, ast_script_file)
         Emitter.sub_sub_title("computing symbolic expressions for target")
@@ -334,6 +336,7 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                                                 start_line_b,
                                                 end_line_b,
                                                 bit_size,
+						sym_poc_path,
                                                 poc_path,
                                                 expr_log_b,
                                                 val_log_b,
@@ -347,10 +350,11 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
         var_info_b = Merger.merge_var_info(var_expr_map_b, var_value_map_b)
         # print(var_info_b)
 
-        Generator.generate_variable_values(source_path_a,
+        Generator.generate_symbolic_expressions(source_path_a,
                                            start_line_a,
                                            end_line_a,
                                            bit_size,
+					  sym_poc_path,
                                            poc_path,
                                            expr_log_a,
                                            val_log_a,
@@ -412,6 +416,7 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                                                 start_line_c,
                                                 line_number_c,
                                                 bit_size,
+                                                sym_poc_path,
                                                 poc_path,
                                                 expr_log_c,
                                                 val_log_c,
@@ -453,7 +458,8 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                                                                    )
                 missing_macro_list = Identifier.identify_missing_macros(inserting_node,
                                                                         source_path_b,
-                                                                        source_path_d)
+                                                                        source_path_d,
+                                                                        skip_line_list)
                 # identify_missing_macros(inserting_node, source_path_b, source_path_d)
                 ast_script_c.append(translated_command)
             elif "Replace" in script_line:
