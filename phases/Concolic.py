@@ -36,6 +36,7 @@ def sym_trace_donor():
     exploit_a = Values.EXPLOIT_A
     poc_path = Values.PATH_POC
     Emitter.normal(project_path_a)
+    klee_flags_a = Values.KLEE_FLAG_A
 
     if not Values.SKIP_SYM_TRACE_GEN:
         binary_path = project_path_a + exploit_a.split(" ")[0]
@@ -46,7 +47,8 @@ def sym_trace_donor():
                                                              binary_name,
                                                              VALUE_BIT_SIZE,
                                                              FILE_SYMBOLIC_POC,
-                                                             FILE_KLEE_LOG_A)
+                                                             FILE_KLEE_LOG_A,
+                                                             klee_flags_a)
         copy_command = "cp " + sym_file_path + " " + FILE_SYM_PATH_A
         execute_command(copy_command)
     sym_path_a = Collector.collect_symbolic_path(FILE_KLEE_LOG_A, project_path_a)
@@ -63,7 +65,8 @@ def sym_trace_donor():
                                                              binary_name,
                                                              VALUE_BIT_SIZE,
                                                              FILE_SYMBOLIC_POC,
-                                                             FILE_KLEE_LOG_B)
+                                                             FILE_KLEE_LOG_B,
+                                                             klee_flags_a)
         copy_command = "cp " + sym_file_path + " " + FILE_SYM_PATH_B
         execute_command(copy_command)
     sym_path_b = Collector.collect_symbolic_path(FILE_KLEE_LOG_B, project_path_b)
@@ -76,6 +79,7 @@ def sym_trace_target():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     project_path_c = Values.PATH_C
     exploit_c = Values.EXPLOIT_C
+    klee_flags_c = Values.KLEE_FLAG_C
     poc_path = Values.PATH_POC
     Emitter.normal(project_path_c)
     if not Values.SKIP_SYM_TRACE_GEN:
@@ -87,7 +91,8 @@ def sym_trace_target():
                                                              binary_name,
                                                              VALUE_BIT_SIZE,
                                                              FILE_SYMBOLIC_POC,
-                                                             FILE_KLEE_LOG_C)
+                                                             FILE_KLEE_LOG_C,
+                                                             klee_flags_c)
         copy_command = "cp " + sym_file_path + " " + FILE_SYM_PATH_C
         execute_command(copy_command)
     sym_path_c = Collector.collect_symbolic_path(FILE_KLEE_LOG_C, project_path_c)

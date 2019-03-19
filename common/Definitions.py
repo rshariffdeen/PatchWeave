@@ -57,7 +57,8 @@ CONF_FLAGS_C = "build_flags_c:"
 CONF_PATH_POC = "path_poc:"
 CONF_EXPLOIT_PREPARE = "pre_exploit:"
 CONF_ASAN_FLAG = "asan_flag:"
-
+CONF_KLEE_FLAG_A = "klee_flag_a:"
+CONF_KLEE_FLAG_C = "klee_flag_c:"
 
 # ----------------- KEY DEFINITIONS -------------------
 

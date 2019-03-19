@@ -32,23 +32,28 @@ def generate_symbolic_expressions(source_path, start_line, end_line,
     Emitter.normal("\t\tgenerating variable information")
     source_file_name = str(source_path).split("/")[-1]
     source_directory = "/".join(str(source_path).split("/")[:-1])
+    klee_flags = ""
     # print(sym_poc_path, poc_path)
     if Values.PATH_A in source_path:
         binary_path = Values.PATH_A + Values.EXPLOIT_A.split(" ")[0]
         binary_args = " ".join(Values.EXPLOIT_A.split(" ")[1:])
         source_directory = Values.PATH_A
+        klee_flags = Values.KLEE_FLAG_A
     elif Values.PATH_B in source_path:
         binary_path = Values.PATH_B + Values.EXPLOIT_A.split(" ")[0]
         binary_args = " ".join(Values.EXPLOIT_A.split(" ")[1:])
         source_directory = Values.PATH_B
+        klee_flags = Values.KLEE_FLAG_A
     elif Values.PATH_C in source_path:
         binary_path = Values.PATH_C + Values.EXPLOIT_C.split(" ")[0]
         binary_args = " ".join(Values.EXPLOIT_C.split(" ")[1:])
         source_directory = Values.PATH_C
+        klee_flags = Values.KLEE_FLAG_C
     else:
         binary_path = Values.Project_D.path + Values.EXPLOIT_C.split(" ")[0]
         binary_args = " ".join(Values.EXPLOIT_C.split(" ")[1:])
         source_directory = Values.Project_D.path
+        klee_flags = Values.KLEE_FLAG_C
 
     binary_name = str(binary_path).split("/")[-1]
     binary_directory = "/".join(str(binary_path).split("/")[:-1])
@@ -70,7 +75,8 @@ def generate_symbolic_expressions(source_path, start_line, end_line,
                                           bit_size,
                                           sym_poc_path,
                                           output_log_expr,
-                                          is_error_on_exit)
+                                          is_error_on_exit,
+                                          klee_flags)
     Emitter.normal("\t\t\tgenerating concrete values for variables")
     KleeExecutor.generate_values(binary_args,
                                  binary_directory,
@@ -78,7 +84,8 @@ def generate_symbolic_expressions(source_path, start_line, end_line,
                                  bit_size,
                                  poc_path,
                                  output_log_value,
-                                 is_error_on_exit)
+                                 is_error_on_exit,
+                                 klee_flags)
     # restore_file("original-bitcode", binary_path)
     reset_git(source_directory)
 

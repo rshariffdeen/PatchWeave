@@ -35,6 +35,7 @@ def trace_donor():
 
     project_path_a = Values.PATH_A
     project_path_b = Values.PATH_B
+    klee_flags_a = Values.KLEE_FLAG_A
     exploit_a = Values.EXPLOIT_A
     exploit_command = " ".join(exploit_a.split(" ")[1:])
     poc_path = Values.PATH_POC
@@ -47,7 +48,8 @@ def trace_donor():
                                     binary_dir,
                                     binary_name,
                                     poc_path,
-                                    FILE_TRACE_LOG_A)
+                                    FILE_TRACE_LOG_A,
+                                    klee_flags_a)
 
     crash_location_a = Collector.collect_crash_point(FILE_TRACE_LOG_A)
     stack_a = Collector.collect_stack_info(FILE_TRACE_LOG_A)
@@ -69,6 +71,7 @@ def trace_donor():
                                     binary_name,
                                     poc_path,
                                     FILE_TRACE_LOG_B,
+                                    klee_flags_a,
                                     True)
 
     list_trace_b = Collector.collect_trace(FILE_TRACE_LOG_B,
@@ -84,6 +87,7 @@ def trace_target():
     exploit_c = Values.EXPLOIT_C
     exploit_command = " ".join(exploit_c.split(" ")[1:])
     poc_path = Values.PATH_POC
+    klee_flags_c = Values.KLEE_FLAG_C
 
     Emitter.normal(project_path_c)
     if not Values.SKIP_TRACE_GEN:
@@ -93,7 +97,8 @@ def trace_target():
                                     binary_dir,
                                     binary_name,
                                     poc_path,
-                                    FILE_TRACE_LOG_C)
+                                    FILE_TRACE_LOG_C,
+                                    klee_flags_c)
 
     crash_location_c = Collector.collect_crash_point(FILE_TRACE_LOG_C)
     stack_c = Collector.collect_stack_info(FILE_TRACE_LOG_C)

@@ -41,6 +41,8 @@ BUILD_COMMAND_C = ""
 PATH_POC = ""
 EXPLOIT_PREPARE = ""
 ASAN_FLAG = ""
+KLEE_FLAG_A = ""
+KLEE_FLAG_C = ""
 FILE_CONFIGURATION = ""
 
 silence_emitter = False
