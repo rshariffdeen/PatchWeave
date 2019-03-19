@@ -63,6 +63,8 @@ def get_sym_path_cond(source_location):
                 sym_path_cond = Concolic.sym_path_c[path]
             if path == source_location:
                 break
+    if sym_path_cond == "":
+        error_exit("No Sym Path found for " + source_location)
     return sym_path_cond
 
 
