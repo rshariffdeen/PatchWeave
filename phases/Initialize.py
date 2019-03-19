@@ -107,10 +107,10 @@ def read_conf():
             Values.BUILD_COMMAND_C = configuration.replace(Definitions.CONF_BUILD_COMMAND_C, '')
         elif Definitions.CONF_ASAN_FLAG in configuration:
             Values.ASAN_FLAG = configuration.replace(Definitions.CONF_ASAN_FLAG, '')
-        elif Definitions.CONF_KLEE_FLAG_A in configuration:
-            Values.KLEE_FLAG_A = configuration.replace(Definitions.CONF_KLEE_FLAG_A, '')
-        elif Definitions.CONF_KLEE_FLAG_C in configuration:
-            Values.KLEE_FLAG_C = configuration.replace(Definitions.CONF_KLEE_FLAG_C, '')
+        elif Definitions.CONF_KLEE_FLAGS_A in configuration:
+            Values.KLEE_FLAG_A = configuration.replace(Definitions.CONF_KLEE_FLAGS_A, '')
+        elif Definitions.CONF_KLEE_FLAGS_C in configuration:
+            Values.KLEE_FLAG_C = configuration.replace(Definitions.CONF_KLEE_FLAGS_C, '')
 
 
 def initialize():
