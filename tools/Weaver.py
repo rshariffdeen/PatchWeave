@@ -336,7 +336,7 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                                                 start_line_b,
                                                 end_line_b,
                                                 bit_size,
-						sym_poc_path,
+                                                sym_poc_path,
                                                 poc_path,
                                                 expr_log_b,
                                                 val_log_b,
@@ -344,29 +344,33 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                                                 )
 
         var_value_map_b = Collector.collect_values(val_log_b)
-        # print(var_value_map_b)
+        print(var_value_map_b)
         var_expr_map_b = Collector.collect_symbolic_expressions(expr_log_b)
-        # print(var_expr_map_b)
+        print(var_expr_map_b)
         var_info_b = Merger.merge_var_info(var_expr_map_b, var_value_map_b)
-        # print(var_info_b)
+        print(var_info_b)
 
         Generator.generate_symbolic_expressions(source_path_a,
-                                           start_line_a,
-                                           end_line_a,
-                                           bit_size,
-					  sym_poc_path,
-                                           poc_path,
-                                           expr_log_a,
-                                           val_log_a,
-                                           stack_info_a
-                                           )
+                                                start_line_a,
+                                                end_line_a,
+                                                bit_size,
+                                                sym_poc_path,
+                                                poc_path,
+                                                expr_log_a,
+                                                val_log_a,
+                                                stack_info_a
+                                                )
 
         var_value_map_a = Collector.collect_values(val_log_a)
-        # print(var_value_map_a)
+        print(var_value_map_a)
         var_expr_map_a = Collector.collect_symbolic_expressions(expr_log_a)
-        # print(var_expr_map_a)
+        print(var_expr_map_a)
         var_info_a = Merger.merge_var_info(var_expr_map_a, var_value_map_a)
-        # print(var_info_a)
+        print(var_info_a)
+
+        for var_a in var_info_a:
+            if var_a not in var_info_b:
+                var_info_b[var_a] = var_info_a[var_a]
 
         Emitter.sub_sub_title("generating candidate function list")
         insertion_function_list = Generator.generate_candidate_function_list(estimate_loc,
