@@ -64,7 +64,7 @@ def get_sym_path_cond(source_location):
             if path == source_location:
                 break
     if sym_path_cond == "":
-        error_exit("No Sym Path found for " + source_location)
+        Emitter.warning("\t\tWarning: no sym path found for " + source_location)
     return sym_path_cond
 
 
@@ -120,24 +120,24 @@ def transplant_code():
                                                        stack_info_c
                                                        )
         if not estimate_loc:
-            error_exit("No estimation for divergent point")
+            Emitter.warning("\t\tWarning: no estimation for divergent point")
         modified_source_list, \
         identified_missing_function_list,\
         identified_missing_macro_list = Weaver.weave_code(diff_loc,
-                                               diff_loc_info,
-                                               path_a,
-                                               path_b,
-                                               path_c,
-                                               path_d,
-                                               bit_size,
-                                               sym_poc_path,
-                                               poc_path,
-                                               file_info,
-                                               trace_list,
-                                               estimate_loc,
-                                               modified_source_list,
-                                               stack_info_a,
-                                               stack_info_c)
+                                                          diff_loc_info,
+                                                          path_a,
+                                                          path_b,
+                                                          path_c,
+                                                          path_d,
+                                                          bit_size,
+                                                          sym_poc_path,
+                                                          poc_path,
+                                                          file_info,
+                                                          trace_list,
+                                                          estimate_loc,
+                                                          modified_source_list,
+                                                          stack_info_a,
+                                                          stack_info_c)
         # print(identified_missing_function_list)
         if missing_function_list:
             if identified_missing_function_list:
