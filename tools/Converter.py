@@ -32,6 +32,23 @@ def convert_cast_expr(ast_node, only_string=False):
     return var_name, var_list
 
 
+def convert_array_iterator(iterator_node):
+    iterator_node_type = str(iterator_node['type'])
+    var_list = list()
+    if iterator_node_type in ["VarDecl", "ParmVarDecl"]:
+        iterator_name = str(iterator_node['value'])
+        iterator_data_type = str(iterator_node['data_type'])
+        var_list.append((iterator_name, iterator_data_type))
+        var_name = "[" + iterator_name + "]"
+    elif iterator_node_type in ["IntegerLiteral"]:
+        iterator_value = str(iterator_node['value'])
+        var_name = "[" + iterator_value + "]"
+    else:
+        print(iterator_node)
+        error_exit("Unknown iterator type for array_subscript")
+    return var_name, var_list
+
+
 def convert_array_subscript(ast_node):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     var_list = list()
@@ -45,19 +62,18 @@ def convert_array_subscript(ast_node):
     if array_type == "DeclRefExpr":
         iterator_node = ast_node['children'][1]
         iterator_node_type = str(iterator_node['type'])
-        if iterator_node_type in ["VarDecl", "ParmVarDecl"]:
-            iterator_name = str(iterator_node['value'])
-            iterator_data_type = str(iterator_node['data_type'])
-            var_list.append((iterator_name, iterator_data_type))
-            var_name = array_name + "[" + iterator_name + "]"
-        elif iterator_node_type in ["IntegerLiteral"]:
-            iterator_value = str(iterator_node['value'])
-            var_name = array_name + "[" + iterator_value + "]"
-        else:
-            print(iterator_node)
-            error_exit("Unknown type for array_subscript")
+        var_name, var_list = convert_array_iterator(iterator_node)
+        var_name = array_name + var_name
+    elif array_type == "MemberExpr":
+        iterator_node = ast_node['children'][1]
+        array_name, array_data_type = convert_member_expr(array_node, True)
+        var_name, var_list = convert_array_iterator(iterator_node)
+        var_name = array_name + var_name
     else:
-        error_exit("Unknown type for array_subscript")
+        print(array_type)
+        print(array_node)
+        print(ast_node)
+        error_exit("Unknown data type for array_subscript")
     return var_name, var_data_type, var_list
 
 
