@@ -16,6 +16,8 @@ def filter_trace_list_by_loc(trace_list, estimate_loc):
     filtered_trace_list = list()
     # print(trace_list)
     # print(estimate_loc)
+    if estimate_loc is None:
+        return trace_list
     for n in range(len(trace_list) - 1, 0, -1):
         filtered_trace_list.append(trace_list[n])
         if estimate_loc == trace_list[n]:
