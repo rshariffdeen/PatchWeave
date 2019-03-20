@@ -132,7 +132,17 @@ def extract_var_dec_list(ast_node, start_line, end_line, only_in_range):
         if not is_intersect(node_start_line, node_end_line, start_line, end_line):
             return var_list
 
-    if node_type in ["ParmVarDecl", "VarDecl"]:
+    if node_type in ["ParmVarDecl"]:
+        var_name = str(ast_node['identifier'])
+        var_type = str(ast_node['data_type'])
+        line_number = int(ast_node['start line'])
+        var_list.append((var_name, line_number, var_type))
+        return var_list
+
+    if node_type in ["VarDecl"]:
+        child_count = len(ast_node['children'])
+        if only_in_range and child_count < 2:
+            return var_list
         var_name = str(ast_node['identifier'])
         var_type = str(ast_node['data_type'])
         line_number = int(ast_node['start line'])
@@ -201,8 +211,19 @@ def extract_var_ref_list(ast_node, start_line, end_line, only_in_range):
             if ref_type == "FunctionDecl":
                 return var_list
         var_name = str(ast_node['value'])
-        var_type = str(ast_node['data_type'])
+        # print(ast_node)
+        if 'data_type' in ast_node.keys():
+            var_type = str(ast_node['data_type'])
+        else:
+            var_type = "macro"
         var_list.append((var_name, line_number, var_type))
+    if node_type == "ArraySubscriptExpr":
+        var_name, var_type, auxilary_list = Converter.convert_array_subscript(ast_node)
+        line_number = int(ast_node['start line'])
+        var_list.append((str(var_name), line_number, var_type))
+        for aux_var_name, aux_var_type in auxilary_list:
+            var_list.append((str(aux_var_name), line_number, aux_var_type))
+        return var_list
     if node_type in ["MemberExpr"]:
         var_name, var_type, auxilary_list = Converter.convert_member_expr(ast_node)
         line_number = int(ast_node['start line'])
@@ -238,6 +259,7 @@ def extract_var_ref_list(ast_node, start_line, end_line, only_in_range):
                     ref_type = child_node['ref_type']
                     if ref_type == "VarDecl":
                         var_name = str(child_node['value'])
+                        # print(ast_node)
                         var_type = str(child_node['data_type'])
                         var_list.append((var_name, line_number, var_type))
                 elif child_node_type == "MemberExpr":
@@ -273,6 +295,7 @@ def extract_variable_list(source_path, start_line, end_line, only_in_range):
             child_node_type = child_node['type']
             if child_node_type == "ParmVarDecl":
                 var_name = str(child_node['identifier'])
+                # print(child_node)
                 var_type = str(child_node['data_type'])
                 if var_name not in variable_list:
                     variable_list.append((var_name, line_number, var_type))
