@@ -32,6 +32,35 @@ def convert_cast_expr(ast_node, only_string=False):
     return var_name, var_list
 
 
+def convert_array_subscript(ast_node):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    var_list = list()
+    var_name = ""
+    var_data_type = ""
+    array_node = ast_node['children'][0]
+    array_name = str(array_node['value'])
+    array_type = str(array_node['type'])
+    array_data_type = str(array_node['data_type'])
+    var_data_type = array_data_type.split("[")[0]
+    if array_type == "DeclRefExpr":
+        iterator_node = ast_node['children'][1]
+        iterator_node_type = str(iterator_node['type'])
+        if iterator_node_type in ["VarDecl", "ParmVarDecl"]:
+            iterator_name = str(iterator_node['value'])
+            iterator_data_type = str(iterator_node['data_type'])
+            var_list.append((iterator_name, iterator_data_type))
+            var_name = array_name + "[" + iterator_name + "]"
+        elif iterator_node_type in ["IntegerLiteral"]:
+            iterator_value = str(iterator_node['value'])
+            var_name = array_name + "[" + iterator_value + "]"
+        else:
+            print(iterator_node)
+            error_exit("Unknown type for array_subscript")
+    else:
+        error_exit("Unknown type for array_subscript")
+    return var_name, var_data_type, var_list
+
+
 def convert_member_expr(ast_node, only_string=False):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     var_list = list()
