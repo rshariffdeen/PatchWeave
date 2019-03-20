@@ -135,7 +135,7 @@ def extract_var_dec_list(ast_node, start_line, end_line, only_in_range):
     if node_type in ["ParmVarDecl"]:
         var_name = str(ast_node['identifier'])
         var_type = str(ast_node['data_type'])
-        line_number = int(ast_node['start line'])
+        line_number = int(ast_node['end line'])
         var_list.append((var_name, line_number, var_type))
         return var_list
 
@@ -145,7 +145,7 @@ def extract_var_dec_list(ast_node, start_line, end_line, only_in_range):
             return var_list
         var_name = str(ast_node['identifier'])
         var_type = str(ast_node['data_type'])
-        line_number = int(ast_node['start line'])
+        line_number = int(ast_node['end line'])
         var_list.append((var_name, line_number, var_type))
         return var_list
 
@@ -206,8 +206,8 @@ def extract_var_ref_list(ast_node, start_line, end_line, only_in_range):
             return var_list
     if node_type == "DeclRefExpr":
         line_number = int(ast_node['start line'])
-        if hasattr(ast_node, "ref_type"):
-            ref_type = ast_node['ref_type']
+        if "ref_type" in ast_node.keys():
+            ref_type = str(ast_node['ref_type'])
             if ref_type == "FunctionDecl":
                 return var_list
         var_name = str(ast_node['value'])
@@ -256,12 +256,13 @@ def extract_var_ref_list(ast_node, start_line, end_line, only_in_range):
             for child_node in ast_node['children']:
                 child_node_type = child_node['type']
                 if child_node_type == "DeclRefExpr":
-                    ref_type = child_node['ref_type']
-                    if ref_type == "VarDecl":
-                        var_name = str(child_node['value'])
-                        # print(ast_node)
-                        var_type = str(child_node['data_type'])
-                        var_list.append((var_name, line_number, var_type))
+                    if "ref_type" in child_node.keys():
+                        ref_type = child_node['ref_type']
+                        if ref_type == "VarDecl":
+                            var_name = str(child_node['value'])
+                            # print(ast_node)
+                            var_type = str(child_node['data_type'])
+                            var_list.append((var_name, line_number, var_type))
                 elif child_node_type == "MemberExpr":
                     var_name, var_type, auxilary_list = Converter.convert_member_expr(child_node)
                     var_list.append((str(var_name), line_number, var_type))
