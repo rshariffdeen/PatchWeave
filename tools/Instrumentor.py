@@ -23,6 +23,7 @@ def instrument_klee_var_expr(source_path, start_line, end_line, stack_info, only
     # print(orig_variable_list)
     insert_code = dict()
     instrument_code = ""
+    # print(source_path, start_line, end_line)
     # print(orig_variable_list)
     for variable, line_number, data_type in orig_variable_list:
         print_code = "klee_print_expr(\"[var-expr] " + variable + "\", " + variable + ");\n"
