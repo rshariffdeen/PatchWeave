@@ -40,6 +40,11 @@ def convert_array_iterator(iterator_node):
         iterator_data_type = str(iterator_node['data_type'])
         var_list.append((iterator_name, iterator_data_type))
         var_name = "[" + iterator_name + "]"
+    elif iterator_node_type == "DeclRefExpr":
+        iterator_name = str(iterator_node['value'])
+        iterator_data_type = str(iterator_node['data_type'])
+        var_list.append((iterator_name, iterator_data_type))
+        var_name = "[" + iterator_name + "]"
     elif iterator_node_type in ["IntegerLiteral"]:
         iterator_value = str(iterator_node['value'])
         var_name = "[" + iterator_value + "]"
