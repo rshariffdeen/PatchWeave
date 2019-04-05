@@ -65,6 +65,8 @@ def read_conf():
                 Values.SKIP_WEAVE = True
             elif Definitions.ARG_SKIP_VERIFY in arg:
                 Values.SKIP_VERIFY = True
+            elif Definitions.ARG_SKIP_RESTORE in arg:
+                Values.SKIP_RESTORE = True
             elif Definitions.ARG_CONF_FILE in arg:
                 Values.FILE_CONFIGURATION = str(arg).replace(Definitions.ARG_CONF_FILE, '')
             elif Definitions.ARG_SKIP_SYM_TRACE_GEN in arg:
@@ -131,4 +133,5 @@ def initialize():
     Emitter.sub_title("set environment")
     set_env_value()
     if Values.SKIP_EXPLOIT:
-        Builder.soft_restore_all()
+        if not Values.SKIP_RESTORE:
+            Builder.soft_restore_all()
