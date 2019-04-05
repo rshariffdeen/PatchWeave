@@ -57,6 +57,14 @@ def read_conf():
                 Values.SKIP_TRACE_GEN = True
             elif Definitions.ARG_SKIP_EXPLOIT in arg:
                 Values.SKIP_EXPLOIT = True
+            elif Definitions.ARG_SKIP_ANALYSE in arg:
+                Values.SKIP_ANALYSE = True
+            elif Definitions.ARG_SKIP_SLICE in arg:
+                Values.SKIP_SLICE = True
+            elif Definitions.ARG_SKIP_WEAVE in arg:
+                Values.SKIP_WEAVE = True
+            elif Definitions.ARG_SKIP_VERIFY in arg:
+                Values.SKIP_VERIFY = True
             elif Definitions.ARG_CONF_FILE in arg:
                 Values.FILE_CONFIGURATION = str(arg).replace(Definitions.ARG_CONF_FILE, '')
             elif Definitions.ARG_SKIP_SYM_TRACE_GEN in arg:

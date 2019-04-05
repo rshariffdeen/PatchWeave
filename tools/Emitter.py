@@ -144,3 +144,7 @@ def help():
     print("\t" + Definitions.ARG_DEBUG + "\t| " + "enable debugging information")
     print("\t" + Definitions.ARG_SKIP_TRACE_GEN + "\t| " + "disable project build")
     print("\t" + Definitions.ARG_SKIP_SYM_TRACE_GEN + "\t| " + "disable symbolic trace generation")
+    print("\t" + Definitions.ARG_SKIP_VERIFY + "\t| " + "disable verification")
+    print("\t" + Definitions.ARG_SKIP_WEAVE + "\t| " + "disable transplant")
+    print("\t" + Definitions.ARG_SKIP_SLICE + "\t| " + "disable slicing")
+    print("\t" + Definitions.ARG_SKIP_ANALYSE + "\t| " + "disable analysis")
