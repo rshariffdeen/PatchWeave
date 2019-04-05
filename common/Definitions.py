@@ -82,6 +82,10 @@ ARG_DEBUG = "--debug"
 ARG_SKIP_SYM_TRACE_GEN = "--skip-sym-trace-gen"
 ARG_SKIP_TRACE_GEN = "--skip-trace-gen"
 ARG_SKIP_EXPLOIT = "--skip-exploit"
+ARG_SKIP_WEAVE = "--skip-weave"
+ARG_SKIP_SLICE = "--skip-slice"
+ARG_SKIP_ANALYSE = "--skip-analyse"
+ARG_SKIP_VERIFY = "--skip-verify"
 
 # ----------------- TOOLS --------------------------------
 TOOL_VECGEN = "third-party/deckard/cvecgen_fail "
