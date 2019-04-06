@@ -78,5 +78,6 @@ def analyse():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Emitter.title("Analysing changes")
     set_values()
-    safe_exec(analyse_source_diff, "analysing source diff")
-    safe_exec(analyse_ast_diff, "analysing ast diff")
+    if not Values.SKIP_ANALYSE:
+        safe_exec(analyse_source_diff, "analysing source diff")
+        safe_exec(analyse_ast_diff, "analysing ast diff")

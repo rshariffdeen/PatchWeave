@@ -62,5 +62,6 @@ def safe_exec(function_def, title, *args):
 def slice():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Emitter.title("Slicing code")
-    safe_exec(remove_code, "slicing code not in trace")
-    safe_exec(remove_func_calls, "slicing function calls")
+    if not Values.SKIP_SLICE:
+        safe_exec(remove_code, "slicing code not in trace")
+        safe_exec(remove_func_calls, "slicing function calls")

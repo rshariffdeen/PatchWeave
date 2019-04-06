@@ -138,5 +138,6 @@ def execute():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Emitter.title("Concolic execution traces")
     set_values()
+
     safe_exec(sym_trace_donor, "generating symbolic trace information from donor program")
     safe_exec(sym_trace_target, "generating symbolic trace information from target program")
