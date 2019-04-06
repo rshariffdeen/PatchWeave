@@ -23,6 +23,12 @@ def collect_symbolic_expressions(trace_file_path):
                         var_expr_map[var_name] = dict()
                         var_expr_map[var_name]['expr_list'] = list()
                     var_expr_map[var_name]['expr_list'] .append(var_expr)
+                if '[var-type]' in line:
+                    line = line.replace("[var-type]: ", "")
+                    var_name = line.split(":")[0]
+                    var_type = line.split(":")[1]
+                    var_type = var_type.replace("\n", "")
+                    var_expr_map[var_name]['data_type'] = var_type
     return var_expr_map
 
 
