@@ -70,6 +70,6 @@ def verify():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Emitter.title("Patch Verification")
     set_values()
-    safe_exec(verify_compilation, "verifying compilation")
+    # safe_exec(verify_compilation, "verifying compilation")
     safe_exec(verify_exploit, "verifying exploit")
     safe_exec(verify_behavior, "verifying differential behavior")

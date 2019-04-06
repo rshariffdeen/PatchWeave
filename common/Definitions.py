@@ -87,6 +87,7 @@ ARG_SKIP_SLICE = "--skip-slice"
 ARG_SKIP_ANALYSE = "--skip-analyse"
 ARG_SKIP_VERIFY = "--skip-verify"
 ARG_SKIP_RESTORE = "--skip-restore"
+ARG_ONLY_VERIFY = "--only-verify"
 
 # ----------------- TOOLS --------------------------------
 TOOL_VECGEN = "third-party/deckard/cvecgen_fail "

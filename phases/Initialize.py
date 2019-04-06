@@ -82,6 +82,14 @@ def read_conf():
                 Values.FILE_CONFIGURATION = str(arg).replace(Definitions.ARG_CONF_FILE, '')
             elif Definitions.ARG_SKIP_SYM_TRACE_GEN in arg:
                 Values.SKIP_SYM_TRACE_GEN = True
+            elif Definitions.ARG_ONLY_VERIFY in arg:
+                Values.SKIP_SYM_TRACE_GEN = True
+                Values.SKIP_RESTORE = True
+                Values.SKIP_WEAVE = True
+                Values.SKIP_ANALYSE = True
+                Values.SKIP_SLICE = True
+                Values.SKIP_EXPLOIT = True
+                Values.SKIP_TRACE_GEN = True
             elif "PatchWeave.py" in arg:
                 continue
             else:
