@@ -109,7 +109,8 @@ def differential_test(file_extension, input_directory, exploit_command,
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Emitter.sub_sub_title("analyzing fuzz inputs")
     count = 100
-    avoids = 0
+    fixes = 0
+    errors = 0
     for i in range(0, 100):
         file_path = input_directory + "/" + str(i) + "." + file_extension
         log_file_name_c = output_directory + "/" + str(i) + "-c"
@@ -127,6 +128,15 @@ def differential_test(file_extension, input_directory, exploit_command,
                                           True)
 
         result = Comparer.compare_test_output(pc_output, pd_output)
-        avoids = avoids + result
-        print(avoids)
+
+        if result == 1:
+            fixes += 1
+        elif result == -1:
+            errors += 1
+
+    Emitter.normal("\t\tTotal test: " + str(count))
+    Emitter.normal("\t\tTotal test that passed only in Pd: " + str(fixes))
+    Emitter.normal("\t\tTotal test that failed only in Pd: " + str(errors))
+
+
 

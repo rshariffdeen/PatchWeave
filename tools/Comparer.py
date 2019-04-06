@@ -2,30 +2,36 @@
 # -*- coding: utf-8 -*-
 
 
-
-from common import Definitions
 import Oracle
 
 
-def compare_test_output(output_a, output_b):
-    if str(output_a) == str(output_b):
+def compare_test_output(output_c, output_d):
+    return_code_c, program_crashed_c, program_output_c = output_c
+    return_code_d, program_crashed_d, program_output_d = output_d
+    if str(program_output_c) == str(program_output_d):
         return 0
     else:
-        if Oracle.did_program_crash(output_a):
-            if Oracle.did_program_crash(output_b):
-                print(output_b)
-                print(output_a)
-                return 0
+        if program_crashed_c:
+            if program_crashed_d:
+                if return_code_c == return_code_d:
+                    return 0
+                else:
+                    print(program_output_c)
+                    print(program_output_d)
+                    return -1
             else:
                 return 1
 
         else:
-            if Oracle.did_program_crash(output_b):
-                print(output_a)
-                print(output_b)
+            if program_crashed_d:
+                print(program_output_c)
+                print(program_output_d)
                 exit(1)
             else:
-                print(output_b)
-                print(output_a)
-                return 0
+                if return_code_c == return_code_d:
+                    return 0
+                else:
+                    print(program_output_c)
+                    print(program_output_d)
+                    return -1
 
