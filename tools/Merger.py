@@ -11,15 +11,22 @@ import Filter
 import Emitter
 
 
-def merge_var_info(var_expr, var_value):
+def merge_var_info(var_expr_map, var_value_map):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     var_info = dict()
-    for var_name in var_value:
-        info = dict()
-        info["data_type"] = var_value[var_name]['data_type']
-        info["value_list"] = var_value[var_name]['value_list']
-        info["expr_list"] = var_expr[var_name]['expr_list']
-        var_info[var_name] = info
+    # print(var_expr_map)
+    # print(var_value_map)
+    for var_name in var_value_map:
+        if var_name in var_expr_map:
+            info = dict()
+            # print(var_name)
+            info["data_type"] = var_expr_map[var_name]['data_type']
+            # print(info["data_type"])
+            info["value_list"] = var_value_map[var_name]['value_list']
+            # print(info["value_list"])
+            info["expr_list"] = var_expr_map[var_name]['expr_list']
+            var_info[var_name] = info
+    # print(var_info)
     return var_info
 
 
