@@ -41,11 +41,11 @@ def map_variable(var_map_a, var_map_b):
                 var_b_type = var_map_b[var_b_name]["data_type"]
                 # print(value_list_b)
                 # print(sym_expr_list_b)
-                for index_b, sym_expr_b in enumerate(sym_expr_list_b):
-                    sym_expr_code_b = Generator.generate_z3_code_for_var(sym_expr_b, var_b_name)
+                for index_b, value_b in enumerate(value_list_b):
                     # print(sym_expr_b)
-                    value_b = value_list_b[index_b]
+                    sym_expr_b = sym_expr_list_b[index_b]
                     # print(value_b)
+                    sym_expr_code_b = Generator.generate_z3_code_for_var(sym_expr_b, var_b_name)
                     input_bytes_b = Extractor.extract_input_bytes_used(sym_expr_code_b)
                     # print(input_bytes_b)
                     if input_bytes_a and (input_bytes_a == input_bytes_b):
