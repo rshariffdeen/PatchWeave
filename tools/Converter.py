@@ -120,20 +120,20 @@ def convert_member_expr(ast_node, only_string=False):
             param_node_var_name = ""
             param_node_aux_list = list()
             if param_node_type == "MemberExpr":
-                param_node_var_name, var_data_type, param_node_aux_list = convert_member_expr(param_node)
+                param_node_var_name, param_data_type, param_node_aux_list = convert_member_expr(param_node)
             elif param_node_type == "CStyleCastExpr":
-                param_node_var_name, var_data_type, param_node_aux_list = convert_cast_expr(param_node)
+                param_node_var_name, param_data_type, param_node_aux_list = convert_cast_expr(param_node)
             var_list = var_list + param_node_aux_list
             var_name = "(" + param_node_var_name + ")" + var_name
             break
         elif child_node_type == "CStyleCastExpr":
-            cast_var_name, var_data_type, cast_node_aux_list = convert_cast_expr(child_node)
+            cast_var_name, cast_data_type, cast_node_aux_list = convert_cast_expr(child_node)
             var_list = var_list + cast_node_aux_list
             var_name = cast_var_name + var_name
             break
         elif child_node_type == "MemberExpr":
             child_node_value = child_node['value']
-            var_data_type = str(child_node['data_type'])
+            # var_data_type = str(child_node['data_type'])
             if "union" in child_node_value:
                 var_name = "." + str(child_node_value.split(":")[-1]) + var_name
             else:
