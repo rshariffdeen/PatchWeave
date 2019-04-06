@@ -7,6 +7,7 @@ import Logger
 import Emitter
 import Builder
 import Exploiter
+import Comparer
 
 
 def run_compilation():
@@ -14,7 +15,7 @@ def run_compilation():
     Builder.build_verify()
 
 
-def compare_output(target_output, target_exit_code, repaired_target_output, repaired_target_exit_code):
+def emit_comparison(target_output, target_exit_code, repaired_target_output, repaired_target_exit_code):
     Emitter.sub_sub_title("before transplantation")
     Emitter.program_output(target_output)
     Emitter.normal("\t\t exit code: " + str(target_exit_code))
@@ -54,50 +55,73 @@ def run_exploit(target_trace_info, exploit_command, project_path, poc_path,
     # print(repaired_target_crashed, target_crashed)
     if target_crashed:
         if repaired_target_crashed:
-            compare_output(target_output,
-                           target_exit_code,
-                           repaired_target_output,
-                           repaired_target_exit_code
-                           )
+            emit_comparison(target_output,
+                            target_exit_code,
+                            repaired_target_output,
+                            repaired_target_exit_code
+                            )
             Emitter.error("\n\tprogram crashed with exit code " + str(target_exit_code))
         else:
-            compare_output(target_output,
-                           target_exit_code,
-                           repaired_target_output,
-                           repaired_target_exit_code
-                           )
+            emit_comparison(target_output,
+                            target_exit_code,
+                            repaired_target_output,
+                            repaired_target_exit_code
+                            )
             Emitter.success("\n\tprogram was repaired!!")
     else:
         runtime_error_count_c = target_output.count("runtime error")
         runtime_error_count_d = repaired_target_output.count("runtime error")
 
         if repaired_target_crashed:
-            compare_output(target_output,
-                           target_exit_code,
-                           repaired_target_output,
-                           repaired_target_exit_code
-                           )
+            emit_comparison(target_output,
+                            target_exit_code,
+                            repaired_target_output,
+                            repaired_target_exit_code
+                            )
             Emitter.error("\n\tprogram crashed with exit code " + str(target_exit_code))
 
         if runtime_error_count_d == 0:
-            compare_output(target_output,
-                           target_exit_code,
-                           repaired_target_output,
-                           repaired_target_exit_code
-                           )
+            emit_comparison(target_output,
+                            target_exit_code,
+                            repaired_target_output,
+                            repaired_target_exit_code
+                            )
             Emitter.success("\n\tprogram was repaired!!")
         elif runtime_error_count_c <= runtime_error_count_d:
-            compare_output(target_output,
-                           target_exit_code,
-                           repaired_target_output,
-                           repaired_target_exit_code
-                           )
+            emit_comparison(target_output,
+                            target_exit_code,
+                            repaired_target_output,
+                            repaired_target_exit_code
+                            )
             Emitter.error("\n\tprogram was not repaired!!")
         else:
-            compare_output(target_output,
-                           target_exit_code,
-                           repaired_target_output,
-                           repaired_target_exit_code
-                           )
+            emit_comparison(target_output,
+                            target_exit_code,
+                            repaired_target_output,
+                            repaired_target_exit_code
+                            )
             Emitter.success("\n\tprogram partially repaired!!")
+
+
+def differential_test(file_extension, input_directory, exploit_command,
+                      project_c_path, project_d_path, output_directory):
+
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+
+    count = 100
+    for i in range(0, 100):
+        file_path = input_directory + "/" + str(i) + "." + file_extension
+        log_file_name_c = output_directory + "/" + str(i) + "-c"
+        pc_output = Exploiter.run_exploit(exploit_command,
+                                          project_c_path,
+                                          file_path,
+                                          log_file_name_c)
+
+        log_file_name_d = output_directory + "/" + str(i) + "-d"
+        pd_output = Exploiter.run_exploit(exploit_command,
+                                          project_d_path,
+                                          file_path,
+                                          log_file_name_d)
+
+        result = Comparer.compare_test_output(pc_output, pd_output)
 
