@@ -16,5 +16,5 @@ def generate_files(poc_path, output_directory):
     for i in range(0, 100):
         generate_command = "radamsa " + str(poc_path) + " > " + output_directory + "/" + str(i) + "." + file_extension
         execute_command(generate_command)
-    Emitter.normal("\t\t fuzz generation complete")
+    Emitter.normal("\t\t[completed] generating 100 fuzzed input files")
     return file_extension

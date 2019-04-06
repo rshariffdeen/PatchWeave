@@ -36,7 +36,8 @@ def verify_behavior():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     target_trace_info = Exploit.target_exit_code, Exploit.target_crashed, Exploit.FILE_EXPLOIT_OUTPUT_C
     file_extension = Fuzzer.generate_files(Values.PATH_POC, DIR_FUZZ_INPUT)
-    Verifier.differential_test(file_extension)
+    Verifier.differential_test(file_extension, DIR_FUZZ_INPUT, Values.EXPLOIT_C,
+                               Values.PATH_C, Values.Project_D.path, DIR_FUZZ_OUTPUT_LOG)
 
 
 def safe_exec(function_def, title, *args):
@@ -68,6 +69,7 @@ def set_values():
 def verify():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Emitter.title("Patch Verification")
+    set_values()
     safe_exec(verify_compilation, "verifying compilation")
     safe_exec(verify_exploit, "verifying exploit")
     safe_exec(verify_behavior, "verifying differential behavior")

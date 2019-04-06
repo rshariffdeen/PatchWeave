@@ -176,16 +176,21 @@ def build_verify():
     C_FLAGS = "'-g -O0 -static -DNDEBUG'"
     Emitter.normal("\t\t" + Values.Project_D.path)
     clean_project(Values.Project_D.path)
+    clean_project(Values.Project_C.path)
     if not Values.BUILD_COMMAND_C:
         config_project(Values.Project_D.path, False)
+        config_project(Values.Project_C.path, False)
         CXX_FLAGS = "'-g -O0 -static -DNDEBUG -fsanitize=" + Values.ASAN_FLAG + "'"
         C_FLAGS = "'-g -O0 -static -DNDEBUG -fsanitize=" + Values.ASAN_FLAG + "'"
+        build_project(Values.Project_C.path)
         build_project(Values.Project_D.path)
     else:
         config_project(Values.Project_D.path, False, Values.CONFIG_COMMAND_C)
+        config_project(Values.Project_C.path, False, Values.CONFIG_COMMAND_C)
         CXX_FLAGS = "'-g -O0 -static -DNDEBUG -fsanitize=" + Values.ASAN_FLAG + "'"
         C_FLAGS = "'-g -O0 -static -DNDEBUG -fsanitize=" + Values.ASAN_FLAG + "'"
         build_project(Values.Project_D.path, Values.BUILD_COMMAND_C)
+        build_project(Values.Project_C.path, Values.BUILD_COMMAND_C)
 
 
 def build_asan():

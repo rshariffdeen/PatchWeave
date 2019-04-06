@@ -107,21 +107,26 @@ def differential_test(file_extension, input_directory, exploit_command,
                       project_c_path, project_d_path, output_directory):
 
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-
+    Emitter.sub_sub_title("analyzing fuzz inputs")
     count = 100
+    avoids = 0
     for i in range(0, 100):
         file_path = input_directory + "/" + str(i) + "." + file_extension
         log_file_name_c = output_directory + "/" + str(i) + "-c"
         pc_output = Exploiter.run_exploit(exploit_command,
                                           project_c_path,
                                           file_path,
-                                          log_file_name_c)
+                                          log_file_name_c,
+                                          True)
 
         log_file_name_d = output_directory + "/" + str(i) + "-d"
         pd_output = Exploiter.run_exploit(exploit_command,
                                           project_d_path,
                                           file_path,
-                                          log_file_name_d)
+                                          log_file_name_d,
+                                          True)
 
         result = Comparer.compare_test_output(pc_output, pd_output)
+        avoids = avoids + result
+        print(avoids)
 

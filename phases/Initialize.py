@@ -47,6 +47,17 @@ def create_output_dir():
         execute_command(create_command)
 
 
+def create_fuzz_dir():
+    input_dir = Definitions.DIRECTORY_OUTPUT + "/fuzz-input"
+    output_dir = Definitions.DIRECTORY_OUTPUT + "/fuzz-output"
+    if not os.path.isdir(input_dir):
+        create_command = "mkdir " + input_dir
+        execute_command(create_command)
+    if not os.path.isdir(output_dir):
+        create_command = "mkdir " + output_dir
+        execute_command(create_command)
+
+
 def read_conf():
     Emitter.normal("reading configuration values")
     if len(sys.argv) > 1:
@@ -129,6 +140,7 @@ def initialize():
     read_conf()
     create_patch_dir()
     create_output_dir()
+    create_fuzz_dir()
     load_values()
     Emitter.sub_title("set environment")
     set_env_value()
