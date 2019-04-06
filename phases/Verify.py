@@ -6,9 +6,12 @@ import sys
 import time
 from common.Utilities import error_exit
 from common import Values, Definitions
-from tools import Logger, Emitter, Verifier
+from tools import Logger, Emitter, Verifier, Fuzzer
 import Trace
 import Exploit
+
+DIR_FUZZ_INPUT = ""
+DIR_FUZZ_OUTPUT_LOG = ""
 
 
 def verify_compilation():
@@ -27,6 +30,13 @@ def verify_exploit():
                          Definitions.crash_word_list,
                          Trace.crash_location_c
                          )
+
+
+def verify_behavior():
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    target_trace_info = Exploit.target_exit_code, Exploit.target_crashed, Exploit.FILE_EXPLOIT_OUTPUT_C
+    file_extension = Fuzzer.generate_files(Values.PATH_POC, DIR_FUZZ_INPUT)
+    Verifier.differential_test(file_extension)
 
 
 def safe_exec(function_def, title, *args):
@@ -49,8 +59,15 @@ def safe_exec(function_def, title, *args):
     return result
 
 
+def set_values():
+    global DIR_FUZZ_INPUT, DIR_FUZZ_OUTPUT_LOG
+    DIR_FUZZ_INPUT = Definitions.DIRECTORY_OUTPUT + "/fuzz-input"
+    DIR_FUZZ_OUTPUT_LOG = Definitions.DIRECTORY_OUTPUT + "/fuzz-output"
+
+
 def verify():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Emitter.title("Patch Verification")
     safe_exec(verify_compilation, "verifying compilation")
     safe_exec(verify_exploit, "verifying exploit")
+    safe_exec(verify_behavior, "verifying differential behavior")
