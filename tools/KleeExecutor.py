@@ -65,8 +65,8 @@ def generate_values(binary_arguments, binary_dir, binary_name, bit_size, poc_pat
     # print(trace_command)
     ret_code = execute_command(trace_command)
     if int(ret_code) != 0:
-        print("Log Path: " + log_path)
-        error_exit("CONCOLIC EXECUTION FAILED with code " + ret_code)
+        Emitter.warning("\t\tWarning: CONCOLIC EXECUTION FAILED with code " + ret_code)
+        print("\t\t\tLog Path: " + log_path)
 
 
 def generate_trace(exploit_command, binary_path, binary_name, poc_path, log_path, klee_flags, no_exit=False):
