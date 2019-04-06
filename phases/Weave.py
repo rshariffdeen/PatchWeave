@@ -83,15 +83,16 @@ def transplant_missing_macros():
 def transplant_missing_functions():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     global missing_header_list, missing_macro_list, modified_source_list
-    missing_header_list, \
+    missing_header_list_func, \
     missing_macro_list_func, modified_source_list = Weaver.weave_functions(missing_function_list,
                                                                      modified_source_list)
 
     missing_macro_list = Merger.merge_macro_info(missing_macro_list, missing_macro_list_func)
+    missing_header_list = Merger.merge_header_info(missing_header_list, missing_header_list_func)
 
 
 def transplant_code():
-    global missing_function_list, modified_source_list, missing_macro_list
+    global missing_function_list, modified_source_list, missing_macro_list, missing_header_list
     path_a = Values.PATH_A
     path_b = Values.PATH_B
     path_c = Values.PATH_C
@@ -121,9 +122,11 @@ def transplant_code():
                                                        )
         if not estimate_loc:
             Emitter.warning("\t\tWarning: no estimation for divergent point")
-        modified_source_list, \
+
+        modified_source_list,\
         identified_missing_function_list,\
-        identified_missing_macro_list = Weaver.weave_code(diff_loc,
+        identified_missing_macro_list,\
+        identified_missing_header_list = Weaver.weave_code(diff_loc,
                                                           diff_loc_info,
                                                           path_a,
                                                           path_b,
@@ -150,6 +153,13 @@ def transplant_code():
                 missing_macro_list = Merger.merge_macro_info(missing_macro_list, identified_missing_macro_list)
         else:
             missing_macro_list = identified_missing_macro_list
+
+        # print(identified_missing_header_list)
+        if missing_header_list:
+            if identified_missing_header_list:
+                missing_header_list = Merger.merge_header_info(missing_header_list, identified_missing_header_list)
+        else:
+            missing_header_list = identified_missing_header_list
 
 
 def safe_exec(function_def, title, *args):

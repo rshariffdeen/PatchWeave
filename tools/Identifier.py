@@ -82,17 +82,27 @@ def identify_missing_var(function_node_a, function_node_b, insert_node_b, skip_l
     return missing_var_list
 
 
-def identify_missing_headers(function_node, target_file):
+def identify_missing_headers(ast_node, target_file):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    Emitter.normal("\t\tidentifying missing headers")
     missing_header_list = dict()
-    function_definition = function_node['value']
-    function_name = function_node['identifier']
-    return_type = (function_definition.replace(function_name, "")).split("(")[1]
-    if return_type.strip() == "_Bool":
-        if "stdbool.h" not in missing_header_list.keys():
-            missing_header_list["stdbool.h"] = target_file
-        else:
-            error_exit("UNKNOWN RETURN TYPE")
+    node_type = ast_node['type']
+    if node_type == "FunctionDecl":
+        function_definition = ast_node['value']
+        function_name = ast_node['identifier']
+        return_type = (function_definition.replace(function_name, "")).split("(")[1]
+        if return_type.strip() == "_Bool":
+            if "stdbool.h" not in missing_header_list.keys():
+                missing_header_list["stdbool.h"] = target_file
+            else:
+                error_exit("UNKNOWN RETURN TYPE")
+    else:
+        data_type_list = Extractor.extract_data_type_list(ast_node)
+        if "uint_fast8_t" in data_type_list:
+            if "stdint.h" not in missing_header_list.keys():
+                missing_header_list["stdint.h"] = target_file
+            else:
+                error_exit("UNKNOWN RETURN TYPE")
     return missing_header_list
 
 

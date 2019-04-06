@@ -34,6 +34,20 @@ def extract_variable_name(source_path, start_pos, end_pos):
     return var_name.strip()
 
 
+def extract_data_type_list(ast_node):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    data_type_list = list()
+    node_type = str(ast_node["type"])
+    if "data_type" in ast_node.keys():
+        data_type = str(ast_node['data_type'])
+        data_type_list.append(data_type)
+    if len(ast_node['children']) > 0:
+        for child_node in ast_node['children']:
+            child_data_type_list = extract_data_type_list(child_node)
+            data_type_list = data_type_list + child_data_type_list
+    return list(set(data_type_list))
+
+
 def extract_source_list(trace_list):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Emitter.normal("\t\t\tcollecting source file list from trace ...")

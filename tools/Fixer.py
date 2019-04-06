@@ -93,7 +93,7 @@ def fix_syntax_errors(source_file):
 
 def check_syntax_errors(modified_source_list):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Emitter.sub_title("computing syntax errors")
+    Emitter.sub_sub_title("computing syntax errors")
     for source_file in modified_source_list:
         Emitter.normal(source_file)
         Emitter.normal("\tchecking syntax errors")
@@ -113,6 +113,5 @@ def set_values():
 
 def check(modified_source_list):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Emitter.sub_title("fixing syntax errors")
     set_values()
     check_syntax_errors(modified_source_list)

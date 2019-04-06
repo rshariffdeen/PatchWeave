@@ -43,3 +43,18 @@ def merge_macro_info(info_a, info_b):
         info = info_b[macro_name]
         macro_info[macro_name] = info
     return macro_info
+
+
+def merge_header_info(info_a, info_b):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    header_info = dict()
+    for header_name in info_a:
+        info = info_a[header_name]
+        if header_name in info_b.keys():
+            error_exit("MULTIPLE USAGE OF HEADER")
+        header_info[header_name] = info
+
+    for header_name in info_b:
+        info = info_b[header_name]
+        header_info[header_name] = info
+    return header_info

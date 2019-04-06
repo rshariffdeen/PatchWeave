@@ -187,6 +187,7 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
     missing_function_list = dict()
     missing_var_list = dict()
     missing_macro_list = dict()
+    missing_header_list = dict()
     position_c = 0
     if operation == 'insert':
         start_line_b, end_line_b = diff_loc_info['new-lines']
@@ -279,6 +280,10 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                                                                     source_path_b,
                                                                     source_path_d,
                                                                     skip_line_list)
+
+            missing_header_list = Identifier.identify_missing_headers(inserting_node,
+                                                                      source_path_d)
+
             # print(missing_macro_list)
             ast_script_c.append(translated_command)
         Writer.write_ast_script(ast_script_c, ast_script_file)
@@ -464,6 +469,9 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                                                                         source_path_b,
                                                                         source_path_d,
                                                                         skip_line_list)
+
+                missing_header_list = Identifier.identify_missing_headers(inserting_node,
+                                                                          source_path_d)
                 # identify_missing_macros(inserting_node, source_path_b, source_path_d)
                 ast_script_c.append(translated_command)
             elif "Replace" in script_line:
@@ -509,4 +517,5 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
         if ret_code == 0:
             if source_path_d not in modified_source_list:
                 modified_source_list.append(source_path_d)
-    return modified_source_list, missing_function_list, missing_macro_list
+
+    return modified_source_list, missing_function_list, missing_macro_list, missing_header_list
