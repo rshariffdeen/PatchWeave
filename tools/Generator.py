@@ -112,6 +112,7 @@ def generate_candidate_function_list(estimate_loc, var_info_a,
                 break
 
     if expected_score == 0:
+        print(var_info_a)
         error_exit("No variable to map")
     best_score = 0
     Emitter.warning("\t\texpected score: " + str(expected_score))
