@@ -226,6 +226,8 @@ def restore_project(project_path):
         restore_command += "git clean -fd; git reset --hard HEAD"
     elif os.path.exists(project_path + "/.svn"):
         restore_command += "svn revert -R .; svn status --no-ignore | grep '^\?' | sed 's/^\?     //'  | xargs rm -rf"
+    elif os.path.exists(project_path + "/.hg"):
+        restore_command += "hg update --clean; hg st -un0 | xargs -0 rm"
     # print(restore_command)
     execute_command(restore_command)
 
@@ -236,6 +238,8 @@ def soft_restore_project(project_path):
         restore_command += "git reset --hard HEAD"
     elif os.path.exists(project_path + "/.svn"):
         restore_command += "svn revert -R .; "
+    elif os.path.exists(project_path + "/.hg"):
+        restore_command += "hg update --clean"
     # print(restore_command)
     execute_command(restore_command)
 
