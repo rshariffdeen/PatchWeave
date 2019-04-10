@@ -26,6 +26,7 @@ def generate_path_condition(binary_arguments, binary_path, binary_name, bit_size
     trace_command += SYMBOLIC_ENGINE + sym_args.replace("$KTEST", poc_path) + " " + binary_name + ".bc "\
                      + binary_arguments.replace("$POC", "A") + " --sym-files 1 " + str(bit_size) + "  > " + log_path + \
                     " 2>&1"
+    # print(klee_flags)
     # print(trace_command)
     execute_command(trace_command)
     sym_file_path = binary_path + "/klee-last/test000001.smt2 "
@@ -44,6 +45,7 @@ def generate_var_expressions(binary_arguments, binary_dir, binary_name, bit_size
     trace_command += SYMBOLIC_ENGINE + sym_args.replace("$KTEST", sym_poc_path) + " " + binary_name + ".bc "\
                      + binary_arguments.replace("$POC", "A") + " --sym-files 1 " + str(bit_size) + "  > " + log_path + \
                     " 2>&1"
+    # print(klee_flags)
     # print(trace_command)
     ret_code = execute_command(trace_command)
     if int(ret_code) != 0:

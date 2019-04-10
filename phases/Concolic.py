@@ -97,6 +97,8 @@ def sym_trace_target():
         execute_command(copy_command)
     sym_path_c = Collector.collect_symbolic_path(FILE_KLEE_LOG_C, project_path_c)
     if not sym_path_c:
+        print(sym_path_c)
+        print(FILE_KLEE_LOG_C)
         error_exit("No symbolic path for Pc")
 
 

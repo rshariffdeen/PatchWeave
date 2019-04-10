@@ -284,17 +284,21 @@ def identify_divergent_point(byte_list, sym_path_list, trace_list, stack_info):
         sym_path = sym_path_list[key]
         # print(sym_path)
         bytes_temp = Extractor.extract_input_bytes_used(sym_path)
+        # print(byte_list)
         # print(bytes_temp)
         count = len(list(set(byte_list).intersection(bytes_temp)))
         # print(count_common, count)
         if count == count_common:
             candidate_list.append(key)
     length = len(trace_list) - 1
+    # print(trace_list)
+    # print(length)
     grab_nearest = False
     # print(candidate_list)
     # print(stack_info)
     for n in range(length, 0, -1):
         trace_loc = trace_list[n]
+        # print(trace_loc)
         source_path, line_number = trace_loc.split(":")
         source_path = os.path.abspath(source_path)
         trace_loc = source_path + ":" + line_number
@@ -317,7 +321,9 @@ def identify_divergent_point(byte_list, sym_path_list, trace_list, stack_info):
                 break
         else:
             if trace_loc in candidate_list:
+                # print(trace_loc)
                 if source_path in stack_info.keys():
+                    # print(source_path)
                     info = stack_info[source_path]
                     for func_name in info:
                         line_number_stack = info[func_name]
