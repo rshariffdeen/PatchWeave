@@ -295,7 +295,7 @@ def identify_divergent_point(byte_list, sym_path_list, trace_list, stack_info):
     # print(length)
     grab_nearest = False
     # print(candidate_list)
-    print(stack_info.keys())
+    # print(stack_info.keys())
     for n in range(0, length, 1):
         trace_loc = trace_list[n]
         # print(trace_loc)
