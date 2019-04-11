@@ -271,25 +271,26 @@ def identify_insertion_points(candidate_function):
     return insertion_point_list, best_score
 
 
-def identify_divergent_point(byte_list, sym_path_list, trace_list, stack_info):
+def identify_divergent_point(byte_list, sym_path_info, trace_list, stack_info):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Emitter.normal("\tfinding similar location in recipient")
-    length = len(sym_path_list) - 1
+    length = len(sym_path_info) - 1
     count_common = len(byte_list)
     candidate_list = list()
     estimated_loc = ""
     for n in range(length, 0, -1):
-        key = sym_path_list.keys()[n]
+        key = sym_path_info.keys()[n]
         # print(key)
-        sym_path = sym_path_list[key]
-        # print(sym_path)
-        bytes_temp = Extractor.extract_input_bytes_used(sym_path)
-        # print(byte_list)
-        # print(bytes_temp)
-        count = len(list(set(byte_list).intersection(bytes_temp)))
-        # print(count_common, count)
-        if count == count_common:
-            candidate_list.append(key)
+        sym_path_list = sym_path_info[key]
+        for sym_path in sym_path_list:
+            # print(sym_path)
+            bytes_temp = Extractor.extract_input_bytes_used(sym_path)
+            # print(byte_list)
+            # print(bytes_temp)
+            count = len(list(set(byte_list).intersection(bytes_temp)))
+            # print(count_common, count)
+            if count == count_common:
+                candidate_list.append(key)
     length = len(trace_list) - 1
     # print(trace_list)
     # print(length)
