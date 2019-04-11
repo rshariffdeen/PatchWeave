@@ -200,6 +200,28 @@ def filter_ast_script_by_skip_line(ast_script, ast_node_a, ast_node_b, skip_line
     return filtered_ast_script
 
 
+def filter_ast_script_by_node_type(ast_script, ast_node_a, ast_node_b):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    Emitter.normal("\t\tfiltering AST script using node types")
+    filtered_ast_script = list()
+    for script_line in ast_script:
+        if "Insert" in script_line:
+            node_id_b = int(((script_line.split(" into ")[0]).split("(")[1]).split(")")[0])
+            node_b = Finder.search_ast_node_by_id(ast_node_b, node_id_b)
+            node_type_b = node_b['type']
+            node_line_start = int(node_b['start line'])
+            node_line_end = int(node_b['end line']) + 1
+            # print(node_line_start)
+            if node_type_b == "LabelStmt":
+                continue
+            elif node_type_b == "ReturnStmt":
+                continue
+            else:
+                filtered_ast_script.append(script_line)
+
+    return filtered_ast_script
+
+
 def filter_best_candidate_function(function_list):
     best_candidate = None
     if not function_list:
