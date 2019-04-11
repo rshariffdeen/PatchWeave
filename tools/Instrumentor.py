@@ -27,7 +27,7 @@ def instrument_klee_var_expr(source_path, start_line, end_line, stack_info, only
     # print(orig_variable_list)
     for variable, line_number, data_type in orig_variable_list:
         print_code = "klee_print_expr(\"[var-expr] " + variable + "\", " + variable + ");\n"
-        type_print_code = "printf(\"[var-type]: " + variable + ":" + data_type + "\\n\");\n"
+        type_print_code = "klee_print_stmt(\"[var-type]: " + variable + ":" + data_type + "\");\n"
         print_code = print_code + type_print_code
         if line_number in insert_code.keys():
             insert_code[
