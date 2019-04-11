@@ -32,6 +32,59 @@ def convert_cast_expr(ast_node, only_string=False):
     return var_name, var_list
 
 
+def convert_paren_node_to_expr(ast_node):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    var_name = ""
+    var_list = list()
+    value = ""
+    child_node = ast_node['children'][0]
+    # print(child_node)
+    child_node_type = child_node['type']
+    if child_node_type == "BinaryOperator":
+        value, var_list = convert_binary_node_to_expr(child_node)
+    else:
+        print(child_node)
+        error_exit("Unknown child node type in parenexpr")
+    var_name = "(" + value + ")"
+    # print(var_name)
+    return var_name, list(set(var_list))
+
+
+def convert_binary_node_to_expr(ast_node):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    var_name = ""
+    var_list = list()
+    # print(ast_node)
+    left_child = ast_node['children'][0]
+    # print(left_child)
+    left_child_value = ""
+    left_child_type = str(left_child['type'])
+    if left_child_type in ["DeclRefExpr", "IntegerLiteral"]:
+        left_child_value = str(left_child['value'])
+    elif left_child_type == "BinaryOperator":
+        left_child_value, left_child_var_list = convert_binary_node_to_expr(left_child)
+        var_list = var_list + left_child_var_list
+    elif left_child_type == "ParenExpr":
+        left_child_value, left_child_var_list = convert_paren_node_to_expr(left_child)
+        var_list = var_list + left_child_var_list
+    operation = str(ast_node['value'])
+    # print(operation)
+    right_child = ast_node['children'][1]
+    # print(right_child)
+    right_child_value = ""
+    right_child_type = str(right_child['type'])
+    if right_child_type in ["DeclRefExpr", "IntegerLiteral"]:
+        right_child_value = str(right_child['value'])
+    elif right_child_type == "BinaryOperator":
+        right_child_value, right_child_var_list = convert_binary_node_to_expr(right_child)
+        var_list = var_list + right_child_var_list
+    elif right_child_type == "ParenExpr":
+        right_child_value, right_child_var_list = convert_paren_node_to_expr(right_child)
+        var_list = var_list + right_child_var_list
+    var_name = left_child_value + " " + operation + " " + right_child_value
+    return var_name, list(set(var_list))
+
+
 def convert_array_iterator(iterator_node):
     iterator_node_type = str(iterator_node['type'])
     var_list = list()
@@ -47,6 +100,9 @@ def convert_array_iterator(iterator_node):
         var_name = "[" + iterator_name + "]"
     elif iterator_node_type in ["IntegerLiteral"]:
         iterator_value = str(iterator_node['value'])
+        var_name = "[" + iterator_value + "]"
+    elif iterator_node_type in ["BinaryOperator"]:
+        iterator_value, var_list = convert_binary_node_to_expr(iterator_node)
         var_name = "[" + iterator_value + "]"
     else:
         print(iterator_node)
