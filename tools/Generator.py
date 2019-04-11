@@ -103,7 +103,7 @@ def generate_candidate_function_list(estimate_loc, var_info_a,
     # print(trace_function_list)
     candidate_function_list = dict()
     expected_score = 0
-    # print(var_expr_map)
+    # print(var_info_a)
     for var_name in var_info_a:
         var_expr_list = var_info_a[var_name]['expr_list']
         for var_expr in var_expr_list:
