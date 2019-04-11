@@ -40,8 +40,8 @@ def generate_var_expressions(binary_arguments, binary_dir, binary_name, bit_size
         sym_args = "-no-exit-on-error "
     trace_command = "cd " + binary_dir + ";"
     sym_args += SYMBOLIC_ARGUMENTS_FOR_EXPR
-    if klee_flags:
-        sym_args = sym_args + " " + klee_flags
+    # if klee_flags:
+    #     sym_args = sym_args + " " + klee_flags
     trace_command += SYMBOLIC_ENGINE + sym_args.replace("$KTEST", sym_poc_path) + " " + binary_name + ".bc "\
                      + binary_arguments.replace("$POC", "A") + " --sym-files 1 " + str(bit_size) + "  > " + log_path + \
                     " 2>&1"
@@ -60,8 +60,8 @@ def generate_values(binary_arguments, binary_dir, binary_name, bit_size, poc_pat
         sym_args = "-no-exit-on-error "
     trace_command = "cd " + binary_dir + ";"
     sym_args += SYMBOLIC_ARGUMENTS_FOR_VALUE
-    if klee_flags:
-        sym_args = sym_args + " " + klee_flags
+    # if klee_flags:
+    #     sym_args = sym_args + " " + klee_flags
     trace_command += SYMBOLIC_ENGINE + sym_args + " " + binary_name + ".bc "\
                      + binary_arguments.replace("$POC", poc_path) + "  > " + log_path + " 2>&1"
     # print(trace_command)
