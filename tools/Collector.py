@@ -77,9 +77,12 @@ def collect_symbolic_path(file_path, project_path):
                     if "(exit)" not in line:
                         path_condition = path_condition + line
                     else:
-                        constraints[source_path] = path_condition
+                        if source_path not in constraints.keys():
+                            constraints[source_path] = list()
+                        constraints[source_path].append((path_condition))
                         source_path = ""
                         path_condition = ""
+    # print(constraints.keys())
     return constraints
 
 
