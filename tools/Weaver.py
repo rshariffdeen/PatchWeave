@@ -349,11 +349,11 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                                                 )
 
         var_value_map_b = Collector.collect_values(val_log_b)
-        print(var_value_map_b)
+        # print(var_value_map_b)
         var_expr_map_b = Collector.collect_symbolic_expressions(expr_log_b)
-        print(var_expr_map_b)
+        # print(var_expr_map_b)
         var_info_b = Merger.merge_var_info(var_expr_map_b, var_value_map_b)
-        print(var_info_b)
+        # print(var_info_b)
 
         Generator.generate_symbolic_expressions(source_path_a,
                                                 start_line_a,
