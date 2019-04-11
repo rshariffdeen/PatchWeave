@@ -219,7 +219,7 @@ def build_llvm():
     C_FLAGS = "'-g -O0 -static'"
     config_all()
     CXX_FLAGS = "'-g -O0 -static -DNDEBUG '"
-    C_FLAGS = "'-g -O0 -static  -L/home/rshariffdeen/workspace/klee/build-rshariffdeen/lib -lkleeRuntest'"
+    C_FLAGS = "'-g -O0 -static  -L/home/ridwan/workspace/klee/build/lib -lkleeRuntest'"
     build_all()
 
 
@@ -299,7 +299,7 @@ def build_instrumented_code(source_directory):
     CC = "wllvm"
     CXX = "wllvm++"
     CXX_FLAGS = "'-g -O0 -static -DNDEBUG '"
-    C_FLAGS = "'-g -O0 -static  -L/home/rshariffdeen/workspace/klee/build-rshariffdeen/lib -lkleeRuntest'"
+    C_FLAGS = "'-g -O0 -static  -L/home/ridwan/workspace/klee/build/lib -lkleeRuntest'"
 
     if os.path.exists(source_directory + "/" + "aclocal.m4"):
         pre_config_command = "cd " + source_directory + ";"
