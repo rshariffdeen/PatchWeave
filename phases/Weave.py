@@ -65,7 +65,7 @@ def get_sym_path_cond(source_location):
                 break
     if sym_path_cond == "":
         Emitter.warning("\t\tWarning: no sym path found for " + source_location)
-    return sym_path_cond
+    return str(sym_path_cond[0])
 
 
 def transplant_missing_header():
@@ -113,7 +113,7 @@ def transplant_code():
         Emitter.normal(diff_loc)
         diff_loc_info = Analyse.diff_info[diff_loc]
         div_sym_path_cond = get_sym_path_cond(diff_loc)
-        last_sym_path_cond = Concolic.sym_path_c[Concolic.sym_path_c.keys()[-1]]
+        last_sym_path_cond = str(Concolic.sym_path_c[Concolic.sym_path_c.keys()[-1]][-1])
         estimate_loc = Solver.estimate_divergent_point(div_sym_path_cond,
                                                        last_sym_path_cond,
                                                        Concolic.sym_path_c,
