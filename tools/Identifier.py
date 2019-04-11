@@ -295,20 +295,8 @@ def identify_divergent_point(byte_list, sym_path_list, trace_list, stack_info):
     # print(length)
     grab_nearest = False
     # print(candidate_list)
-    # print(stack_info)
-    start = 0
-    end = 0
-    step = 0
-    if stack_info:
-        start = length
-        end = 0
-        step = -1
-    else:
-        start = 0
-        end = length
-        step = 1
-
-    for n in range(start, end, step):
+    print(stack_info.keys())
+    for n in range(0, length, 1):
         trace_loc = trace_list[n]
         # print(trace_loc)
         source_path, line_number = trace_loc.split(":")
@@ -339,8 +327,12 @@ def identify_divergent_point(byte_list, sym_path_list, trace_list, stack_info):
                     info = stack_info[source_path]
                     for func_name in info:
                         line_number_stack = info[func_name]
+                        # print(line_number, line_number_stack)
                         if int(line_number_stack) == int(line_number):
                             grab_nearest = True
+                        else:
+                            estimated_loc = trace_loc
+                            return estimated_loc
                 elif ".h" in source_path:
                     grab_nearest = True
                 else:
