@@ -79,6 +79,10 @@ def slice_ast_script(diff_info, project_path_a, project_path_b):
                                                                     ast_map_b,
                                                                     skip_lines
                                                                     )
+        filtered_ast_script = Filter.filter_ast_script_by_node_type(filtered_ast_script,
+                                                                    ast_map_a,
+                                                                    ast_map_b
+                                                                    )
         # print(filtered_ast_script)
         diff_loc_info['ast-script'] = filtered_ast_script
         filtered_diff_info[diff_loc] = diff_loc_info
