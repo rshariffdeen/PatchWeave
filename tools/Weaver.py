@@ -367,11 +367,11 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                                                 )
 
         var_value_map_a = Collector.collect_values(val_log_a)
-        print(var_value_map_a)
+        # print(var_value_map_a)
         var_expr_map_a = Collector.collect_symbolic_expressions(expr_log_a)
-        print(var_expr_map_a)
+        # print(var_expr_map_a)
         var_info_a = Merger.merge_var_info(var_expr_map_a, var_value_map_a)
-        print(var_info_a)
+        # print(var_info_a)
 
         for var_a in var_info_a:
             if var_a not in var_info_b:
