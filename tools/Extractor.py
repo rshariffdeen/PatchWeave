@@ -383,9 +383,11 @@ def extract_input_bytes_used(sym_expr):
         # print(sym_expr)
         # print(Exception.message)
         Emitter.warning("\t\t\twarning: exception in generating model")
+    # print("model-a")
     # print(model_a)
     input_byte_list = list()
     if model_a is not None:
+
         input_byte_list = extract_keys_from_model(model_a)
         if not input_byte_list:
             script_lines = str(sym_expr).split("\n")
@@ -402,8 +404,12 @@ def extract_input_bytes_used(sym_expr):
                     input_byte_list.append(int(byte_index))
                 else:
                    error_exit("unexpected error")
+    # print("input byte list")
+    # print(input_byte_list)
     if input_byte_list:
         input_byte_list.sort()
+    else:
+        error_exit("No input bytes in sym path for div point")
 
     return input_byte_list
 
