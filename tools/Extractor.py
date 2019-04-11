@@ -408,8 +408,6 @@ def extract_input_bytes_used(sym_expr):
     # print(input_byte_list)
     if input_byte_list:
         input_byte_list.sort()
-    else:
-        error_exit("No input bytes in sym path for div point")
 
     return input_byte_list
 
