@@ -380,9 +380,9 @@ def extract_input_bytes_used(sym_expr):
     try:
         model_a = Generator.generate_model(sym_expr)
     except Exception:
-        print(sym_expr)
-        print(Exception.message)
-
+        # print(sym_expr)
+        # print(Exception.message)
+        Emitter.warning("\t\t\twarning: exception in generating model")
     # print(model_a)
     input_byte_list = list()
     if model_a is not None:
@@ -393,7 +393,10 @@ def extract_input_bytes_used(sym_expr):
             if "A-data" in value_line:
                 tokens = value_line.split("A-data")
                 if len(tokens) > 2:
-                    error_exit("MORE than expected!!")
+                    for token in tokens[1:]:
+                        byte_index = ((token.split(")")[0]).split("bv")[1]).split(" ")[0]
+                        input_byte_list.append(int(byte_index))
+                    Emitter.warning("\t\t\twarning: manual inspection of bytes")
                 elif len(tokens) == 2:
                     byte_index = ((tokens[1].split(")")[0]).split("bv")[1]).split(" ")[0]
                     input_byte_list.append(int(byte_index))
