@@ -11,8 +11,8 @@ import Emitter
 
 CC = "clang"
 CXX = "clang++"
-C_FLAGS = "-g -O0 -ftrapv -fPIC"
-CXX_FLAGS = "-g -O0 -ftrapv -fPIC"
+C_FLAGS = "-g -O0  -fPIC"
+CXX_FLAGS = "-g -O0  -fPIC"
 LD_FLAGS = ""
 
 
@@ -165,8 +165,8 @@ def build_normal():
     CXX_FLAGS = "'-g -O0 -static'"
     C_FLAGS = "'-g -O0 -static'"
     config_all()
-    CXX_FLAGS = "'-g -O0 -static -DNDEBUG -ftrapv'"
-    C_FLAGS = "'-g -O0 -static -DNDEBUG -ftrapv'"
+    CXX_FLAGS = "'-g -O0 -static -DNDEBUG '"
+    C_FLAGS = "'-g -O0 -static -DNDEBUG '"
     build_all()
 
 
@@ -218,8 +218,8 @@ def build_llvm():
     CXX_FLAGS = "'-g -O0 -static'"
     C_FLAGS = "'-g -O0 -static'"
     config_all()
-    CXX_FLAGS = "'-g -O0 -static -DNDEBUG -ftrapv'"
-    C_FLAGS = "'-g -O0 -static -ftrapv -L/home/rshariffdeen/workspace/klee/build-rshariffdeen/lib -lkleeRuntest'"
+    CXX_FLAGS = "'-g -O0 -static -DNDEBUG '"
+    C_FLAGS = "'-g -O0 -static  -L/home/rshariffdeen/workspace/klee/build-rshariffdeen/lib -lkleeRuntest'"
     build_all()
 
 
@@ -298,8 +298,8 @@ def build_instrumented_code(source_directory):
     global CXX_FLAGS, C_FLAGS, CC, CXX
     CC = "wllvm"
     CXX = "wllvm++"
-    CXX_FLAGS = "'-g -O0 -static -DNDEBUG -ftrapv'"
-    C_FLAGS = "'-g -O0 -static -ftrapv -L/home/rshariffdeen/workspace/klee/build-rshariffdeen/lib -lkleeRuntest'"
+    CXX_FLAGS = "'-g -O0 -static -DNDEBUG '"
+    C_FLAGS = "'-g -O0 -static  -L/home/rshariffdeen/workspace/klee/build-rshariffdeen/lib -lkleeRuntest'"
 
     if os.path.exists(source_directory + "/" + "aclocal.m4"):
         pre_config_command = "cd " + source_directory + ";"
