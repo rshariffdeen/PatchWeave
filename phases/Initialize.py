@@ -114,6 +114,9 @@ def read_conf():
             Values.EXPLOIT_C = configuration.replace(Definitions.CONF_EXPLOIT_C, '')
         elif Definitions.CONF_PATH_POC in configuration:
             Values.PATH_POC = configuration.replace(Definitions.CONF_PATH_POC, '')
+            if not os.path.isfile(Values.PATH_POC):
+                Emitter.error("[NOT FOUND] POC File")
+                exit()
         elif Definitions.CONF_PATH_A in configuration:
             Values.PATH_A = configuration.replace(Definitions.CONF_PATH_A, '')
         elif Definitions.CONF_PATH_B in configuration:
