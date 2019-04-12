@@ -14,6 +14,14 @@ import Finder
 import Generator
 
 
+def identify_missing_labels(ast_map, ast_node, source_path_b, source_path_d, skip_list):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    Emitter.normal("\t\tidentifying missing labels")
+    missing_label_list = list()
+    label_list = Extractor.extract_label_node_list(ast_node)
+    return missing_label_list
+
+
 def identify_missing_functions(ast_map, ast_node, source_path_b, source_path_d, skip_list):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Emitter.normal("\t\tidentifying missing function calls")
