@@ -444,7 +444,9 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
         # print(var_expr_map_a)
         # print(var_expr_map_c)
         var_map_ac = Mapper.map_variable(var_info_a, var_info_c)
+        # print(var_map_ac)
         var_map_bc = Mapper.map_variable(var_info_b, var_info_c)
+        # print(var_map_bc)
         ast_map_b = ASTGenerator.get_ast_json(source_path_b)
         ast_map_a = ASTGenerator.get_ast_json(source_path_a)
         Emitter.sub_sub_title("transplanting code")
@@ -507,9 +509,10 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
             ast_op += " into " + position_c
             ast_script_c.append(ast_op)
         ast_script_c.reverse()
-        Emitter.emit_var_map(var_map_ac)
+        var_map_abc = Merger.merge_var_map(var_map_ac, var_map_bc)
+        Emitter.emit_var_map(var_map_abc)
         Emitter.emit_ast_script(ast_script_c)
-        Writer.write_var_map(var_map_ac, var_map_file)
+        Writer.write_var_map(var_map_abc, var_map_file)
         Writer.write_ast_script(ast_script_c, ast_script_file)
         ret_code = execute_ast_transformation(source_path_b,
                                               source_path_d,
