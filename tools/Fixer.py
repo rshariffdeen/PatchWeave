@@ -82,7 +82,7 @@ def fix_return_type(source_file, source_location):
 
 def fix_syntax_errors(source_file):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Emitter.normal("\tfixing syntax errors")
+    Emitter.normal("\t\tfixing syntax errors")
     with open(FILE_SYNTAX_ERRORS, 'r') as error_log:
         read_line = error_log.readline()
         source_location = read_line.split(": ")[0]
@@ -95,8 +95,8 @@ def check_syntax_errors(modified_source_list):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Emitter.sub_sub_title("computing syntax errors")
     for source_file in modified_source_list:
-        Emitter.normal(source_file)
-        Emitter.normal("\tchecking syntax errors")
+        Emitter.normal("\t" + source_file)
+        Emitter.normal("\t\tchecking syntax errors")
         check_command = "clang-check -analyze " + source_file + " > " + FILE_SYNTAX_ERRORS
         check_command += " 2>&1"
         ret_code = int(execute_command(check_command))
