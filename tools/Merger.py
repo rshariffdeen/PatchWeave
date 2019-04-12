@@ -30,6 +30,23 @@ def merge_var_info(var_expr_map, var_value_map):
     return var_info
 
 
+def merge_var_map(map_a, map_b):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    var_map = dict()
+    for var_name in map_a:
+        if var_name in map_b:
+            error_exit("unhandled exception in merging var maps")
+        else:
+            var_map[var_name] = map_a[var_name]
+
+    for var_name in map_b:
+        if var_name not in map_a:
+            var_map[var_name] = map_b[var_name]
+
+    # print(var_info)
+    return var_map
+
+
 def merge_macro_info(info_a, info_b):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     macro_info = dict()
