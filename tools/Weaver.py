@@ -19,6 +19,7 @@ import Writer
 import Finder
 import Filter
 import Extractor
+import Oracle
 import Merger
 
 TOOL_AST_PATCH = "patchweave"
@@ -235,6 +236,7 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
         Emitter.sub_sub_title("generating candidate insertion point list")
         insertion_loc_list, loc_best_score = Identifier.identify_insertion_points(best_candidate_function)
         best_candidate_insertion_loc = Filter.filter_best_candidate_loc(insertion_loc_list, loc_best_score)
+
         Emitter.success(
             "\n\t\tBest candidate location: " + function_name + ":" + str(best_candidate_insertion_loc) + '\n')
         ast_script_c = list()
@@ -258,6 +260,11 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
 
         start_line_c = function_node_c['start line']
         position_c = Finder.find_ast_node_position(function_node_c, int(line_number_c))
+        if Oracle.is_loc_on_stack(source_path_c, function_node_c['identifier'], line_number_c, stack_info_c):
+            Emitter.warning("\t\twarning: insertion loc is on crash stack")
+            position_number = int(position_c.split(" at ")[1]) - 1
+            position_c = str(position_c.split(" at ")[0] + " at " + str(position_number))
+            Emitter.warning("\t\tinsert location adjusted by 1")
         Emitter.normal("\t\t\tgenerating AST script")
         for script_line in ast_script:
             inserting_node_str = script_line.split(" into ")[0]
