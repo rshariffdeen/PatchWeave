@@ -183,7 +183,10 @@ def filter_ast_script_by_skip_line(ast_script, ast_node_a, ast_node_b, skip_line
             node_type_b = node_b['type']
             node_line_start = int(node_b['start line'])
             node_line_end = int(node_b['end line']) + 1
+            target_node_type = str((script_line.split(" into ")[1]).split("(")[0])
             # print(node_line_start)
+            if node_line_start in skip_lines:
+                continue
             if node_type_b in ["IfStmt"]:
                 body_node = node_b['children'][1]
                 count = 0
@@ -192,11 +195,21 @@ def filter_ast_script_by_skip_line(ast_script, ast_node_a, ast_node_b, skip_line
                         count = count + 1
                 if count != 0:
                     filtered_ast_script.append(script_line)
+            elif target_node_type in ["IfStmt"]:
+                insert_position = int((script_line.split(" into ")[1]).split(" at ")[1])
+                # print(insert_position)
+                if insert_position == 0:
+                    target_node = Finder.search_node_by_loc(ast_node_b, node_line_start)
+                    body_node = target_node['children'][1]
+                    count = 0
+                    for child_node in body_node['children']:
+                        if int(child_node['start line']) not in skip_lines:
+                            count = count + 1
+                    if count != 0:
+                        filtered_ast_script.append(script_line)
             else:
                 filtered_ast_script.append(script_line)
 
-            if node_line_start in skip_lines:
-                continue
     return filtered_ast_script
 
 
@@ -215,6 +228,8 @@ def filter_ast_script_by_node_type(ast_script, ast_node_a, ast_node_b):
             if node_type_b == "LabelStmt":
                 continue
             elif node_type_b == "ReturnStmt":
+                continue
+            elif node_type_b == "GotoStmt":
                 continue
             else:
                 filtered_ast_script.append(script_line)
