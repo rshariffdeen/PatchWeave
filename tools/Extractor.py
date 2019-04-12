@@ -116,6 +116,20 @@ def extract_call_node_list(ast_node):
     return call_expr_list
 
 
+def extract_label_node_list(ast_node):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    label_stmt_list = list()
+    node_type = str(ast_node["type"])
+    if node_type == "LabelStmt":
+        label_stmt_list.append(ast_node)
+    else:
+        if len(ast_node['children']) > 0:
+            for child_node in ast_node['children']:
+                child_label_list = extract_label_node_list(child_node)
+                call_expr_list = label_stmt_list + child_label_list
+    return label_stmt_list
+
+
 def extract_function_call_list(source_file, line_number):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     line_list = dict()
