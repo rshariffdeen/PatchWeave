@@ -170,6 +170,54 @@ def build_normal():
     build_all()
 
 
+def build_instrumented_code(source_directory):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    Emitter.normal("\t\t\tbuilding instrumented code")
+    global CXX_FLAGS, C_FLAGS, CC, CXX
+    CC = "wllvm"
+    CXX = "wllvm++"
+    CXX_FLAGS = "'-g -O0 -static -DNDEBUG '"
+    C_FLAGS = "'-g -O0 -static  -L/home/ridwan/workspace/klee/build/lib -lkleeRuntest'"
+
+    if os.path.exists(source_directory + "/" + "aclocal.m4"):
+        pre_config_command = "cd " + source_directory + ";"
+        pre_config_command += "rm aclocal.m4;aclocal"
+        execute_command(pre_config_command)
+
+    build_command = "cd " + source_directory + ";"
+    custom_build_command = ""
+    if (Values.PATH_A in source_directory) or (Values.PATH_B in source_directory):
+        if Values.BUILD_COMMAND_A is not None:
+            custom_build_command = Values.BUILD_COMMAND_A
+
+    if Values.PATH_C in source_directory:
+        if Values.BUILD_COMMAND_C is not None:
+            custom_build_command = Values.BUILD_COMMAND_C
+
+    # print("custom command is " + custom_build_command)
+
+    if not custom_build_command:
+        build_command += "make CFLAGS=" + C_FLAGS + " "
+        build_command += "CXXFLAGS=" + CXX_FLAGS + " > " + Definitions.FILE_MAKE_LOG
+    else:
+        build_command_with_flags = apply_flags(custom_build_command)
+        build_command += build_command_with_flags
+
+    # print(build_command)
+    ret_code = execute_command(build_command)
+    if int(ret_code) == 2:
+        # TODO: check only upto common directory
+        while source_directory != "" and ret_code != "0":
+            build_command = build_command.replace(source_directory, "???")
+            source_directory = "/".join(source_directory.split("/")[:-1])
+            build_command = build_command.replace("???", source_directory)
+            ret_code = execute_command(build_command)
+
+    if int(ret_code) != 0:
+        Emitter.error(build_command)
+        error_exit("BUILD FAILED!!\nExit Code: " + str(ret_code))
+
+
 def build_verify():
     global CC, CXX, CXX_FLAGS, C_FLAGS, LD_FLAGS
     Emitter.sub_sub_title("building projects")
@@ -180,20 +228,24 @@ def build_verify():
     Emitter.normal("\t\t" + Values.Project_D.path)
     clean_project(Values.Project_D.path)
     clean_project(Values.Project_C.path)
-    if not Values.BUILD_COMMAND_C:
-        config_project(Values.Project_D.path, False)
-        config_project(Values.Project_C.path, False)
-        CXX_FLAGS = "'-g -O0 -static -DNDEBUG -fsanitize=" + Values.ASAN_FLAG + "'"
-        C_FLAGS = "'-g -O0 -static -DNDEBUG -fsanitize=" + Values.ASAN_FLAG + "'"
-        build_project(Values.Project_C.path)
-        build_project(Values.Project_D.path)
-    else:
+
+    if Values.CONFIG_COMMAND_C:
         config_project(Values.Project_D.path, False, Values.CONFIG_COMMAND_C)
         config_project(Values.Project_C.path, False, Values.CONFIG_COMMAND_C)
+    else:
+        config_project(Values.Project_D.path, False)
+        config_project(Values.Project_C.path, False)
+
+    if Values.BUILD_COMMAND_C:
         CXX_FLAGS = "'-g -O0 -static -DNDEBUG -fsanitize=" + Values.ASAN_FLAG + "'"
         C_FLAGS = "'-g -O0 -static -DNDEBUG -fsanitize=" + Values.ASAN_FLAG + "'"
         build_project(Values.Project_D.path, Values.BUILD_COMMAND_C)
         build_project(Values.Project_C.path, Values.BUILD_COMMAND_C)
+    else:
+        CXX_FLAGS = "'-g -O0 -static -DNDEBUG -fsanitize=" + Values.ASAN_FLAG + "'"
+        C_FLAGS = "'-g -O0 -static -DNDEBUG -fsanitize=" + Values.ASAN_FLAG + "'"
+        build_project(Values.Project_C.path)
+        build_project(Values.Project_D.path)
 
 
 def build_asan():
@@ -290,51 +342,3 @@ def clean_all():
 
     Emitter.normal("\t" + Values.Project_D.path)
     clean_project(Values.Project_D.path)
-
-
-def build_instrumented_code(source_directory):
-    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Emitter.normal("\t\t\tbuilding instrumented code")
-    global CXX_FLAGS, C_FLAGS, CC, CXX
-    CC = "wllvm"
-    CXX = "wllvm++"
-    CXX_FLAGS = "'-g -O0 -static -DNDEBUG '"
-    C_FLAGS = "'-g -O0 -static  -L/home/ridwan/workspace/klee/build/lib -lkleeRuntest'"
-
-    if os.path.exists(source_directory + "/" + "aclocal.m4"):
-        pre_config_command = "cd " + source_directory + ";"
-        pre_config_command += "rm aclocal.m4;aclocal"
-        execute_command(pre_config_command)
-
-    build_command = "cd " + source_directory + ";"
-    custom_build_command = ""
-    if (Values.PATH_A in source_directory) or (Values.PATH_B in source_directory):
-        if Values.BUILD_COMMAND_A is not None:
-            custom_build_command = Values.BUILD_COMMAND_A
-
-    if Values.PATH_C in source_directory:
-        if Values.BUILD_COMMAND_C is not None:
-            custom_build_command = Values.BUILD_COMMAND_C
-
-    # print("custom command is " + custom_build_command)
-
-    if not custom_build_command:
-        build_command += "make CFLAGS=" + C_FLAGS + " "
-        build_command += "CXXFLAGS=" + CXX_FLAGS + " > " + Definitions.FILE_MAKE_LOG
-    else:
-        build_command_with_flags = apply_flags(custom_build_command)
-        build_command += build_command_with_flags
-
-    # print(build_command)
-    ret_code = execute_command(build_command)
-    if int(ret_code) == 2:
-        # TODO: check only upto common directory
-        while source_directory != "" and ret_code != "0":
-            build_command = build_command.replace(source_directory, "???")
-            source_directory = "/".join(source_directory.split("/")[:-1])
-            build_command = build_command.replace("???", source_directory)
-            ret_code = execute_command(build_command)
-
-    if int(ret_code) != 0:
-        Emitter.error(build_command)
-        error_exit("BUILD FAILED!!\nExit Code: " + str(ret_code))
