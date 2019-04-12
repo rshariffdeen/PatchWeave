@@ -99,8 +99,11 @@ def collect_trace(file_path, project_path, suspicious_loc_list):
                         trace_line = trace_line.strip()
                         if (not list_trace) or (list_trace[-1] != trace_line):
                             list_trace.append(trace_line)
-                        if any(loc in line for loc in suspicious_loc_list):
-                            break
+                        # if any(loc in line for loc in suspicious_loc_list):
+                        #     print(line)
+                        #     print(suspicious_loc_list)
+                        #     exit(1)
+                        #     break
     return list_trace
 
 
