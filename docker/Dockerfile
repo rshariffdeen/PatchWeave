@@ -2,6 +2,7 @@ FROM ubuntu:16.04
 MAINTAINER Ridwan Shariffdeen <ridwan@comp.nus.edu.sg>
 
 RUN apt-get update && apt-get install -y \
+    autoconf \
     bison \
     cmake \
     curl \
@@ -57,3 +58,6 @@ RUN git clone https://github.com/Z3Prover/z3.git /z3;
 RUN cd /z3; python scripts/mk_make.py;
 RUN cd /z3/build; make -j32; make install
 
+RUN pip install --upgrade pip && pip install \
+    pysmt \
+    six
