@@ -2,14 +2,19 @@ FROM ubuntu:16.04
 MAINTAINER Ridwan Shariffdeen <ridwan@comp.nus.edu.sg>
 
 RUN apt-get update && apt-get install -y \
+    bison \
     cmake \
     curl \
+    flex \
     git \
     google-perftools \
+    libboost-all-dev \
     libgoogle-perftools-dev \
     libncurses5-dev \
+    minisat \
     nano \
     ninja \
+    perl \
     python \
     python-pip \
     software-properties-common \
