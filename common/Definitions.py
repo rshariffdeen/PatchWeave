@@ -101,3 +101,4 @@ SYNTAX_CHECK_COMMAND = "clang-check "
 STYLE_FORMAT_COMMAND = "clang-format -style=LLVM "
 
 crash_word_list = ["abort", "core dumped", "crashed", "exception"]
+error_word_list = ["runtime error", "buffer-overflow"]

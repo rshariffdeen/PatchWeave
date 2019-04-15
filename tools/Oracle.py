@@ -114,6 +114,13 @@ def did_program_crash(program_output):
     return False
 
 
+def any_runtime_error(program_output):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    if any(error_word in str(program_output).lower() for error_word in Definitions.error_word_list):
+        return True
+    return False
+
+
 def is_loc_on_stack(source_path, function_name, line_number, stack_info):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     # print(source_path, function_name, line_number)
