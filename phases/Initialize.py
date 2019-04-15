@@ -83,6 +83,7 @@ def read_conf():
             elif Definitions.ARG_SKIP_SYM_TRACE_GEN in arg:
                 Values.SKIP_SYM_TRACE_GEN = True
             elif Definitions.ARG_ONLY_VERIFY in arg:
+                Values.ONLY_VERIFY = True
                 Values.SKIP_SYM_TRACE_GEN = True
                 Values.SKIP_RESTORE = True
                 Values.SKIP_WEAVE = True
