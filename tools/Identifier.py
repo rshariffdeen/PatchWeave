@@ -287,9 +287,11 @@ def identify_divergent_point(byte_list, sym_path_info, trace_list, stack_info):
     candidate_list = list()
     estimated_loc = ""
     for n in range(length, 0, -1):
+        # print(n)
         key = sym_path_info.keys()[n]
         # print(key)
         sym_path_list = sym_path_info[key]
+        # print(len(sym_path_list))
         for sym_path in sym_path_list:
             # print(sym_path)
             bytes_temp = Extractor.extract_input_bytes_used(sym_path)
@@ -299,6 +301,9 @@ def identify_divergent_point(byte_list, sym_path_info, trace_list, stack_info):
             # print(count_common, count)
             if count == count_common:
                 candidate_list.append(key)
+                break
+        # print("finish")
+    # print("FINISH")
     length = len(trace_list) - 1
     # print(trace_list)
     # print(length)
