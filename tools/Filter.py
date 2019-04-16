@@ -16,14 +16,19 @@ def filter_trace_list_by_loc(trace_list, estimate_loc):
     filtered_trace_list = list()
     # print(trace_list)
     # print(estimate_loc)
+    source_path, line_number, count_instant = estimate_loc.split(":")
+    estimate_loc = source_path + ":" + str(line_number)
     if estimate_loc is None:
         return trace_list
-    for n in range(len(trace_list) - 1, 0, -1):
-        filtered_trace_list.append(trace_list[n])
+    div_point = 0
+    for n in range(0, len(trace_list), 1):
         if estimate_loc == trace_list[n]:
-            break
-    filtered_trace_list.reverse()
-    # print(filtered_trace_list)
+            if count_instant == 1:
+                return trace_list[div_point:]
+            else:
+                count_instant = count_instant - 1
+        div_point = div_point + 1
+
     return filtered_trace_list
 
 

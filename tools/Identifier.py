@@ -338,33 +338,41 @@ def identify_divergent_point(byte_list, sym_path_info, trace_list, stack_info):
             if trace_loc in sym_path_info.keys():
                 sym_path_list = sym_path_info[trace_loc]
                 # print(len(sym_path_list))
-                for sym_path in sym_path_list:
-                    # print(sym_path)
-                    bytes_temp = Extractor.extract_input_bytes_used(sym_path)
-                    # print(byte_list)
-                    # print(bytes_temp)
-                    count = len(list(set(byte_list).intersection(bytes_temp)))
-                    # print(count_common, count)
-                    if count == count_common:
-                        if source_path in stack_info.keys():
-                            # print(source_path)
-                            info = stack_info[source_path]
-                            for func_name in info:
-                                line_number_stack = info[func_name]
-                                # print(line_number, line_number_stack)
-                                if int(line_number_stack) == int(line_number):
-                                    grab_nearest = True
-                                else:
-                                    estimated_loc = trace_loc
-                                    return estimated_loc
-                        elif ".h" in source_path:
-                            grab_nearest = True
+                sym_path_latest = sym_path_list[-1]
+                bytes_latest = Extractor.extract_input_bytes_used(sym_path_latest)
+                count_latest = len(list(set(byte_list).intersection(bytes_latest)))
+                if count_latest == count_common:
+                    count_instant = 0
+                    for sym_path in sym_path_list:
+                        # print(sym_path)
+                        bytes_temp = Extractor.extract_input_bytes_used(sym_path)
+                        # print(byte_list)
+                        # print(bytes_temp)
+                        count = len(list(set(byte_list).intersection(bytes_temp)))
+                        # print(count_common, count)
+                        if count == count_common:
+                            return trace_loc, count_instant
                         else:
-                            estimated_loc = trace_loc
-                            return estimated_loc
-                        break
+                            count_instant = count_instant + 1
+                    # if source_path in stack_info.keys():
+                    #     # print(source_path)
+                    #     info = stack_info[source_path]
+                    #     for func_name in info:
+                    #         line_number_stack = info[func_name]
+                    #         # print(line_number, line_number_stack)
+                    #         if int(line_number_stack) == int(line_number):
+                    #             grab_nearest = True
+                    #         else:
+                    #             estimated_loc = trace_loc
+                    #             return estimated_loc
+                    # elif ".h" in source_path:
+                    #     grab_nearest = True
+                    # else:
+                    #     estimated_loc = trace_loc
+                    #     return estimated_loc
+                    # break
 
-    return estimated_loc
+    return estimated_loc, 0
 
 
 def identify_fixed_errors(output_a, output_b):
