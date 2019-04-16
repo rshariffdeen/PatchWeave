@@ -24,13 +24,13 @@ def estimate_divergent_point(path_cond_a, path_cond_b, target_sym_path, target_t
     byte_list = Extractor.extract_common_bytes(bytes_a, bytes_c)
     # print(byte_list)
     Emitter.normal("\testimating divergent point")
-    estimate_loc = Identifier.identify_divergent_point(byte_list,
+    estimate_loc, count_instant = Identifier.identify_divergent_point(byte_list,
                                                        target_sym_path,
                                                        target_trace,
                                                        stack_info
                                                        )
     Emitter.highlight("\testimated divergent point:" + estimate_loc)
-    return estimate_loc
+    return estimate_loc, count_instant
 
 
 # Christopher P. Matthews
