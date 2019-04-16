@@ -316,7 +316,7 @@ def identify_divergent_point(byte_list, sym_path_info, trace_list, stack_info):
         # print(trace_loc)
         source_path, line_number = trace_loc.split(":")
         source_path = os.path.abspath(source_path)
-        trace_loc = source_path + ":" + line_number
+        trace_loc = source_path + ":" + str(line_number)
         if grab_nearest:
             # print(trace_loc)
             if source_path in stack_info.keys():
