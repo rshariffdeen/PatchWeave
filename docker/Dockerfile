@@ -56,12 +56,22 @@ RUN cd /klee/build; make -j32; make install
 
 
 RUN git clone https://github.com/Z3Prover/z3.git /z3;
-RUN cd /z3; python scripts/mk_make.py;
+RUN cd /z3; git checkout z3-4.8.1; python scripts/mk_make.py;
 RUN cd /z3/build; make -j32; make install
+ENV PYTHONPATH=/z3/build/python
 
 RUN mkdir /bear; git clone https://github.com/rizsotto/Bear.git /bear/source;
 RUN mkdir /bear/build; cd /bear/build; cmake ../source; make -j32; make install
 
-RUN pip install --upgrade pip && pip install \
+RUN /usr/bin/pip install --upgrade pip && pip install \
     pysmt \
-    six
+    six \
+    wllvm
+
+RUN echo "Y" | pysmt-install  --z
+
+RUN svn co http://llvm.org/svn/llvm-project/compiler-rt/tags/RELEASE_700/final /llvm/llvm-7/source/projects/compiler-rt
+RUN rm -rf /llvm/llvm-7/build
+RUN mkdir /llvm/llvm-7/build; cd /llvm/llvm-7/build; cmake /llvm/llvm-7/source -DCMAKE_BUILD_TYPE=Release -DCMAKE_ENABLE_ASSERTIONS=OFF -DLLVM_ENABLE_WERROR=OFF -DLLVM_TARGETS_TO_BUILD=X86 -DCMAKE_CXX_FLAGS="-std=c++11" -DCMAKE_C_COMPILER=clang-7 -DCMAKE_CXX_COMPILER=clang++-7
+RUN cd /llvm/llvm-7/build; make -j32; make install
+RUN cd /llvm/llvm-34/build; make -j32; make install
