@@ -105,7 +105,7 @@ def convert_array_iterator(iterator_node):
         iterator_value, var_list = convert_binary_node_to_expr(iterator_node)
         var_name = "[" + iterator_value + "]"
     elif iterator_node_type in ["MemberExpr"]:
-        iterator_value, var_list = convert_member_expr(iterator_node)
+        iterator_value, iterator_type, var_list = convert_member_expr(iterator_node)
         var_name = "[" + iterator_value + "]"
     else:
         print(iterator_node)
@@ -118,19 +118,28 @@ def convert_array_subscript(ast_node):
     var_list = list()
     var_name = ""
     var_data_type = ""
+    # print(ast_node)
     array_node = ast_node['children'][0]
-    array_name = str(array_node['value'])
     array_type = str(array_node['type'])
-    array_data_type = str(array_node['data_type'])
-    var_data_type = array_data_type.split("[")[0]
     if array_type == "DeclRefExpr":
+        array_name = str(array_node['value'])
+        array_data_type = str(array_node['data_type'])
+        var_data_type = array_data_type.split("[")[0]
         iterator_node = ast_node['children'][1]
         iterator_node_type = str(iterator_node['type'])
         var_name, var_list = convert_array_iterator(iterator_node)
         var_name = array_name + var_name
     elif array_type == "MemberExpr":
+        array_name = str(array_node['value'])
+        array_data_type = str(array_node['data_type'])
         iterator_node = ast_node['children'][1]
         array_name, array_data_type = convert_member_expr(array_node, True)
+        var_name, var_list = convert_array_iterator(iterator_node)
+        var_name = array_name + var_name
+    elif array_type == "ParenExpr":
+        array_name, var_list = convert_paren_node_to_expr(array_node)
+        array_data_type = str(array_node['data_type'])
+        iterator_node = ast_node['children'][1]
         var_name, var_list = convert_array_iterator(iterator_node)
         var_name = array_name + var_name
     else:
