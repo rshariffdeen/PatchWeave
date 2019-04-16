@@ -286,23 +286,24 @@ def identify_divergent_point(byte_list, sym_path_info, trace_list, stack_info):
     count_common = len(byte_list)
     candidate_list = list()
     estimated_loc = ""
-    for n in range(length, 0, -1):
-        # print(n)
-        key = sym_path_info.keys()[n]
-        # print(key)
-        sym_path_list = sym_path_info[key]
-        # print(len(sym_path_list))
-        for sym_path in sym_path_list:
-            # print(sym_path)
-            bytes_temp = Extractor.extract_input_bytes_used(sym_path)
-            # print(byte_list)
-            # print(bytes_temp)
-            count = len(list(set(byte_list).intersection(bytes_temp)))
-            # print(count_common, count)
-            if count == count_common:
-                candidate_list.append(key)
-                break
-        # print("finish")
+    print(length)
+    # for n in range(length, 0, -1):
+    #     print(n)
+    #     key = sym_path_info.keys()[n]
+    #     print(key)
+    #     sym_path_list = sym_path_info[key]
+    #     # print(len(sym_path_list))
+    #     for sym_path in sym_path_list:
+    #         # print(sym_path)
+    #         bytes_temp = Extractor.extract_input_bytes_used(sym_path)
+    #         # print(byte_list)
+    #         # print(bytes_temp)
+    #         count = len(list(set(byte_list).intersection(bytes_temp)))
+    #         print(count_common, count)
+    #         if count == count_common:
+    #             candidate_list.append(key)
+    #             break
+    #     print("finish")
     # print("FINISH")
     length = len(trace_list) - 1
     # print(trace_list)
@@ -334,24 +335,34 @@ def identify_divergent_point(byte_list, sym_path_info, trace_list, stack_info):
                 estimated_loc = trace_loc
                 break
         else:
-            if trace_loc in candidate_list:
-                # print(trace_loc)
-                if source_path in stack_info.keys():
-                    # print(source_path)
-                    info = stack_info[source_path]
-                    for func_name in info:
-                        line_number_stack = info[func_name]
-                        # print(line_number, line_number_stack)
-                        if int(line_number_stack) == int(line_number):
+            if trace_loc in sym_path_info.keys():
+                sym_path_list = sym_path_info[trace_loc]
+                # print(len(sym_path_list))
+                for sym_path in sym_path_list:
+                    # print(sym_path)
+                    bytes_temp = Extractor.extract_input_bytes_used(sym_path)
+                    # print(byte_list)
+                    # print(bytes_temp)
+                    count = len(list(set(byte_list).intersection(bytes_temp)))
+                    print(count_common, count)
+                    if count == count_common:
+                        if source_path in stack_info.keys():
+                            # print(source_path)
+                            info = stack_info[source_path]
+                            for func_name in info:
+                                line_number_stack = info[func_name]
+                                # print(line_number, line_number_stack)
+                                if int(line_number_stack) == int(line_number):
+                                    grab_nearest = True
+                                else:
+                                    estimated_loc = trace_loc
+                                    return estimated_loc
+                        elif ".h" in source_path:
                             grab_nearest = True
                         else:
                             estimated_loc = trace_loc
                             return estimated_loc
-                elif ".h" in source_path:
-                    grab_nearest = True
-                else:
-                    estimated_loc = trace_loc
-                    break
+                        break
 
     return estimated_loc
 
