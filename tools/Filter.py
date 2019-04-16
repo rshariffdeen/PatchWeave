@@ -17,6 +17,7 @@ def filter_trace_list_by_loc(trace_list, estimate_loc):
     # print(trace_list)
     # print(estimate_loc)
     source_path, line_number, count_instant = estimate_loc.split(":")
+    count_instant = int(count_instant)
     estimate_loc = source_path + ":" + str(line_number)
     if estimate_loc is None:
         return trace_list
