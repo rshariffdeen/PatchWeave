@@ -313,7 +313,7 @@ def identify_divergent_point(byte_list, sym_path_info, trace_list, stack_info):
     # print(stack_info.keys())
     for n in range(0, length, 1):
         trace_loc = trace_list[n]
-        print(trace_loc)
+        # print(trace_loc)
         source_path, line_number = trace_loc.split(":")
         source_path = os.path.abspath(source_path)
         # trace_loc = source_path + ":" + str(line_number)
