@@ -63,13 +63,13 @@ RUN cd /z3/build; make -j32; make install
 ENV PYTHONPATH=/z3/build/python
 
 RUN mkdir /bear; git clone https://github.com/rizsotto/Bear.git /bear/source;
+RUN cd /bear/source; git checkout 2.2.1
 RUN mkdir /bear/build; cd /bear/build; cmake ../source; make -j32; make install
 
 RUN /usr/bin/pip install --upgrade pip && pip install \
     pysmt \
     six \
     wllvm
-
 
 RUN echo "Y" | pysmt-install  --z
 
