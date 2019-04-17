@@ -130,4 +130,4 @@ def find_definition_insertion_point(source_path):
             child_node_file_name = child_node['file']
             if child_node_file_name == file_name:
                 return int(child_node['start line'])
-    return -1
+    return 0
