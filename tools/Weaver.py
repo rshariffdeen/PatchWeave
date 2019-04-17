@@ -207,7 +207,7 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                                                 poc_path,
                                                 expr_log_b,
                                                 val_log_b,
-                                                stack_info_a
+                                                dict()
                                                 )
 
         var_value_map_b = Collector.collect_values(val_log_b)
