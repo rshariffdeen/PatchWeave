@@ -62,16 +62,23 @@ def extract_source_list(trace_list):
 
 def extract_complete_function_node(function_def_node, source_path):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    # print(source_path)
     source_dir = "/".join(source_path.split("/")[:-1])
+    # print(source_dir)
     if len(function_def_node['children']) > 1:
         source_file_loc = source_dir + "/" + function_def_node['file']
+        # print(source_file_loc)
         source_file_loc = os.path.abspath(source_file_loc)
+        # print(source_file_loc)
         return function_def_node, source_file_loc
     else:
-        header_file_loc = source_dir + "/" + function_def_node['file']
+        # header_file_loc = source_dir + "/" + function_def_node['file']
+        header_file_loc = function_def_node['file']
+        # print(header_file_loc)
         function_name = function_def_node['identifier']
         source_file_loc = header_file_loc.replace(".h", ".c")
         source_file_loc = os.path.abspath(source_file_loc)
+        # print(source_file_loc)
         if not os.path.exists(source_file_loc):
             source_file_name = source_file_loc.split("/")[-1]
             header_file_dir = "/".join(source_file_loc.split("/")[:-1])
