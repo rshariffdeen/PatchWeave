@@ -158,7 +158,7 @@ def generate_candidate_function_list(estimate_loc, var_info_a,
         Emitter.emit_var_map(var_map)
         if best_score < score:
             best_score = score
-        if expected_score == score:
+        if (expected_score == score) and (len(set(var_map.values())) == score):
             info = dict()
             info['var-map'] = var_map
             info['start-line'] = start_line
