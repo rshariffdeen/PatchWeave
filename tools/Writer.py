@@ -30,6 +30,6 @@ def write_ast_script(ast_script, output_file):
     with open(output_file, 'w') as script_file:
         for op in ast_script:
             content += op
-            if op != ast_script[-1]:
+            if op != ast_script[-1] and not str(op).endswith("\n"):
                 content += "\n"
         script_file.writelines(content)
