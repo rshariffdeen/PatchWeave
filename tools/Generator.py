@@ -118,8 +118,6 @@ def generate_candidate_function_list(estimate_loc, var_info_a,
     Emitter.warning("\t\texpected score: " + str(expected_score))
     for function_id in trace_function_list:
         Emitter.special("\t\t" + function_id)
-        if function_id != "/home/ridwan/workspace/research-work/patch-transplant/data-set/FSE/CVE-2016-9387-4/jasper-1.900.13/src/libjasper/jpc/jpc_dec.c:jpc_dec_process_siz":
-            continue
         source_path, function_name = str(function_id).split(":")
         function_info = trace_function_list[function_id]
         begin_line = function_info['begin']
@@ -161,8 +159,8 @@ def generate_candidate_function_list(estimate_loc, var_info_a,
         if best_score < score:
             best_score = score
         if (expected_score == score) and (len(set(var_map.values())) == score):
-            if len(var_map.values() == 1):
-                if len(var_map.values()[0]) == 1:
+            if len(var_map.values()) == 1:
+                if len(var_map.values()[0].split(")")[1]) == 1:
                     continue
             info = dict()
             info['var-map'] = var_map
