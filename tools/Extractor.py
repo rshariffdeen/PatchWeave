@@ -372,8 +372,14 @@ def extract_variable_list(source_path, start_line, end_line, only_in_range):
     # print(str(start_line), str(end_line))
     for var in variable_list:
         var_name, line_num, var_type = var
+        if only_in_range:
+            for dec_var in child_var_dec_list:
+                dec_var_name, dec_line_num, dec_var_type = dec_var
+                if dec_var_name == var_name:
+                    continue
         if int(start_line) <= int(line_num) <= int(end_line):
             filtered_list.append(var)
+
     # print(variable_list)
     # print(filtered_list)
     return filtered_list
