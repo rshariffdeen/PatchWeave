@@ -244,6 +244,7 @@ def filter_ast_script_by_node_type(ast_script, ast_node_a, ast_node_b):
 
 
 def filter_best_candidate_function(function_list):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     best_candidate = None
     if not function_list:
         Emitter.error("No candidate function")
@@ -259,6 +260,7 @@ def filter_best_candidate_function(function_list):
 
 
 def filter_best_candidate_loc(loc_list, best_score):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     best_candidate = 0
     for loc in loc_list:
         # print(loc)
@@ -273,6 +275,7 @@ def filter_best_candidate_loc(loc_list, best_score):
 
 
 def filter_line_range(initial_range, skip_list):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     start_loc, end_loc = initial_range
     filtered_start = start_loc
     filtered_end = end_loc
@@ -292,3 +295,15 @@ def filter_line_range(initial_range, skip_list):
 
     # print(filtered_start, filtered_end)
     return filtered_start, filtered_end
+
+
+def filter_new_variables(var_map, ast_node_a, ast_node_b):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    filtered_map = dict()
+    dec_node_list_a = Extractor.extract_decl_node_list(ast_node_a)
+    dec_node_list_b = Extractor.extract_decl_node_list(ast_node_b)
+    for var_name in var_map:
+        if (var_name in dec_node_list_b.keys()) and (var_name not in dec_node_list_a.keys()):
+            continue
+        filtered_map[var_name] = var_map[var_name]
+    return filtered_map
