@@ -150,6 +150,44 @@ def convert_array_subscript(ast_node):
     return var_name, var_data_type, var_list
 
 
+def convert_call_expr(ast_node, only_string=False):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    var_name = ""
+    function_name = ""
+    operand_list = list()
+    var_list = list()
+    call_function_node = ast_node['children'][0]
+    call_function_node_type = str(call_function_node['type'])
+    call_function_node_ref_type = str(call_function_node['ref_type'])
+    if call_function_node_type == "DeclRefExpr" and call_function_node_ref_type == "FunctionDecl":
+        function_name = str(call_function_node['value'])
+    else:
+        print(ast_node)
+        error_exit("unknown decl tyep in convert_call_expr")
+
+    operand_count = len(ast_node['children'])
+    for i in range(1, operand_count):
+        operand_node = ast_node['children'][i]
+        operand_node_type = str(operand_node['type'])
+        if operand_node_type == "CallExpr":
+            operand_var_name, operand_var_list = convert_call_expr(operand_node, only_string)
+            operand_list.append(operand_var_name)
+            var_list = var_list + operand_var_list
+        elif operand_node_type == "DeclRefExpr":
+            operand_var_name = str(operand_node['value'])
+            operand_list.append(operand_var_name)
+
+    var_name = function_name + "("
+    for operand in operand_list:
+        var_name += operand
+        if operand != operand_list[-1]:
+            var_name += ","
+
+    var_name += ")"
+    print(var_name)
+    return var_name, list(set(var_list))
+
+
 def convert_member_expr(ast_node, only_string=False):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     var_list = list()
@@ -206,6 +244,12 @@ def convert_member_expr(ast_node, only_string=False):
                 var_name = "." + str(child_node_value.split(":")[-1]) + var_name
             else:
                 var_name = "->" + str(child_node_value.split(":")[-1]) + var_name
+        elif child_node_type == "CallExpr":
+            child_var_name, child_aux_list = convert_call_expr(child_node)
+            var_list = var_list + child_aux_list
+            var_name = child_var_name + var_name
+            break
+
         else:
             print(ast_node)
             error_exit("unhandled exception at membership expr -> str")
