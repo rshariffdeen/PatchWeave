@@ -34,7 +34,7 @@ def generate_symbolic_expressions(source_path, start_line, end_line,
     source_directory = "/".join(str(source_path).split("/")[:-1])
     klee_flags = ""
     # print(sym_poc_path, poc_path)
-    if Values.PATH_A in source_path:
+    if Values.PATH_A + "/" in source_path:
         binary_path = Values.PATH_A + Values.EXPLOIT_A.split(" ")[0]
         binary_args = " ".join(Values.EXPLOIT_A.split(" ")[1:])
         source_directory = Values.PATH_A
