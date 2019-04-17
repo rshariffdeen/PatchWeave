@@ -123,7 +123,11 @@ def generate_candidate_function_list(estimate_loc, var_info_a,
         begin_line = function_info['begin']
         last_line = function_info['last']
         trace_order = function_info['order']
+
         ast_map_c = ASTGenerator.get_ast_json(source_path)
+        if ast_map_c is None:
+            Emitter.warning("\t\t\tcompile command found")
+            continue
         # print(int(last_line), source_path)
         function_node = Finder.search_function_node_by_loc(ast_map_c,
                                                            int(last_line),

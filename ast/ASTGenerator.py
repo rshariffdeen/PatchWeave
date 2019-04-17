@@ -50,6 +50,8 @@ def get_ast_json(file_path):
     if not os.path.exists(json_file):
         generate_json(file_path)
     ast_dump(file_path, json_file)
+    if os.stat(json_file).st_size == 0:
+        return None
     with open(json_file, 'r') as f:
         ast_json = json.load(f)
     return ast_json['root']
