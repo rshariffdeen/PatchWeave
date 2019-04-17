@@ -506,6 +506,36 @@ def extract_macro_definitions(source_path):
         return macro_def_list
 
 
+def extract_typedef_node_list(ast_node):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    typedef_node_list = dict()
+    node_type = str(ast_node["type"])
+    if node_type in ["TypedefDecl"]:
+        identifier = str(ast_node['identifier'])
+        typedef_node_list[identifier] = ast_node
+
+    if len(ast_node['children']) > 0:
+        for child_node in ast_node['children']:
+            child_typedef_node_list = extract_typedef_node_list(child_node)
+            typedef_node_list.update(child_typedef_node_list)
+    return typedef_node_list
+
+
+def extract_typeloc_node_list(ast_node):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    typeloc_node_list = dict()
+    node_type = str(ast_node["type"])
+    if node_type in ["TypeLoc"]:
+        identifier = str(ast_node['value'])
+        typeloc_node_list[identifier] = ast_node
+
+    if len(ast_node['children']) > 0:
+        for child_node in ast_node['children']:
+            child_typeloc_node_list = extract_typeloc_node_list(child_node)
+            typeloc_node_list.update(child_typeloc_node_list)
+    return typeloc_node_list
+
+
 def extract_decl_list(ast_node):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     dec_list = list()
