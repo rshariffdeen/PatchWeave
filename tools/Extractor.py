@@ -74,7 +74,10 @@ def extract_complete_function_node(function_def_node, source_path):
     else:
         # header_file_loc = source_dir + "/" + function_def_node['file']
         header_file_loc = function_def_node['file']
+        if str(header_file_loc).startswith("."):
+            header_file_loc = source_dir + "/" + function_def_node['file']
         # print(header_file_loc)
+
         function_name = function_def_node['identifier']
         source_file_loc = header_file_loc.replace(".h", ".c")
         source_file_loc = os.path.abspath(source_file_loc)
@@ -532,6 +535,7 @@ def extract_typeloc_node_list(ast_node):
     if len(ast_node['children']) > 0:
         for child_node in ast_node['children']:
             child_typeloc_node_list = extract_typeloc_node_list(child_node)
+            # print(child_typeloc_node_list)
             typeloc_node_list.update(child_typeloc_node_list)
     return typeloc_node_list
 
