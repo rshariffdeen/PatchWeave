@@ -197,7 +197,8 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
         Writer.write_skip_list(skip_line_list, skip_list_file)
         line_range_b = (start_line_b, end_line_b)
         line_range_a = (-1, -1)
-
+        ast_map_a = ASTGenerator.get_ast_json(source_path_a)
+        ast_map_b = ASTGenerator.get_ast_json(source_path_b)
         Emitter.sub_sub_title("computing symbolic expressions for Donor")
         Generator.generate_symbolic_expressions(source_path_b,
                                                 start_line_b,
@@ -215,6 +216,8 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
         var_expr_map_b = Collector.collect_symbolic_expressions(expr_log_b)
         # print(var_expr_map_b)
         var_info_b = Merger.merge_var_info(var_expr_map_b, var_value_map_b)
+        # print(var_info_b)
+        var_info_b = Filter.filter_new_variables(var_info_b, ast_map_a, ast_map_b)
         # print(var_info_b)
         Emitter.sub_sub_title("generating candidate function list")
         insertion_function_list = Generator.generate_candidate_function_list(estimate_loc,
@@ -241,8 +244,7 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
             "\n\t\tBest candidate location: " + function_name + ":" + str(best_candidate_insertion_loc) + '\n')
         ast_script_c = list()
         Emitter.sub_sub_title("generating patch for insertion point")
-        ast_map_a = ASTGenerator.get_ast_json(source_path_a)
-        ast_map_b = ASTGenerator.get_ast_json(source_path_b)
+
 
         source_path_c = source_path
         line_number_c = best_candidate_insertion_loc
