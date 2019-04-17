@@ -79,3 +79,6 @@ RUN mkdir /llvm/llvm-7/build; cd /llvm/llvm-7/build; cmake /llvm/llvm-7/source -
 RUN cd /llvm/llvm-7/build; make -j32; make install
 RUN cd /llvm/llvm-34/build; make -j32; make install
 
+# Libraries for Experiments
+RUN apt-get install -y \
+    libtiff5-dev
