@@ -322,7 +322,7 @@ def identify_divergent_point(byte_list, sym_path_info, trace_list, stack_info):
             bytes_latest = Extractor.extract_input_bytes_used(sym_path_latest)
             count_latest = len(list(set(byte_list).intersection(bytes_latest)))
             if count_latest == count_common:
-                count_instant = 0
+                count_instant = 1
                 for sym_path in sym_path_list:
                     # print(sym_path)
                     bytes_temp = Extractor.extract_input_bytes_used(sym_path)
