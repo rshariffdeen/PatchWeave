@@ -82,3 +82,6 @@ RUN cd /llvm/llvm-34/build; make -j32; make install
 # Libraries for Experiments
 RUN apt-get install -y \
     libtiff5-dev
+
+RUN git clone https://gitlab.com/akihe/radamsa.git /radamsa
+RUN cd /radamsa; make; make install
