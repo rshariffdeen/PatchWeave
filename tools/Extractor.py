@@ -13,6 +13,7 @@ from common import Definitions
 import Converter
 import Generator
 import Finder
+import collections
 
 
 FILE_MACRO_DEF = Definitions.DIRECTORY_TMP + "/macro-def"
@@ -588,7 +589,7 @@ def extract_source_lines_from_trace(trace_list):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Emitter.normal("\t\t\t\textracting source lines executed ...")
     unique_trace_list = list(set(trace_list))
-    source_line_map = dict()
+    source_line_map = collections.OrderedDict()
     for trace_line in unique_trace_list:
         source_path, line_number = str(trace_line).split(":")
         if source_path not in source_line_map.keys():
