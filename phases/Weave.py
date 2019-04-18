@@ -77,7 +77,7 @@ def transplant_missing_header():
 def transplant_missing_macros():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     global modified_source_list, missing_macro_list
-    modified_source_list = Weaver.weave_macros(missing_macro_list, modified_source_list)
+    modified_source_list = Weaver.weave_definitions(missing_macro_list, modified_source_list)
 
 
 def transplant_missing_functions():
