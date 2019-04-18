@@ -112,7 +112,7 @@ def convert_array_iterator(iterator_node):
         var_name = "[" + iterator_value + "]"
     else:
         print(iterator_node)
-        error_exit("Unknown iterator type for array_subscript")
+        error_exit("Unknown iterator type for convert_array_iterator")
     return var_name, var_list
 
 
