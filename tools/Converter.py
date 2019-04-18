@@ -193,7 +193,7 @@ def convert_call_expr(ast_node, only_string=False):
             var_name += ","
 
     var_name += ")"
-    print(var_name)
+    # print(var_name)
     return var_name, list(set(var_list))
 
 
