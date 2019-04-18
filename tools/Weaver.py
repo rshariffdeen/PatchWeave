@@ -582,4 +582,5 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
         if ret_code == 0:
             if source_path_d not in modified_source_list:
                 modified_source_list.append(source_path_d)
-    return modified_source_list, missing_function_list, missing_macro_list, missing_header_list
+    return modified_source_list, missing_function_list, missing_macro_list, \
+           missing_header_list, missing_data_type_list

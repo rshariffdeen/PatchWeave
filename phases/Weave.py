@@ -19,7 +19,7 @@ mapping_ba = dict()
 missing_function_list = dict()
 missing_macro_list = dict()
 missing_header_list = dict()
-
+missing_data_type_list = dict()
 modified_source_list = list()
 
 var_expr_map_a = dict()
@@ -80,6 +80,12 @@ def transplant_missing_macros():
     modified_source_list = Weaver.weave_definitions(missing_macro_list, modified_source_list)
 
 
+def transplant_missing_data_types():
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    global modified_source_list, missing_data_type_list
+    modified_source_list = Weaver.weave_data_type(missing_data_type_list, modified_source_list)
+
+
 def transplant_missing_functions():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     global missing_header_list, missing_macro_list, modified_source_list
@@ -92,7 +98,8 @@ def transplant_missing_functions():
 
 
 def transplant_code():
-    global missing_function_list, modified_source_list, missing_macro_list, missing_header_list
+    global missing_function_list, modified_source_list, missing_macro_list
+    global missing_header_list, missing_data_type_list
     path_a = Values.PATH_A
     path_b = Values.PATH_B
     path_c = Values.PATH_C
@@ -128,7 +135,8 @@ def transplant_code():
         modified_source_list,\
         identified_missing_function_list,\
         identified_missing_macro_list,\
-        identified_missing_header_list = Weaver.weave_code(diff_loc,
+        identified_missing_header_list,\
+        identified_missing_data_type_list = Weaver.weave_code(diff_loc,
                                                           diff_loc_info,
                                                           path_a,
                                                           path_b,
@@ -162,6 +170,13 @@ def transplant_code():
                 missing_header_list = Merger.merge_header_info(missing_header_list, identified_missing_header_list)
         else:
             missing_header_list = identified_missing_header_list
+
+        print(identified_missing_data_type_list)
+        if missing_data_type_list:
+            if identified_missing_data_type_list:
+                missing_data_type_list = Merger.merge_data_type_info(missing_data_type_list, identified_missing_data_type_list)
+            else:
+                missing_data_type_list = identified_missing_data_type_list
 
 
 def safe_exec(function_def, title, *args):
@@ -208,6 +223,7 @@ def weave():
     if not Values.SKIP_WEAVE:
         safe_exec(transplant_code, "transplanting code")
         safe_exec(transplant_missing_functions, "transplanting functions")
+        safe_exec(transplant_missing_data_types, "transplanting data structures")
         safe_exec(transplant_missing_macros, "transplanting macros")
         safe_exec(transplant_missing_header, "transplanting header files")
         safe_exec(Fixer.check, "correcting syntax errors", modified_source_list)
