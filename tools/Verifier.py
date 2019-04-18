@@ -37,7 +37,7 @@ def run_exploit(target_trace_info, exploit_command, project_path, poc_path,
 
     Emitter.sub_sub_title("running exploit on repaired program")
     if crash_location == "":
-        Builder.build_asan()
+        # Builder.build_asan()
         repaired_target_exit_code, \
         repaired_target_crashed, \
         repaired_target_output = Exploiter.run_exploit(exploit_command,
