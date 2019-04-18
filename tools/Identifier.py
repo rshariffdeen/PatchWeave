@@ -13,6 +13,8 @@ import Extractor
 import Finder
 import Generator
 
+STANDARD_DATA_TYPES = ["int", "char", "float"]
+
 
 def identify_missing_labels(ast_map, ast_node, source_path_b, source_path_d, skip_list):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
@@ -106,6 +108,8 @@ def identify_missing_data_types(insert_node_b, var_info, target_path, ast_node_b
                 identifier = str(ref_node['data_type'])
                 var_name = str(ref_node['value'])
                 if var_name not in var_info.keys():
+                    continue
+                if identifier in STANDARD_DATA_TYPES:
                     continue
                 if identifier not in type_def_node_list_c:
                     if identifier not in missing_data_type_list.keys():
