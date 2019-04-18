@@ -13,7 +13,6 @@ from common.Utilities import error_exit
 def filter_trace_list_by_loc(trace_list, estimate_loc):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Emitter.normal("\t\t\tfiltering trace based on estimation point")
-    filtered_trace_list = list()
     # print(trace_list)
     # print(estimate_loc)
     source_path, line_number, count_instant = estimate_loc.split(":")
@@ -22,15 +21,17 @@ def filter_trace_list_by_loc(trace_list, estimate_loc):
     if estimate_loc is None:
         return trace_list
     div_point = 0
+    estimated_div_point = 0
     for n in range(0, len(trace_list), 1):
         if estimate_loc == trace_list[n]:
+            estimated_div_point = n
             if count_instant == 1:
                 return trace_list[div_point:]
             else:
                 count_instant = count_instant - 1
         div_point = div_point + 1
 
-    return filtered_trace_list
+    return trace_list[estimated_div_point:]
 
 
 def filter_function_list_using_trace(source_function_map, trace_list):
