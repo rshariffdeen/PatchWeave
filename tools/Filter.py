@@ -8,6 +8,7 @@ import Emitter
 import Extractor
 import Logger
 from common.Utilities import error_exit
+import collections
 
 
 def filter_trace_list_by_loc(trace_list, estimate_loc):
@@ -37,7 +38,7 @@ def filter_trace_list_by_loc(trace_list, estimate_loc):
 def filter_function_list_using_trace(source_function_map, trace_list):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Emitter.normal("\t\t\textracting function list from trace ...")
-    trace_function_info = dict()
+    trace_function_info = collections.OrderedDict()
     source_line_map = Extractor.extract_source_lines_from_trace(trace_list)
     for source_path in source_line_map:
         function_list = source_function_map[source_path]
