@@ -171,12 +171,12 @@ def transplant_code():
         else:
             missing_header_list = identified_missing_header_list
 
-        print(identified_missing_data_type_list)
+        # print(identified_missing_data_type_list)
         if missing_data_type_list:
             if identified_missing_data_type_list:
                 missing_data_type_list = Merger.merge_data_type_info(missing_data_type_list, identified_missing_data_type_list)
-            else:
-                missing_data_type_list = identified_missing_data_type_list
+        else:
+            missing_data_type_list = identified_missing_data_type_list
 
 
 def safe_exec(function_def, title, *args):
