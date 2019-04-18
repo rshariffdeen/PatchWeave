@@ -13,7 +13,7 @@ import Extractor
 import Finder
 import Generator
 
-STANDARD_DATA_TYPES = ["int", "char", "float"]
+STANDARD_DATA_TYPES = ["int", "char", "float", "unsigned int"]
 
 
 def identify_missing_labels(ast_map, ast_node, source_path_b, source_path_d, skip_list):
