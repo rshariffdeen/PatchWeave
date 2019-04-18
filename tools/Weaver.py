@@ -139,9 +139,10 @@ def weave_data_type(missing_data_type_list, modified_source_list):
     for data_type in missing_data_type_list:
         Emitter.normal(data_type)
         data_type_info = missing_data_type_list[data_type]
-        def_start_line = int(data_type_info['start line'])
-        def_end_line = int(data_type_info['end line'])
-        source_file = data_type_info['source']
+        ast_node = data_type_info['ast-node']
+        def_start_line = int(ast_node['start line'])
+        def_end_line = int(ast_node['end line'])
+        source_file = ast_node['file']
         target_file = data_type_info['target']
         def_insert_line = Finder.find_definition_insertion_point(target_file)
         transplant_code = "\n"
@@ -329,6 +330,7 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
             # print(missing_macro_list)
             missing_data_type_list.update(Identifier.identify_missing_data_types(inserting_node,
                                                                                  var_info_b,
+                                                                                 source_path_d,
                                                                                  ast_map_b,
                                                                                  ast_map_c))
             # print(missing_data_type_list)
@@ -537,6 +539,12 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                 missing_header_list = Identifier.identify_missing_headers(inserting_node,
                                                                           source_path_d)
                 # identify_missing_macros(inserting_node, source_path_b, source_path_d)
+                missing_data_type_list.update(Identifier.identify_missing_data_types(inserting_node,
+                                                                                     var_info_b,
+                                                                                     source_path_d,
+                                                                                     ast_map_b,
+                                                                                     ast_map_c))
+                # print(missing_data_type_list)
                 ast_script_c.append(translated_command)
             elif "Replace" in script_line:
                 replacing_node_str = (script_line.split(" with ")[0]).replace("Replace ", "")
