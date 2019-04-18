@@ -9,7 +9,7 @@ from common import Definitions, Values
 import Concolic
 import Analyse
 import Trace
-from tools import Logger, Solver, Fixer, Emitter, Weaver, Merger
+from tools import Logger, Solver, Fixer, Emitter, Weaver, Merger, Collector
 
 function_list_a = list()
 function_list_b = list()
@@ -57,7 +57,7 @@ def get_sym_path_cond(source_location):
                 sym_path_cond = Concolic.sym_path_b[path]
             if path == source_location:
                 break
-    elif Values.PATH_A in source_location:
+    elif Values.PATH_C in source_location:
         for path in Trace.list_trace_c:
             if path in Concolic.sym_path_c.keys():
                 sym_path_cond = Concolic.sym_path_c[path]
@@ -120,7 +120,8 @@ def transplant_code():
         Emitter.normal(diff_loc)
         diff_loc_info = Analyse.diff_info[diff_loc]
         div_sym_path_cond = get_sym_path_cond(diff_loc)
-        last_sym_path_cond = str(Concolic.sym_path_c[Concolic.sym_path_c.keys()[-1]][-1])
+        last_sym_path_cond = Collector.collect_last_sym_path(Concolic.FILE_SYM_PATH_C)
+        # print(last_sym_path_cond)
         estimate_loc, count_instant = Solver.estimate_divergent_point(div_sym_path_cond,
                                                        last_sym_path_cond,
                                                        Concolic.sym_path_c,
