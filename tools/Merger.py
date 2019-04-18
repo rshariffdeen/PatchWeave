@@ -75,3 +75,18 @@ def merge_header_info(info_a, info_b):
         info = info_b[header_name]
         header_info[header_name] = info
     return header_info
+
+
+def merge_data_type_info(info_a, info_b):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    header_info = dict()
+    for header_name in info_a:
+        info = info_a[header_name]
+        if header_name in info_b.keys():
+            error_exit("MULTIPLE USAGE OF DATA TYPE")
+        header_info[header_name] = info
+
+    for header_name in info_b:
+        info = info_b[header_name]
+        header_info[header_name] = info
+    return header_info
