@@ -24,7 +24,7 @@ def identify_missing_labels(ast_map, ast_node, source_path_b, source_path_d, ski
 
 def identify_missing_functions(ast_map, ast_node, source_path_b, source_path_d, skip_list):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Emitter.normal("\t\tidentifying missing function calls")
+    Emitter.normal("\t\t\tidentifying missing function calls")
     missing_function_list = dict()
     call_list = Extractor.extract_call_node_list(ast_node)
     # print(call_list)
@@ -62,7 +62,7 @@ def identify_missing_functions(ast_map, ast_node, source_path_b, source_path_d, 
 
 def identify_missing_var(function_node_a, function_node_b, insert_node_b, skip_list):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Emitter.normal("\t\tidentifying missing variables")
+    Emitter.normal("\t\t\tidentifying missing variables")
     missing_var_list = dict()
     ref_list = Extractor.extract_reference_node_list(insert_node_b)
     dec_list = Extractor.extract_decl_list(function_node_a)
@@ -88,9 +88,44 @@ def identify_missing_var(function_node_a, function_node_b, insert_node_b, skip_l
     return missing_var_list
 
 
+def identify_missing_data_types(insert_node_b, var_info, ast_node_b, ast_node_c):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    Emitter.normal("\t\t\tidentifying missing data-types")
+    missing_data_type_list = dict()
+    type_loc_node_list = Extractor.extract_typeloc_node_list(insert_node_b)
+    ref_list = Extractor.extract_reference_node_list(insert_node_b)
+    type_def_node_list_b = Extractor.extract_typedef_node_list(ast_node_b)
+    type_def_node_list_c = Extractor.extract_typedef_node_list(ast_node_c)
+    for ref_node in ref_list:
+        node_type = str(ref_node['type'])
+        node_start_line = int(ref_node['start line'])
+        if node_type == "DeclRefExpr":
+            ref_type = str(ref_node['ref_type'])
+            identifier = str(ref_node['data_type'])
+            if ref_type == "VarDecl":
+                var_name = str(ref_node['identifier'])
+                if var_name not in var_info.keys():
+                    continue
+                if identifier not in type_def_node_list_c:
+                    if identifier not in missing_data_type_list.keys():
+                        info = dict()
+                        info['ref_list'] = list()
+                        info['ast-node'] = type_def_node_list_b[identifier]
+                        missing_data_type_list[identifier] = info
+    for type_loc_node in type_loc_node_list:
+        identifier = str(type_loc_node['value'])
+        if identifier not in type_def_node_list_c:
+            if identifier not in missing_data_type_list.keys():
+                info = dict()
+                info['ref_list'] = list()
+                info['ast-node'] = type_def_node_list_b[identifier]
+                missing_data_type_list[identifier] = info
+    return missing_data_type_list
+
+
 def identify_missing_headers(ast_node, target_file):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Emitter.normal("\t\tidentifying missing headers")
+    Emitter.normal("\t\t\tidentifying missing headers")
     missing_header_list = dict()
     node_type = ast_node['type']
     if node_type == "FunctionDecl":
@@ -139,7 +174,7 @@ def identify_missing_definitions(function_node, missing_function_list):
 
 def identify_missing_macros(ast_node, source_file, target_file, skip_line_list):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Emitter.normal("\t\tidentifying missing macros")
+    Emitter.normal("\t\t\tidentifying missing macros")
     missing_macro_list = dict()
     ref_list = Extractor.extract_reference_node_list(ast_node)
     # print(ref_list)
