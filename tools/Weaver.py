@@ -132,6 +132,31 @@ def weave_definitions(missing_definition_list, modified_source_list):
     return modified_source_list
 
 
+def weave_data_type(missing_data_type_list, modified_source_list):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    if not missing_data_type_list:
+        Emitter.normal("\t-none-")
+    for data_type in missing_data_type_list:
+        Emitter.normal(data_type)
+        data_type_info = missing_data_type_list[data_type]
+        def_start_line = int(data_type_info['start line'])
+        def_end_line = int(data_type_info['end line'])
+        source_file = data_type_info['source']
+        target_file = data_type_info['target']
+        def_insert_line = Finder.find_definition_insertion_point(target_file)
+        transplant_code = "\n"
+        for i in range(def_start_line, def_end_line + 1, 1):
+            transplant_code += get_code(source_file, int(i))
+        transplant_code += "\n"
+        backup_file(target_file, FILENAME_BACKUP)
+        insert_code(transplant_code, target_file, def_insert_line)
+        if target_file not in modified_source_list:
+            modified_source_list.append(target_file)
+        backup_file_path = Definitions.DIRECTORY_BACKUP + "/" + FILENAME_BACKUP
+        show_partial_diff(backup_file_path, target_file)
+    return modified_source_list
+
+
 def weave_functions(missing_function_list, modified_source_list):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     if not missing_function_list:
@@ -306,19 +331,17 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                                                                                  var_info_b,
                                                                                  ast_map_b,
                                                                                  ast_map_c))
-            print(missing_data_type_list)
+            # print(missing_data_type_list)
             ast_script_c.append(translated_command)
 
-        print(missing_var_list)
+        # print(missing_var_list)
         for var in missing_var_list:
-            print(var)
+            # print(var)
             var_info = missing_var_list[var]
             ast_node = var_info['ast-node']
             ast_op = "Insert " + ast_node['type'] + "(" + str(ast_node['id']) + ")"
             ast_op += " into " + position_c
             ast_script_c.append(ast_op)
-
-
 
         ast_script_c.reverse()
         Writer.write_ast_script(ast_script_c, ast_script_file)
