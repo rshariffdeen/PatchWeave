@@ -96,6 +96,8 @@ def identify_missing_data_types(insert_node_b, var_info, ast_node_b, ast_node_c)
     ref_list = Extractor.extract_reference_node_list(insert_node_b)
     type_def_node_list_b = Extractor.extract_typedef_node_list(ast_node_b)
     type_def_node_list_c = Extractor.extract_typedef_node_list(ast_node_c)
+    source_path = str(ast_node_b['filename'])
+    target_path = str(ast_node_c['filename'])
     for ref_node in ref_list:
         # print(ref_node)
         node_type = str(ref_node['type'])
@@ -110,7 +112,8 @@ def identify_missing_data_types(insert_node_b, var_info, ast_node_b, ast_node_c)
                 if identifier not in type_def_node_list_c:
                     if identifier not in missing_data_type_list.keys():
                         info = dict()
-                        info['ref_list'] = list()
+                        info['source'] = source_path
+                        info['target'] = target_path
                         info['ast-node'] = type_def_node_list_b[identifier]
                         missing_data_type_list[identifier] = info
     for type_loc_node in type_loc_node_list:
@@ -118,7 +121,8 @@ def identify_missing_data_types(insert_node_b, var_info, ast_node_b, ast_node_c)
         if identifier not in type_def_node_list_c:
             if identifier not in missing_data_type_list.keys():
                 info = dict()
-                info['ref_list'] = list()
+                info['source'] = source_path
+                info['target'] = target_path
                 info['ast-node'] = type_def_node_list_b[identifier]
                 missing_data_type_list[identifier] = info
     return missing_data_type_list
