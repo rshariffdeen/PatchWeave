@@ -25,7 +25,7 @@ import Merger
 
 def generate_symbolic_expressions(source_path, start_line, end_line,
                                   bit_size, sym_poc_path, poc_path,
-                                  output_log_expr, output_log_value, stack_info,
+                                  output_log_expr, output_log_value, stack_info, skip_lines,
                                   only_in_range=True):
 
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
@@ -62,6 +62,7 @@ def generate_symbolic_expressions(source_path, start_line, end_line,
                                                              start_line,
                                                              end_line,
                                                              stack_info,
+                                                             skip_lines,
                                                              only_in_range
                                                              )
 
@@ -118,6 +119,7 @@ def generate_candidate_function_list(estimate_loc, var_info_a,
     Emitter.warning("\t\texpected score: " + str(expected_score))
     for function_id in trace_function_list:
         Emitter.special("\t\t" + function_id)
+
         source_path, function_name = str(function_id).split(":")
         function_info = trace_function_list[function_id]
         begin_line = function_info['begin']
@@ -143,7 +145,8 @@ def generate_candidate_function_list(estimate_loc, var_info_a,
                                       poc_path,
                                       var_expr_log,
                                       var_value_log,
-                                      stack_info
+                                      stack_info,
+                                      list()
                                       )
 
         var_value_map = Collector.collect_values(var_value_log)

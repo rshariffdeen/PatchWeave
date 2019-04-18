@@ -106,22 +106,22 @@ def weave_headers(missing_header_list, modified_source_list):
     return modified_source_list
 
 
-def weave_macros(missing_macro_list, modified_source_list):
+def weave_definitions(missing_definition_list, modified_source_list):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    if not missing_macro_list:
+    if not missing_definition_list:
         Emitter.normal("\t-none-")
-    for macro_name in missing_macro_list:
-        Emitter.normal(macro_name)
-        macro_info = missing_macro_list[macro_name]
+    for def_name in missing_definition_list:
+        Emitter.normal(def_name)
+        macro_info = missing_definition_list[def_name]
         source_file = macro_info['source']
         target_file = macro_info['target']
         macro_def_list = Extractor.extract_macro_definitions(source_file)
         def_insert_line = Finder.find_definition_insertion_point(target_file)
         transplant_code = ""
         for macro_def in macro_def_list:
-            if macro_name in macro_def:
+            if def_name in macro_def:
                 if "#define" in macro_def:
-                    if macro_name in macro_def.split(" "):
+                    if def_name in macro_def.split(" "):
                         transplant_code += "\n" + macro_def + "\n"
         backup_file(target_file, FILENAME_BACKUP)
         insert_code(transplant_code, target_file, def_insert_line)
@@ -189,6 +189,8 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
     missing_var_list = dict()
     missing_macro_list = dict()
     missing_header_list = dict()
+    missing_data_type_list = dict()
+
     position_c = 0
     if operation == 'insert':
         start_line_b, end_line_b = diff_loc_info['new-lines']
@@ -208,7 +210,8 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                                                 poc_path,
                                                 expr_log_b,
                                                 val_log_b,
-                                                dict()
+                                                dict(),
+                                                skip_line_list
                                                 )
 
         var_value_map_b = Collector.collect_values(val_log_b)
@@ -217,11 +220,11 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
         # print(var_expr_map_b)
         var_info_b = Merger.merge_var_info(var_expr_map_b, var_value_map_b)
         # print(var_info_b)
-        var_info_b = Filter.filter_new_variables(var_info_b, ast_map_a, ast_map_b)
+        var_info_b_filtered = Filter.filter_new_variables(var_info_b, ast_map_a, ast_map_b)
         # print(var_info_b)
         Emitter.sub_sub_title("generating candidate function list")
         insertion_function_list = Generator.generate_candidate_function_list(estimate_loc,
-                                                                             var_info_b,
+                                                                             var_info_b_filtered,
                                                                              bit_size,
                                                                              sym_poc_path,
                                                                              poc_path,
@@ -267,34 +270,57 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
             position_number = int(position_c.split(" at ")[1]) - 1
             position_c = str(position_c.split(" at ")[0] + " at " + str(position_number))
             Emitter.warning("\t\tinsert location adjusted by 1")
-        Emitter.normal("\t\t\tgenerating AST script")
+        Emitter.normal("\t\tgenerating AST script")
         for script_line in ast_script:
+            Emitter.special("\t\t" + script_line)
             inserting_node_str = script_line.split(" into ")[0]
             inserting_node_id = int((inserting_node_str.split("(")[1]).split(")")[0])
             inserting_node = Finder.search_ast_node_by_id(ast_map_b, inserting_node_id)
             translated_command = inserting_node_str + " into " + position_c + "\n"
-            missing_function_list = Identifier.identify_missing_functions(ast_map_a,
-                                                                          inserting_node,
-                                                                          source_path_b,
-                                                                          source_path_d,
-                                                                          skip_line_list)
+            missing_function_list.update(Identifier.identify_missing_functions(ast_map_a,
+                                                                               inserting_node,
+                                                                               source_path_b,
+                                                                               source_path_d,
+                                                                               skip_line_list))
+            # print(missing_function_list)
 
-            missing_var_list = Identifier.identify_missing_var(function_node_a,
-                                                               function_node_b,
-                                                               inserting_node,
-                                                               skip_line_list
-                                                               )
+            missing_var_list.update(Identifier.identify_missing_var(function_node_a,
+                                                                    function_node_b,
+                                                                    inserting_node,
+                                                                    skip_line_list
+                                                                    ))
+            # print(missing_var_list)
 
-            missing_macro_list = Identifier.identify_missing_macros(inserting_node,
-                                                                    source_path_b,
-                                                                    source_path_d,
-                                                                    skip_line_list)
+            missing_macro_list.update(Identifier.identify_missing_macros(inserting_node,
+                                                                         source_path_b,
+                                                                         source_path_d,
+                                                                         skip_line_list))
+            # print(missing_macro_list)
 
-            missing_header_list = Identifier.identify_missing_headers(inserting_node,
-                                                                      source_path_d)
+            missing_header_list.update(Identifier.identify_missing_headers(inserting_node,
+                                                                           source_path_d))
+            # print(missing_header_list)
 
             # print(missing_macro_list)
+            missing_data_type_list.update(Identifier.identify_missing_data_types(inserting_node,
+                                                                                 var_info_b,
+                                                                                 ast_map_b,
+                                                                                 ast_map_c))
+            print(missing_data_type_list)
             ast_script_c.append(translated_command)
+
+        print(missing_var_list)
+        for var in missing_var_list:
+            print(var)
+            var_info = missing_var_list[var]
+            ast_node = var_info['ast-node']
+            ast_op = "Insert " + ast_node['type'] + "(" + str(ast_node['id']) + ")"
+            ast_op += " into " + position_c
+            ast_script_c.append(ast_op)
+
+
+
+        ast_script_c.reverse()
         Writer.write_ast_script(ast_script_c, ast_script_file)
         Emitter.sub_sub_title("computing symbolic expressions for target")
 
@@ -306,7 +332,8 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                                                 poc_path,
                                                 expr_log_c,
                                                 val_log_c,
-                                                stack_info_c
+                                                stack_info_c,
+                                                skip_line_list
                                                 )
 
         var_value_map_c = Collector.collect_values(val_log_c)
@@ -319,7 +346,7 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
         # print(var_expr_map_b)
         # print(var_expr_map_c)
         Emitter.sub_sub_title("generating variable mapping from donor to target")
-        var_map = Mapper.map_variable(var_info_b, var_info_c)
+        var_map = Mapper.map_variable(var_info_b_filtered, var_info_c)
 
         # print(var_map)
         # print(ast_script_c)
@@ -354,7 +381,8 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                                                 poc_path,
                                                 expr_log_b,
                                                 val_log_b,
-                                                stack_info_a
+                                                stack_info_a,
+                                                skip_line_list
                                                 )
 
         var_value_map_b = Collector.collect_values(val_log_b)
@@ -372,7 +400,8 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                                                 poc_path,
                                                 expr_log_a,
                                                 val_log_a,
-                                                stack_info_a
+                                                stack_info_a,
+                                                skip_line_list
                                                 )
 
         var_value_map_a = Collector.collect_values(val_log_a)
@@ -439,6 +468,7 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                                                 expr_log_c,
                                                 val_log_c,
                                                 stack_info_c,
+                                                skip_line_list,
                                                 False
                                                 )
 
@@ -510,7 +540,7 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                     translated_command = script_line.replace(replacing_node_str, target_node_str)
                     ast_script_c.append(translated_command)
         # print(var_map_ac)
-
+        # print(missing_var_list)
         for var in missing_var_list:
             var_info = missing_var_list[var]
             ast_node = var_info['ast-node']
@@ -529,5 +559,4 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
         if ret_code == 0:
             if source_path_d not in modified_source_list:
                 modified_source_list.append(source_path_d)
-
     return modified_source_list, missing_function_list, missing_macro_list, missing_header_list
