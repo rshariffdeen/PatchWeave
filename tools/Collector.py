@@ -97,6 +97,9 @@ def collect_trace(file_path, project_path, suspicious_loc_list):
                     if project_path in line:
                         trace_line = str(line.replace("[trace]", '')).split(" - ")[0]
                         trace_line = trace_line.strip()
+                        source_path, line_number = trace_line.split(":")
+                        source_path = os.path.abspath(source_path)
+                        trace_line = source_path + ":" + str(line_number)
                         if (not list_trace) or (list_trace[-1] != trace_line):
                             list_trace.append(trace_line)
                         # if any(loc in line for loc in suspicious_loc_list):
@@ -181,3 +184,10 @@ def collect_stack_info(trace_file_path):
                     continue
     return stack_map
 
+
+def collect_last_sym_path(sym_path_file):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    data = ""
+    with open(sym_path_file, 'r') as file:
+        data = file.read()
+    return data
