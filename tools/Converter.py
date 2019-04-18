@@ -93,6 +93,9 @@ def convert_array_iterator(iterator_node):
         iterator_data_type = str(iterator_node['data_type'])
         var_list.append((iterator_name, iterator_data_type))
         var_name = "[" + iterator_name + "]"
+    elif iterator_node_type in ["Macro"]:
+        iterator_value = str(iterator_node['value'])
+        var_name = "[" + iterator_value + "]"
     elif iterator_node_type == "DeclRefExpr":
         iterator_name = str(iterator_node['value'])
         iterator_data_type = str(iterator_node['data_type'])
@@ -127,21 +130,27 @@ def convert_array_subscript(ast_node):
         var_data_type = array_data_type.split("[")[0]
         iterator_node = ast_node['children'][1]
         iterator_node_type = str(iterator_node['type'])
-        var_name, var_list = convert_array_iterator(iterator_node)
-        var_name = array_name + var_name
+        iterator_name, var_list = convert_array_iterator(iterator_node)
+        var_name = array_name + iterator_name
     elif array_type == "MemberExpr":
         array_name = str(array_node['value'])
         array_data_type = str(array_node['data_type'])
         iterator_node = ast_node['children'][1]
         array_name, array_data_type = convert_member_expr(array_node, True)
-        var_name, var_list = convert_array_iterator(iterator_node)
-        var_name = array_name + var_name
+        iterator_name, var_list = convert_array_iterator(iterator_node)
+        var_name = array_name + iterator_name
     elif array_type == "ParenExpr":
         array_name, var_list = convert_paren_node_to_expr(array_node)
-        array_data_type = str(array_node['data_type'])
+        var_data_type = str(array_node['data_type'])
         iterator_node = ast_node['children'][1]
-        var_name, var_list = convert_array_iterator(iterator_node)
-        var_name = array_name + var_name
+        iterator_name, var_list = convert_array_iterator(iterator_node)
+        var_name = array_name + iterator_name
+    elif array_type == "Macro":
+        var_data_type = str(array_node['data_type'])
+        iterator_node = ast_node['children'][1]
+        array_name = str(array_node['value'])
+        iterator_name, var_list = convert_array_iterator(iterator_node)
+        var_name = array_name + iterator_name
     else:
         print(array_type)
         print(array_node)
