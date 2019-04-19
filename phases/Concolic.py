@@ -21,14 +21,21 @@ FILE_SYM_PATH_B = ""
 FILE_SYM_PATH_C = ""
 FILE_SYMBOLIC_POC = ""
 
+
 sym_path_a = dict()
 sym_path_b = dict()
 sym_path_c = dict()
+
+last_sym_path_a = ""
+last_sym_path_b = ""
+last_sym_path_c = ""
+
 estimate_loc_map = dict()
 
 
 def sym_trace_donor():
     global sym_path_a, sym_path_b
+    global last_sym_path_a, last_sym_path_b
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
 
     project_path_a = Values.PATH_A
@@ -51,7 +58,8 @@ def sym_trace_donor():
                                                              klee_flags_a)
         copy_command = "cp " + sym_file_path + " " + FILE_SYM_PATH_A
         execute_command(copy_command)
-    sym_path_a = Collector.collect_symbolic_path(FILE_KLEE_LOG_A, project_path_a)
+    sym_path_a, last_sym_path_a = Collector.collect_symbolic_path(FILE_KLEE_LOG_A, project_path_a)
+
     if not sym_path_a:
         error_exit("No symbolic path for Pa")
 
@@ -69,13 +77,13 @@ def sym_trace_donor():
                                                              klee_flags_a)
         copy_command = "cp " + sym_file_path + " " + FILE_SYM_PATH_B
         execute_command(copy_command)
-    sym_path_b = Collector.collect_symbolic_path(FILE_KLEE_LOG_B, project_path_b)
+    sym_path_b, last_sym_path_b = Collector.collect_symbolic_path(FILE_KLEE_LOG_B, project_path_b)
     if not sym_path_b:
         error_exit("No symbolic path for Pb")
 
 
 def sym_trace_target():
-    global sym_path_c
+    global sym_path_c, last_sym_path_c
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     project_path_c = Values.PATH_C
     exploit_c = Values.EXPLOIT_C
@@ -95,7 +103,7 @@ def sym_trace_target():
                                                              klee_flags_c)
         copy_command = "cp " + sym_file_path + " " + FILE_SYM_PATH_C
         execute_command(copy_command)
-    sym_path_c = Collector.collect_symbolic_path(FILE_KLEE_LOG_C, project_path_c)
+    sym_path_c, last_sym_path_c = Collector.collect_symbolic_path(FILE_KLEE_LOG_C, project_path_c)
     if not sym_path_c:
         print(sym_path_c)
         print(FILE_KLEE_LOG_C)

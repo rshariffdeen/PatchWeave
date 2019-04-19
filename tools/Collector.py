@@ -61,6 +61,7 @@ def collect_symbolic_path(file_path, project_path):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Emitter.normal("\tcollecting symbolic path conditions")
     constraints = dict()
+    last_sym_path = ""
     if os.path.exists(file_path):
         source_path = ""
         path_condition = ""
@@ -80,10 +81,12 @@ def collect_symbolic_path(file_path, project_path):
                         if source_path not in constraints.keys():
                             constraints[source_path] = list()
                         constraints[source_path].append((path_condition))
+                        last_sym_path = path_condition
                         source_path = ""
                         path_condition = ""
+    # constraints['last-sym-path'] = last_sym_path
     # print(constraints.keys())
-    return constraints
+    return constraints, last_sym_path
 
 
 def collect_trace(file_path, project_path, suspicious_loc_list):
