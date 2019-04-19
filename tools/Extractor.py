@@ -585,10 +585,18 @@ def extract_reference_node_list(ast_node):
     return ref_node_list
 
 
+def extract_unique_in_order(list):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    seen_set = set()
+    seen_add = seen_set.add
+    return [x for x in list if not (x in seen_set or seen_add(x))]
+
+
 def extract_source_lines_from_trace(trace_list):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Emitter.normal("\t\t\t\textracting source lines executed ...")
-    unique_trace_list = list(set(trace_list))
+    unique_trace_list = extract_unique_in_order(trace_list)
+    # print(unique_trace_list)
     source_line_map = collections.OrderedDict()
     for trace_line in unique_trace_list:
         source_path, line_number = str(trace_line).split(":")
