@@ -23,10 +23,11 @@ def config_project(project_path, is_llvm, custom_config_command=None):
         execute_command(pre_config_command)
 
     if custom_config_command is not None:
-
         if custom_config_command == "skip":
             return
         else:
+            if CC == "wllvm":
+                custom_config_command = remove_fsanitize(custom_config_command)
             config_command = "CC=" + CC + " "
             config_command += "CXX=" + CXX + " "
             config_command += custom_config_command
