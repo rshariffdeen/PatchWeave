@@ -64,26 +64,25 @@ def config_project(project_path, is_llvm, custom_config_command=None):
 
 
 def apply_flags(build_command):
-    command = build_command.replace("make", "bear make")
     c_flags = C_FLAGS
     if "CFLAGS" in build_command:
         c_flags_old = (build_command.split("CFLAGS='")[1]).split("'")[0]
         if "-fPIC" in c_flags_old:
             c_flags = c_flags.replace("-static", "")
         c_flags_new = c_flags.replace("'", "") + " " + c_flags_old
-        command = command.replace(c_flags_old, c_flags_new)
+        build_command = build_command.replace(c_flags_old, c_flags_new)
     else:
         new_command = "make CFLAGS=" + c_flags + " "
-        command = command.replace("make", new_command)
+        build_command = build_command.replace("make", new_command)
 
     if "CC" in build_command:
         cc_old = (build_command.split("CC='")[1]).split("'")[0]
-        command = command.replace(cc_old, CC)
+        build_command = build_command.replace(cc_old, CC)
     else:
         new_command = "make CC=" + CC + " "
-        command = command.replace("make", new_command)
+        build_command = build_command.replace("make", new_command)
 
-    return command
+    return build_command
 
 
 def build_project(project_path, build_command=None):
@@ -92,6 +91,8 @@ def build_project(project_path, build_command=None):
         build_command = "bear make CFLAGS=" + C_FLAGS + " "
         build_command += "CXXFLAGS=" + CXX_FLAGS + " > " + Definitions.FILE_MAKE_LOG
     else:
+        if not os.path.isfile(project_path + "/compile_commands.json"):
+            build_command = build_command.replace("make", "bear make")
         build_command = apply_flags(build_command)
     build_command = dir_command + build_command
     # print(build_command)
@@ -200,6 +201,8 @@ def build_instrumented_code(source_directory):
         build_command += "make CFLAGS=" + C_FLAGS + " "
         build_command += "CXXFLAGS=" + CXX_FLAGS + " > " + Definitions.FILE_MAKE_LOG
     else:
+        if not os.path.isfile(source_directory + "/compile_commands.json"):
+            custom_build_command = custom_build_command.replace("make", "bear make")
         build_command_with_flags = apply_flags(custom_build_command)
         build_command += build_command_with_flags
 
@@ -325,6 +328,9 @@ def soft_restore_all():
 
 def clean_project(project_path):
     clean_command = "cd " + project_path + "; make clean; make distclean"
+    clean_command += "; rm compile_commands.json"
+    clean_command += "; rm CMakeCache.txt"
+    clean_command += "; rm -rf CMakeFiles"
     execute_command(clean_command)
 
 
