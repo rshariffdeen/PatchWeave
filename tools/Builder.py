@@ -171,6 +171,14 @@ def build_normal():
     build_all()
 
 
+def remove_fsanitize(build_command):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    sanitize_group = ['integer', 'address', 'undefined']
+    for group in sanitize_group:
+        build_command = str(build_command).replace("-fsanitize=" + str(group), "")
+    return build_command
+
+
 def build_instrumented_code(source_directory):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Emitter.normal("\t\t\tbuilding instrumented code")
@@ -203,6 +211,7 @@ def build_instrumented_code(source_directory):
     else:
         if not os.path.isfile(source_directory + "/compile_commands.json"):
             custom_build_command = custom_build_command.replace("make", "bear make")
+        build_command = remove_fsanitize(build_command)
         build_command_with_flags = apply_flags(custom_build_command)
         build_command += build_command_with_flags
 
