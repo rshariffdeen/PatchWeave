@@ -21,16 +21,14 @@ def filter_trace_list_by_loc(trace_list, estimate_loc):
     estimate_loc = source_path + ":" + str(line_number)
     if estimate_loc is None:
         return trace_list
-    div_point = 0
     estimated_div_point = 0
     for n in range(0, len(trace_list), 1):
         if estimate_loc == trace_list[n]:
             estimated_div_point = n
             if count_instant == 1:
-                return trace_list[div_point:]
+                return trace_list[n:]
             else:
                 count_instant = count_instant - 1
-        div_point = div_point + 1
 
     return trace_list[estimated_div_point:]
 
@@ -41,6 +39,7 @@ def filter_function_list_using_trace(source_function_map, trace_list):
     trace_function_info = collections.OrderedDict()
     source_line_map = Extractor.extract_source_lines_from_trace(trace_list)
     for source_path in source_line_map:
+        # print(source_path)
         function_list = source_function_map[source_path]
         trace_line_list = source_line_map[source_path]
         for line_number in trace_line_list:
@@ -48,6 +47,7 @@ def filter_function_list_using_trace(source_function_map, trace_list):
             for function_name, begin_line, finish_line in function_list:
                 if line_number in range(begin_line, finish_line):
                     function_id = source_path + ":" + function_name
+                    # print(function_id)
                     if function_id not in trace_function_info.keys():
                         trace_function_info[function_id] = dict()
                         trace_function_info[function_id]['start'] = begin_line
