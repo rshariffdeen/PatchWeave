@@ -37,35 +37,59 @@ def filter_function_list_using_trace(source_function_map, trace_list):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Emitter.normal("\t\t\textracting function list from trace ...")
     trace_function_info = collections.OrderedDict()
-    source_line_map = Extractor.extract_source_lines_from_trace(trace_list)
-    for source_path in source_line_map:
-        # print(source_path)
+    unique_trace_list = Extractor.extract_unique_in_order(trace_list)
+    for trace_line in unique_trace_list:
+        source_path, line_number = str(trace_line).split(":")
         function_list = source_function_map[source_path]
-        trace_line_list = source_line_map[source_path]
-        for line_number in trace_line_list:
-            order = 1
-            for function_name, begin_line, finish_line in function_list:
-                if line_number in range(begin_line, finish_line):
-                    function_id = source_path + ":" + function_name
-                    # print(function_id)
-                    if function_id not in trace_function_info.keys():
-                        trace_function_info[function_id] = dict()
-                        trace_function_info[function_id]['start'] = begin_line
-                        trace_function_info[function_id]['end'] = finish_line
-                        trace_function_info[function_id]['last'] = int(line_number)
-                        trace_function_info[function_id]['begin'] = int(line_number)
-                        trace_function_info[function_id]['lines'] = list()
-                        trace_function_info[function_id]['order'] = order
+        for function_name, begin_line, finish_line in function_list:
+            if int(line_number) in range(begin_line, finish_line):
+                function_id = source_path + ":" + function_name
+                if function_id not in trace_function_info.keys():
+                    trace_function_info[function_id] = dict()
+                    trace_function_info[function_id]['start'] = begin_line
+                    trace_function_info[function_id]['end'] = finish_line
+                    trace_function_info[function_id]['last'] = int(line_number)
+                    trace_function_info[function_id]['begin'] = int(line_number)
+                    trace_function_info[function_id]['lines'] = list()
+                    trace_function_info[function_id]['lines'].append(line_number)
+                else:
+                    if line_number not in trace_function_info[function_id]['lines']:
                         trace_function_info[function_id]['lines'].append(line_number)
-                        order += 1
-                    else:
-                        if line_number not in trace_function_info[function_id]['lines']:
-                            trace_function_info[function_id]['lines'].append(line_number)
-                        if trace_function_info[function_id]['last'] < line_number:
-                            trace_function_info[function_id]['last'] = line_number
-                        if trace_function_info[function_id]['begin'] > line_number:
-                            trace_function_info[function_id]['begin'] = line_number
-                    break
+                    if trace_function_info[function_id]['last'] < line_number:
+                        trace_function_info[function_id]['last'] = line_number
+                    if trace_function_info[function_id]['begin'] > line_number:
+                        trace_function_info[function_id]['begin'] = line_number
+                break
+
+    # source_line_map = Extractor.extract_source_lines_from_trace(trace_list)
+    # for source_path in source_line_map:
+    #     # print(source_path)
+    #     function_list = source_function_map[source_path]
+    #     trace_line_list = source_line_map[source_path]
+    #     for line_number in trace_line_list:
+    #         order = 1
+    #         for function_name, begin_line, finish_line in function_list:
+    #             if line_number in range(begin_line, finish_line):
+    #                 function_id = source_path + ":" + function_name
+    #                 # print(function_id)
+    #                 if function_id not in trace_function_info.keys():
+    #                     trace_function_info[function_id] = dict()
+    #                     trace_function_info[function_id]['start'] = begin_line
+    #                     trace_function_info[function_id]['end'] = finish_line
+    #                     trace_function_info[function_id]['last'] = int(line_number)
+    #                     trace_function_info[function_id]['begin'] = int(line_number)
+    #                     trace_function_info[function_id]['lines'] = list()
+    #                     trace_function_info[function_id]['order'] = order
+    #                     trace_function_info[function_id]['lines'].append(line_number)
+    #                     order += 1
+    #                 else:
+    #                     if line_number not in trace_function_info[function_id]['lines']:
+    #                         trace_function_info[function_id]['lines'].append(line_number)
+    #                     if trace_function_info[function_id]['last'] < line_number:
+    #                         trace_function_info[function_id]['last'] = line_number
+    #                     if trace_function_info[function_id]['begin'] > line_number:
+    #                         trace_function_info[function_id]['begin'] = line_number
+    #                 break
     return trace_function_info
 
 
