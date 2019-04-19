@@ -120,7 +120,7 @@ def transplant_code():
         Emitter.normal(diff_loc)
         diff_loc_info = Analyse.diff_info[diff_loc]
         div_sym_path_cond = get_sym_path_cond(diff_loc)
-        last_sym_path_cond = Collector.collect_last_sym_path(Concolic.FILE_SYM_PATH_C)
+        last_sym_path_cond = Concolic.last_sym_path_c
         # print(last_sym_path_cond)
         estimate_loc, count_instant = Solver.estimate_divergent_point(div_sym_path_cond,
                                                        last_sym_path_cond,
