@@ -275,14 +275,14 @@ def filter_best_candidate_function(function_list):
     if not function_list:
         Emitter.error("No candidate function")
         error_exit("no suitable function to insert")
-    min_order = 1000
-    for function_id in function_list:
-        info = function_list[function_id]
-        order = info['order']
-        if min_order > order:
-            min_order = order
-            best_candidate = function_id
-    return best_candidate
+    # min_order = 1000
+    # for function_id in function_list:
+    #     info = function_list[function_id]
+    #     order = info['order']
+    #     if min_order > order:
+    #         min_order = order
+    #         best_candidate = function_id
+    return function_list[0]
 
 
 def filter_best_candidate_loc(loc_list, best_score):
