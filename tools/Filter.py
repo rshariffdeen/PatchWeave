@@ -282,7 +282,7 @@ def filter_best_candidate_function(function_list):
     #     if min_order > order:
     #         min_order = order
     #         best_candidate = function_id
-    return function_list[function_list.keys()[0]]
+    return function_list.keys()[0]
 
 
 def filter_best_candidate_loc(loc_list, best_score):
