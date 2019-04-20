@@ -124,7 +124,7 @@ def generate_candidate_function_list(estimate_loc, var_info_a,
         function_info = trace_function_list[function_id]
         begin_line = function_info['begin']
         last_line = function_info['last']
-        trace_order = function_info['order']
+        # trace_order = function_info['order']
 
         ast_map_c = ASTGenerator.get_ast_json(source_path)
         if ast_map_c is None:
@@ -172,7 +172,7 @@ def generate_candidate_function_list(estimate_loc, var_info_a,
             info['last-line'] = last_line
             info['exec-lines'] = function_info['lines']
             info['score'] = score
-            info['order'] = trace_order
+            # info['order'] = trace_order
             candidate_function_list[function_id] = info
             return candidate_function_list
 
