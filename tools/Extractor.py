@@ -9,7 +9,7 @@ from common.Utilities import error_exit, get_file_list, is_intersect, execute_co
 import Emitter
 import Logger
 from ast import ASTGenerator
-from common import Definitions
+from common import Definitions, Values
 import Converter
 import Generator
 import Finder
@@ -93,7 +93,10 @@ def extract_complete_function_node(function_def_node, source_path):
                     if source_file_name in file_name and file_name[-2:] == ".c":
                         source_file_loc = file_name
                         break
+                if search_dir in [Values.PATH_A, Values.PATH_B, Values.PATH_C]:
+                    return None, None
                 search_dir = os.path.dirname(search_dir)
+
         ast_tree = ASTGenerator.get_ast_json(source_file_loc)
         function_node = Finder.search_function_node_by_name(ast_tree, function_name)
         return function_node, source_file_loc
@@ -270,7 +273,7 @@ def extract_var_ref_list(ast_node, start_line, end_line, only_in_range):
         for aux_var_name, aux_var_type in auxilary_list:
             var_list.append((str(aux_var_name), line_number, aux_var_type))
         return var_list
-    if node_type in ["ForStmt"]:
+    if node_type in ["ForStmt", "WhileStmt"]:
         body_node = ast_node['children'][child_count - 1]
         insert_line = body_node['start line']
         for i in range(0, child_count - 1):
