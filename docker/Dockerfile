@@ -67,6 +67,7 @@ RUN cd /bear/source; git checkout 2.2.1
 RUN mkdir /bear/build; cd /bear/build; cmake ../source; make -j32; make install
 
 RUN /usr/bin/pip install --upgrade pip && pip install \
+    libfreetype6-dev \
     pysmt \
     six \
     wllvm
