@@ -81,6 +81,8 @@ def is_function_important(source_path, function_call_node, sym_path_list):
     function_node, file_path = Extractor.extract_complete_function_node(function_def_node, source_path)
     # print(file_path)
     # print(function_node)
+    if function_node is None:
+        return False
     file_path = os.path.abspath(file_path)
     start_line = function_node['start line']
     end_line = function_node['end line']
