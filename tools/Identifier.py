@@ -394,7 +394,7 @@ def identify_divergent_point(byte_list, sym_path_info, trace_list, stack_info):
                     count = len(list(set(byte_list).intersection(bytes_temp)))
                     # print(count_common, count)
                     if count == count_common:
-                        return str(trace_loc_1), count_instant
+                        return str(trace_loc), count_instant
                     else:
                         count_instant = count_instant + 1
         elif trace_loc_2 in sym_path_info.keys():
@@ -413,7 +413,7 @@ def identify_divergent_point(byte_list, sym_path_info, trace_list, stack_info):
                     count = len(list(set(byte_list).intersection(bytes_temp)))
                     # print(count_common, count)
                     if count == count_common:
-                        return str(trace_loc_2), count_instant
+                        return str(trace_loc), count_instant
                     else:
                         count_instant = count_instant + 1
         # if grab_nearest:
