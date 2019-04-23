@@ -323,7 +323,7 @@ def identify_divergent_point(byte_list, sym_path_info, trace_list, stack_info):
     length = len(sym_path_info) - 1
     count_common = len(byte_list)
     candidate_list = list()
-    estimated_loc = ""
+    estimated_loc = None
     # print(length)
     # for n in range(length, 0, -1):
     #     print(n)
@@ -349,14 +349,18 @@ def identify_divergent_point(byte_list, sym_path_info, trace_list, stack_info):
     grab_nearest = False
     # print(candidate_list)
     # print(stack_info.keys())
+    # print(sym_path_info.keys())
     for n in range(0, length, 1):
         trace_loc = trace_list[n]
         # print(trace_loc)
         source_path, line_number = trace_loc.split(":")
         source_path = os.path.abspath(source_path)
         # trace_loc = source_path + ":" + str(line_number)
-        if trace_loc in sym_path_info.keys():
-            sym_path_list = sym_path_info[trace_loc]
+        trace_loc_0 = trace_loc
+        trace_loc_1 = source_path + ":" + str(int(line_number) + 1)
+        trace_loc_2 = source_path + ":" + str(int(line_number) - 1)
+        if trace_loc_0 in sym_path_info.keys():
+            sym_path_list = sym_path_info[trace_loc_0]
             # print(len(sym_path_list))
             sym_path_latest = sym_path_list[-1]
             bytes_latest = Extractor.extract_input_bytes_used(sym_path_latest)
@@ -371,7 +375,45 @@ def identify_divergent_point(byte_list, sym_path_info, trace_list, stack_info):
                     count = len(list(set(byte_list).intersection(bytes_temp)))
                     # print(count_common, count)
                     if count == count_common:
-                        return str(trace_loc), count_instant
+                        return str(trace_loc_0), count_instant
+                    else:
+                        count_instant = count_instant + 1
+        elif trace_loc_1 in sym_path_info.keys():
+            sym_path_list = sym_path_info[trace_loc_1]
+            # print(len(sym_path_list))
+            sym_path_latest = sym_path_list[-1]
+            bytes_latest = Extractor.extract_input_bytes_used(sym_path_latest)
+            count_latest = len(list(set(byte_list).intersection(bytes_latest)))
+            if count_latest == count_common:
+                count_instant = 1
+                for sym_path in sym_path_list:
+                    # print(sym_path)
+                    bytes_temp = Extractor.extract_input_bytes_used(sym_path)
+                    # print(byte_list)
+                    # print(bytes_temp)
+                    count = len(list(set(byte_list).intersection(bytes_temp)))
+                    # print(count_common, count)
+                    if count == count_common:
+                        return str(trace_loc_1), count_instant
+                    else:
+                        count_instant = count_instant + 1
+        elif trace_loc_2 in sym_path_info.keys():
+            sym_path_list = sym_path_info[trace_loc_2]
+            # print(len(sym_path_list))
+            sym_path_latest = sym_path_list[-1]
+            bytes_latest = Extractor.extract_input_bytes_used(sym_path_latest)
+            count_latest = len(list(set(byte_list).intersection(bytes_latest)))
+            if count_latest == count_common:
+                count_instant = 1
+                for sym_path in sym_path_list:
+                    # print(sym_path)
+                    bytes_temp = Extractor.extract_input_bytes_used(sym_path)
+                    # print(byte_list)
+                    # print(bytes_temp)
+                    count = len(list(set(byte_list).intersection(bytes_temp)))
+                    # print(count_common, count)
+                    if count == count_common:
+                        return str(trace_loc_2), count_instant
                     else:
                         count_instant = count_instant + 1
         # if grab_nearest:
