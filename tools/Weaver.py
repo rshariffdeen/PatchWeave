@@ -443,8 +443,8 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
 
         for var_a in var_info_a:
             if var_a not in var_info_b_filtered:
-                var_info_b[var_a] = var_info_a[var_a]
-
+                var_info_b_filtered[var_a] = var_info_a[var_a]
+        # print(var_info_b_filtered)
         Emitter.sub_sub_title("generating candidate function list")
         insertion_function_list = Generator.generate_candidate_function_list(estimate_loc,
                                                                              var_info_b_filtered,
@@ -519,6 +519,7 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
         ast_map_b = ASTGenerator.get_ast_json(source_path_b)
         ast_map_a = ASTGenerator.get_ast_json(source_path_a)
         Emitter.sub_sub_title("transplanting code")
+        # print(ast_script)
         for script_line in ast_script:
             translated_command = script_line
             if "Insert" in script_line:
@@ -584,6 +585,7 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
             ast_op += " into " + position_c
             ast_script_c.append(ast_op)
         ast_script_c.reverse()
+        # print(ast_script)
         var_map_abc = Merger.merge_var_map(var_map_ac, var_map_bc)
         Emitter.emit_var_map(var_map_abc)
         Emitter.emit_ast_script(ast_script_c)
