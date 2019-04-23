@@ -35,7 +35,7 @@ def merge_var_map(map_a, map_b):
     var_map = dict()
     for var_name in map_a:
         if var_name in map_b:
-            error_exit("unhandled exception in merging var maps")
+            var_map[var_name] = map_b[var_name]
         else:
             var_map[var_name] = map_a[var_name]
 
