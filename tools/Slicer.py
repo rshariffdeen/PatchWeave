@@ -105,7 +105,7 @@ def slice_function_calls(diff_info, sym_path_list, path_a, path_b):
             for line_number in line_numbers:
                 loc_id = source_file + ":" + str(line_number)
                 if line_number in function_call_node_list.keys():
-                    # print(line_number)
+                    # print(loc_id)
                     # print(skip_lines)
                     if not Oracle.is_function_important(source_file,
                                                         function_call_node_list[line_number],
