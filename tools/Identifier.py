@@ -13,7 +13,7 @@ import Extractor
 import Finder
 import Generator
 
-STANDARD_DATA_TYPES = ["int", "char", "float", "unsigned int"]
+STANDARD_DATA_TYPES = ["int", "char", "float", "unsigned int", "uint32_t", "uint8_t"]
 
 
 def identify_missing_labels(ast_map, ast_node, source_path_b, source_path_d, skip_list):
@@ -95,6 +95,7 @@ def identify_missing_data_types(insert_node_b, var_info, target_path, ast_node_b
     Emitter.normal("\t\t\tidentifying missing data-types")
     missing_data_type_list = dict()
     type_loc_node_list = Extractor.extract_typeloc_node_list(insert_node_b)
+    # print(type_loc_node_list)
     ref_list = Extractor.extract_reference_node_list(insert_node_b)
     type_def_node_list_b = Extractor.extract_typedef_node_list(ast_node_b)
     type_def_node_list_c = Extractor.extract_typedef_node_list(ast_node_c)
@@ -106,20 +107,27 @@ def identify_missing_data_types(insert_node_b, var_info, target_path, ast_node_b
             ref_type = str(ref_node['ref_type'])
             if ref_type == "VarDecl":
                 identifier = str(ref_node['data_type'])
+                # print(identifier)
                 var_name = str(ref_node['value'])
+                # print(var_name)
                 if var_name not in var_info.keys():
                     continue
                 if identifier in STANDARD_DATA_TYPES:
                     continue
+                # print("cont")
                 if identifier not in type_def_node_list_c:
                     if identifier not in missing_data_type_list.keys():
                         info = dict()
                         info['target'] = target_path
                         info['ast-node'] = type_def_node_list_b[identifier]
                         missing_data_type_list[identifier] = info
-    for type_loc_node in type_loc_node_list:
+    for type_loc_name in type_loc_node_list:
+        # print(type_loc_name)
+        type_loc_node = type_loc_node_list[type_loc_name]
         identifier = str(type_loc_node['value'])
         if identifier not in type_def_node_list_c:
+            if identifier in STANDARD_DATA_TYPES:
+                continue
             if identifier not in missing_data_type_list.keys():
                 info = dict()
                 info['target'] = target_path
