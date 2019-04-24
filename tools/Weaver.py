@@ -554,10 +554,14 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                 ast_script_c.append(translated_command)
             elif "Replace" in script_line:
                 replacing_node_str = (script_line.split(" with ")[0]).replace("Replace ", "")
+                replace_nod_str = script_line.split(" with ")[1]
                 replacing_node_id = (replacing_node_str.split("(")[1]).split(")")[0]
                 replacing_node = Finder.search_ast_node_by_id(ast_map_a, int(replacing_node_id))
+                # print(replacing_node)
+                # print(function_node_c)
                 target_node_str = Finder.search_matching_node(function_node_c, replacing_node, var_map_ac)
                 if target_node_str is None:
+                    Emitter.warning("warning: couldn't find target node to replace")
                     continue
                 elif "Macro" in target_node_str:
                     print("inside macro")
@@ -574,7 +578,7 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                     print(translated_patch)
                     insert_code(translated_patch, source_path_c, line_number_c)
                 else:
-                    translated_command = script_line.replace(replacing_node_str, target_node_str)
+                    translated_command = "Replace " + target_node_str + " with " + replace_nod_str
                     ast_script_c.append(translated_command)
         # print(var_map_ac)
         # print(missing_var_list)
