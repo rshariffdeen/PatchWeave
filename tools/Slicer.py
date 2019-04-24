@@ -14,14 +14,17 @@ import Emitter
 
 def slice_code_from_trace(diff_info, trace_list, path_a, path_b):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    # print(diff_info)
     for diff_loc in diff_info:
         source_file, start_line = diff_loc.split(":")
         source_file = source_file.replace(path_a, path_b)
         skip_lines = list()
         diff_loc_info = diff_info[diff_loc]
+        # print(diff_loc)
         if 'new-lines' in diff_loc_info.keys():
             start_line, end_line = diff_loc_info['new-lines']
             line_numbers = set(range(int(start_line), int(end_line) + 1))
+            # print(line_numbers)
             for line_number in line_numbers:
                 loc_id = source_file + ":" + str(line_number)
                 if loc_id not in trace_list:
@@ -79,6 +82,7 @@ def slice_ast_script(diff_info, project_path_a, project_path_b):
                                                                     ast_map_b,
                                                                     skip_lines
                                                                     )
+        # print(filtered_ast_script)
         filtered_ast_script = Filter.filter_ast_script_by_node_type(filtered_ast_script,
                                                                     ast_map_a,
                                                                     ast_map_b
