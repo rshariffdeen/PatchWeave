@@ -116,7 +116,7 @@ def convert_array_iterator(iterator_node):
     return var_name, var_list
 
 
-def convert_array_subscript(ast_node):
+def convert_array_subscript(ast_node, only_string=False):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     var_list = list()
     var_name = ""
@@ -156,6 +156,8 @@ def convert_array_subscript(ast_node):
         print(array_node)
         print(ast_node)
         error_exit("Unknown data type for array_subscript")
+    if only_string:
+        return var_name, var_data_type
     return var_name, var_data_type, var_list
 
 
@@ -194,6 +196,8 @@ def convert_call_expr(ast_node, only_string=False):
 
     var_name += ")"
     # print(var_name)
+    if only_string:
+        return var_name
     return var_name, list(set(var_list))
 
 
