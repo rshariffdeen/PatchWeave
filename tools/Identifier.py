@@ -152,7 +152,8 @@ def identify_missing_headers(ast_node, target_file):
                 error_exit("UNKNOWN RETURN TYPE")
     else:
         data_type_list = Extractor.extract_data_type_list(ast_node)
-        if "uint_fast8_t" in data_type_list:
+        std_int_list = ["uint_fast32_t", "uint_fast8_t"]
+        if any(x in data_type_list for x in std_int_list):
             if "stdint.h" not in missing_header_list.keys():
                 missing_header_list["stdint.h"] = target_file
             else:
