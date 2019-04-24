@@ -163,3 +163,12 @@ def load_from_file(file_path):
     ast = [i for i in AST.nodes]
     AST.nodes = []
     return ast
+
+
+def load_from_map(ast_map):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    global ast
+    AST(ast_map)
+    ast = [i for i in AST.nodes]
+    AST.nodes = []
+    return ast
