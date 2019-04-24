@@ -136,17 +136,17 @@ def merge_ast_script(ast_script, ast_node_a, ast_node_b, mapping_ba):
                 # print(target_node_str)
                 script_line = "Replace " + target_node_str + " with " + replace_node_str
                 # print(script_line)
-            elif len(target_node['children']) >= insert_position:
-                possible_replacement_node = target_node['children'][insert_position]
-                # print(possible_replacement_node)
-                replacement_node_id = possible_replacement_node['id']
-                del_op = "Delete " + str(possible_replacement_node['type']) + "(" + str(replacing_node_id) + ")"
-                # print(del_op)
-                if del_op in ast_script:
-                    # print(del_op)
-                    replace_node_str = str(replace_node['type']) + "(" + node_id_a + ")"
-                    target_node_str = str(possible_replacement_node['type']) + "(" + replacement_node_id + ")"
-                    script_line = "Replace " + replace_node_str + " with " + target_node_str
+            # elif len(target_node['children']) >= insert_position:
+            #     possible_replacement_node = target_node['children'][insert_position]
+            #     # print(possible_replacement_node)
+            #     replacement_node_id = possible_replacement_node['id']
+            #     del_op = "Delete " + str(possible_replacement_node['type']) + "(" + str(replacing_node_id) + ")"
+            #     # print(del_op)
+            #     if del_op in ast_script:
+            #         # print(del_op)
+            #         replace_node_str = str(replace_node['type']) + "(" + node_id_a + ")"
+            #         target_node_str = str(possible_replacement_node['type']) + "(" + replacement_node_id + ")"
+            #         script_line = "Replace " + replace_node_str + " with " + target_node_str
 
             if node_id_b not in inserted_node_list:
                 merged_ast_script.append(script_line)
