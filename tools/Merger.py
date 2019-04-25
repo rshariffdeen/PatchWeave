@@ -220,4 +220,35 @@ def merge_ast_script(ast_script, ast_node_a, ast_node_b, mapping_ba):
                 inserted_node_list.append(replacing_node_id)
             # print(script_line)
             merged_ast_script.append(script_line)
-    return merged_ast_script
+
+    second_merged_ast_script = list()
+    for script_line in merged_ast_script:
+        # print(script_line)
+        if "Replace" in script_line:
+            # print(script_line)
+            node_id_a = int(((script_line.split(" with ")[0]).split("(")[1]).split(")")[0])
+            node_id_b = int(((script_line.split(" with ")[1]).split("(")[1]).split(")")[0])
+            node_a = Finder.search_ast_node_by_id(ast_node_a, node_id_a)
+            parent_node_id_a = int(node_a['parent_id'])
+            parent_node_a = Finder.search_ast_node_by_id(ast_node_a, parent_node_id_a)
+            if len(parent_node_a['children']) > 0:
+                count = 0
+                for child_node in parent_node_a['children']:
+                    replace_op = "Replace " + child_node['type'] + "(" + str(child_node['id']) + ")"
+                    count += sum(replace_op in s for s in merged_ast_script)
+                if count > 1:
+                    node_b = Finder.search_ast_node_by_id(ast_node_b, node_id_b)
+                    parent_node_id_b = int(node_b['parent_id'])
+                    parent_node_b = Finder.search_ast_node_by_id(ast_node_b, parent_node_id_b)
+                    parent_node_str_a = parent_node_a['type'] + "(" + str(parent_node_a['id']) + ")"
+                    parent_node_str_b = parent_node_b['type'] + "(" + str(parent_node_b['id']) + ")"
+                    new_op = "Replace " + parent_node_str_a + " with " + parent_node_str_b + "\n"
+                    if new_op not in second_merged_ast_script:
+                        second_merged_ast_script.append(new_op)
+                else:
+                    second_merged_ast_script.append(new_op)
+            else:
+                second_merged_ast_script.append(new_op)
+        else:
+            second_merged_ast_script.append(new_op)
+    return second_merged_ast_script
