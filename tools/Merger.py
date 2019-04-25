@@ -246,9 +246,9 @@ def merge_ast_script(ast_script, ast_node_a, ast_node_b, mapping_ba):
                     if new_op not in second_merged_ast_script:
                         second_merged_ast_script.append(new_op)
                 else:
-                    second_merged_ast_script.append(new_op)
+                    second_merged_ast_script.append(script_line)
             else:
-                second_merged_ast_script.append(new_op)
+                second_merged_ast_script.append(script_line)
         else:
-            second_merged_ast_script.append(new_op)
+            second_merged_ast_script.append(script_line)
     return second_merged_ast_script
