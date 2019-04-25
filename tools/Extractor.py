@@ -588,6 +588,20 @@ def extract_reference_node_list(ast_node):
     return ref_node_list
 
 
+def extract_macro_node_list(ast_node):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    macro_node_list = list()
+    node_type = str(ast_node["type"])
+    if node_type in ["Macro"]:
+        macro_node_list.append(ast_node)
+    else:
+        if len(ast_node['children']) > 0:
+            for child_node in ast_node['children']:
+                child_ref_list = extract_macro_node_list(child_node)
+                macro_node_list = macro_node_list + child_ref_list
+    return macro_node_list
+
+
 def extract_unique_in_order(list):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     seen_set = set()
@@ -623,3 +637,55 @@ def extract_error_list_from_output(output):
             error += " address"
             error_list.append(error)
     return error_list
+
+
+def extract_macro_definition(ast_node, skip_line_list, source_file, target_file):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    Emitter.normal("\t\t\t\textracting macro definitions")
+    macro_list = dict()
+    node_type = str(ast_node['type'])
+    # print(ast_node)
+    # print(node_type)
+    if node_type == "Macro":
+        identifier = str(ast_node['value'])
+        # print(identifier)
+        start_line = int(ast_node['start line'])
+        if start_line in skip_line_list:
+            return macro_list
+        node_child_count = len(ast_node['children'])
+        if identifier in Values.STANDARD_MACRO_LIST:
+            return macro_list
+        # print(node_child_count)
+        if node_child_count > 0:
+            for child_node in ast_node['children']:
+                identifier = str(child_node['value'])
+                # print(identifier)
+                if str(identifier).isdigit():
+                    continue
+                if identifier in Values.STANDARD_MACRO_LIST:
+                    continue
+                if "(" in identifier:
+                    identifier = identifier.split("(")[0]
+                if identifier not in macro_list.keys():
+                    info = dict()
+                    info['source'] = source_file
+                    info['target'] = target_file
+                    macro_list[identifier] = info
+                else:
+                    info = macro_list[identifier]
+                    if info['source'] != source_file or info['target'] != target_file:
+                        error_exit("MACRO REQUIRED MULTIPLE TIMES!!")
+        else:
+            token_list = identifier.split(" ")
+            # print(token_list)
+            for token in token_list:
+                if token in ["/", "+", "-"]:
+                    continue
+                if identifier not in macro_list.keys():
+                    info = dict()
+                    info['source'] = source_file
+                    info['target'] = target_file
+                    macro_list[token] = info
+                else:
+                    error_exit("MACRO REQUIRED MULTIPLE TIMES!!")
+    return macro_list

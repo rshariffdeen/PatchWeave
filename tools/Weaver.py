@@ -123,6 +123,10 @@ def weave_definitions(missing_definition_list, modified_source_list):
                 if "#define" in macro_def:
                     if def_name in macro_def.split(" "):
                         transplant_code += "\n" + macro_def + "\n"
+            else:
+                query = "#define " + def_name
+
+
         backup_file(target_file, FILENAME_BACKUP)
         insert_code(transplant_code, target_file, def_insert_line)
         if target_file not in modified_source_list:
@@ -555,12 +559,17 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                 ast_script_c.append(translated_command)
             elif "Replace" in script_line:
                 replacing_node_str = (script_line.split(" with ")[0]).replace("Replace ", "")
-                replace_nod_str = script_line.split(" with ")[1]
                 replacing_node_id = (replacing_node_str.split("(")[1]).split(")")[0]
                 replacing_node = Finder.search_ast_node_by_id(ast_map_a, int(replacing_node_id))
+
+                replace_node_str = script_line.split(" with ")[1]
+                replace_node_id = (replace_node_str.split("(")[1]).split(")")[0]
+                replace_node = Finder.search_ast_node_by_id(ast_map_b, int(replace_node_id))
                 # print(replacing_node)
                 # print(function_node_c)
                 target_node_str = Finder.search_matching_node(function_node_c, replacing_node, var_map_ac)
+                target_node_id = int((target_node_str.split("(")[1]).split(")")[0])
+                target_node = Finder.search_ast_node_by_id(ast_map_c, target_node_id)
                 if target_node_str is None:
                     Emitter.warning("\t\twarning: couldn't find target node to replace")
                     continue
@@ -579,11 +588,11 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                     print(translated_patch)
                     insert_code(translated_patch, source_path_c, line_number_c)
                 else:
-                    translated_command = "Replace " + target_node_str + " with " + replace_nod_str
-                    missing_macro_list = Identifier.identify_missing_macros(replacing_node,
-                                                                            source_path_b,
-                                                                            source_path_d,
-                                                                            skip_line_list)
+                    translated_command = "Replace " + target_node_str + " with " + replace_node_str
+                    missing_macro_list.update(Identifier.identify_missing_macros(replace_node,
+                                                                                 source_path_b,
+                                                                                 source_path_d,
+                                                                                 skip_line_list))
                     ast_script_c.append(translated_command)
         # print(var_map_ac)
         # print(missing_var_list)
