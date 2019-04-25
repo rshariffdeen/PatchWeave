@@ -9,6 +9,7 @@ from common import Values
 import Trace
 from tools import Logger, Emitter, Slicer
 import Analyse
+import Exploit
 import Concolic
 
 
@@ -26,7 +27,6 @@ def remove_code():
     Analyse.diff_info = Slicer.slice_skipped_diff_locs(diff_info)
 
 
-
 def remove_func_calls():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Emitter.normal("slicing unrelated function calls")
@@ -37,6 +37,14 @@ def remove_func_calls():
     diff_info = Slicer.slice_function_calls(diff_info, sym_path_list, path_a, path_b)
     diff_info = Slicer.slice_ast_script(diff_info, Values.PATH_A, Values.PATH_B)
     Analyse.diff_info = Slicer.slice_skipped_diff_locs(diff_info)
+
+
+def remove_redundancy():
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    Emitter.normal("slicing redundant patches")
+    diff_info = Analyse.diff_info
+    suspicious_lines = Exploit.donor_suspect_line_list
+    Analyse.diff_info = Slicer.slice_redundant_patches(diff_info, suspicious_lines)
 
 
 def safe_exec(function_def, title, *args):
@@ -65,3 +73,4 @@ def slice():
     if not Values.SKIP_SLICE:
         safe_exec(remove_code, "slicing code not in trace")
         safe_exec(remove_func_calls, "slicing function calls")
+        safe_exec(remove_redundancy, "slicing redundant diff")
