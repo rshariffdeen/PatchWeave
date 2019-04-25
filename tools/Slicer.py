@@ -120,3 +120,33 @@ def slice_function_calls(diff_info, sym_path_list, path_a, path_b):
         diff_loc_info['skip-lines'] = skip_lines
         diff_info[diff_loc] = diff_loc_info
     return diff_info
+
+
+def slice_redundant_patches(diff_info, suspicious_locs):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    filtered_diff_info = dict()
+    inserted_similar_loc_list = list()
+    for diff_loc in diff_info:
+        source_path, start_line = diff_loc.split(":")
+        source_file = source_path.split("/")[-1]
+        patch_loc = source_file + ":" + start_line
+        if patch_loc in suspicious_locs.keys():
+            bug_reason = suspicious_locs[patch_loc]
+            # print(patch_loc)
+            similar_loc_list = list()
+            for suspicious_loc in suspicious_locs:
+                if suspicious_locs[suspicious_loc] == bug_reason:
+                    similar_loc_list.append(suspicious_loc)
+            # print(similar_loc_list)
+            redundant = False
+            for similar_loc in similar_loc_list:
+                if similar_loc in inserted_similar_loc_list:
+                    redundant = True
+                    break
+            # print(redundant)
+            if not redundant:
+                filtered_diff_info[diff_loc] = diff_info[diff_loc]
+                inserted_similar_loc_list.append(patch_loc)
+        else:
+            filtered_diff_info[diff_loc] = diff_info[diff_loc]
+    return filtered_diff_info
