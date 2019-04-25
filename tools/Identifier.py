@@ -208,6 +208,8 @@ def identify_missing_macros(ast_node, source_file, target_file, skip_line_list):
                     identifier = str(child_node['value'])
                     if identifier in Values.STANDARD_MACRO_LIST:
                         continue
+                    if "(" in identifier:
+                        identifier = identifier.split("(")[0]
                     if identifier not in missing_macro_list.keys():
                         info = dict()
                         info['source'] = source_file
