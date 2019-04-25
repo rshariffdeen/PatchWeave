@@ -580,6 +580,10 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                     insert_code(translated_patch, source_path_c, line_number_c)
                 else:
                     translated_command = "Replace " + target_node_str + " with " + replace_nod_str
+                    missing_macro_list = Identifier.identify_missing_macros(replacing_node,
+                                                                            source_path_b,
+                                                                            source_path_d,
+                                                                            skip_line_list)
                     ast_script_c.append(translated_command)
         # print(var_map_ac)
         # print(missing_var_list)
