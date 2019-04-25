@@ -148,7 +148,7 @@ def merge_ast_script(ast_script, ast_node_a, ast_node_b, mapping_ba):
                     # print(del_op)
                     replace_node_str = str(replace_node['type']) + "(" + str(node_id_a) + ")"
                     target_node_str = str(possible_replacement_node['type']) + "(" + str(replacement_node_id) + ")"
-                    script_line = "Replace " + replace_node_str + " with " + target_node_str
+                    script_line = "Replace " + target_node_str + " with " +  replace_node_str
                     # print(script_line)
                     deleted_node_list.append(replacement_node_id)
                     child_id_list = Extractor.extract_child_id_list(possible_replacement_node)
@@ -199,7 +199,7 @@ def merge_ast_script(ast_script, ast_node_a, ast_node_b, mapping_ba):
                     # print(del_op)
                     replace_node_str = str(move_node_b['type']) + "(" + str(move_node_b['id']) + ")"
                     target_node_str = str(possible_replacement_node['type']) + "(" + str(replacement_node_id) + ")"
-                    script_line = "Replace " + replace_node_str + " with " + target_node_str
+                    script_line = "Replace " + target_node_str + " with " + replace_node_str
                     # print(script_line)
                     deleted_node_list.append(replacement_node_id)
                     child_id_list = Extractor.extract_child_id_list(possible_replacement_node)
