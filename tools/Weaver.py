@@ -582,6 +582,8 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                 # print(function_node_c)
                 target_node_str = Finder.search_matching_node(function_node_c, replacing_node, var_map_ac)
                 if target_node_str is None:
+                    # print(replacing_node)
+                    # print(function_node_c)
                     Emitter.warning("\t\twarning: couldn't find target node to replace")
                     continue
                 elif "Macro" in target_node_str:
