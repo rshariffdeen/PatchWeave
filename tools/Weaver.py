@@ -123,9 +123,22 @@ def weave_definitions(missing_definition_list, modified_source_list):
                 if "#define" in macro_def:
                     if def_name in macro_def.split(" "):
                         transplant_code += "\n" + macro_def + "\n"
-            else:
-                query = "#define " + def_name
 
+        if transplant_code == "":
+            header_file = Finder.find_header_file(def_name, source_file)
+            # print(header_file)
+            if header_file is not None:
+                macro_def_list = Extractor.extract_macro_definitions(header_file)
+                # print(macro_def_list)
+                transplant_code = ""
+                for macro_def in macro_def_list:
+                    if def_name in macro_def:
+                        # print(macro_def)
+                        if "#define" in macro_def:
+                            if def_name in macro_def.split(" "):
+                                transplant_code += "\n" + macro_def + "\n"
+                            elif str(macro_def).count(def_name) == 1:
+                                transplant_code += "\n" + macro_def + "\n"
 
         backup_file(target_file, FILENAME_BACKUP)
         insert_code(transplant_code, target_file, def_insert_line)
