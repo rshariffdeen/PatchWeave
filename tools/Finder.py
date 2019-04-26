@@ -6,6 +6,11 @@ import sys
 from ast import ASTGenerator
 import Oracle
 import Logger
+import Extractor
+from common.Utilities import execute_command, error_exit
+from common import Definitions
+
+FILE_GREP_RESULT = ""
 
 
 def search_matching_node(ast_node, search_node, var_map):
@@ -131,3 +136,25 @@ def find_definition_insertion_point(source_path):
             if child_node_file_name == file_name:
                 return int(child_node['start line'])
     return 0
+
+
+def find_header_file(query, source_path):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    global FILE_GREP_RESULT
+    project_dir = Extractor.extract_project_path(source_path)
+    FILE_GREP_RESULT = Definitions.DIRECTORY_OUTPUT + "/grep-output"
+    search_command = "cd " + project_dir + ";"
+    search_command += "grep -inr -e \"" + query + "\" . | grep define"
+    search_command += search_command + " > " + FILE_GREP_RESULT
+    execute_command(search_command)
+    with open(FILE_GREP_RESULT, 'r') as result_file:
+        lines = result_file.readlines()
+        if len(lines) == 1:
+            relative_path = str(lines[0]).split(":")[0]
+            abs_path = project_dir + "/" + relative_path
+            return abs_path
+        else:
+            error_exit("\t\tError: more than one result for GREP")
+
+    return None
+
