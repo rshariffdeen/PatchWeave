@@ -506,7 +506,7 @@ def extract_declaration_line_list(ast_node):
 def extract_macro_definitions(source_path):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Emitter.normal("\textracting macro definitions from\n\t\t" + str(source_path))
-    extract_command = "clang -E -dM " + source_path + " > " + FILE_MACRO_DEF
+    extract_command = "clang -E -dD -dM " + source_path + " > " + FILE_MACRO_DEF
     execute_command(extract_command)
     with open(FILE_MACRO_DEF, "r") as macro_file:
         macro_def_list = macro_file.readlines()
@@ -689,3 +689,13 @@ def extract_macro_definition(ast_node, skip_line_list, source_file, target_file)
                 else:
                     error_exit("MACRO REQUIRED MULTIPLE TIMES!!")
     return macro_list
+
+
+def extract_project_path(source_path):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    if Values.PATH_A + "/" in source_path:
+        return Values.PATH_A
+    elif Values.PATH_B in source_path:
+        return Values.PATH_B
+    elif Values.PATH_C in source_path:
+        return Values.PATH_C
