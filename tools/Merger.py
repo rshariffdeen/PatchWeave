@@ -138,7 +138,7 @@ def merge_ast_script(ast_script, ast_node_a, ast_node_b, mapping_ba):
                 # print(target_node_str)
                 script_line = "Replace " + target_node_str + " with " + replace_node_str
                 # print(script_line)
-            elif len(target_node['children']) >= insert_position:
+            elif len(target_node['children']) > insert_position:
                 possible_replacement_node = target_node['children'][insert_position]
                 # print(possible_replacement_node)
                 replacement_node_id = possible_replacement_node['id']
