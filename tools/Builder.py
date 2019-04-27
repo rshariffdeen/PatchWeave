@@ -214,6 +214,10 @@ def build_instrumented_code(source_directory):
         pre_config_command += "rm aclocal.m4;aclocal"
         execute_command(pre_config_command)
 
+    elif os.path.exists(source_directory + "/autogen.sh"):
+        pre_config_command = "./autogen.sh;"
+        execute_command(pre_config_command)
+
     build_command = "cd " + source_directory + ";"
     custom_build_command = ""
     if (Values.PATH_A in source_directory) or (Values.PATH_B in source_directory):
