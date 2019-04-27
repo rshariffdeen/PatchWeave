@@ -28,9 +28,11 @@ def config_project(project_path, is_llvm, custom_config_command=None):
         else:
             if CC == "wllvm":
                 custom_config_command = remove_fsanitize(custom_config_command)
+                print(custom_config_command)
             config_command = "CC=" + CC + " "
             config_command += "CXX=" + CXX + " "
             config_command += custom_config_command
+            print(config_command)
 
     elif os.path.exists(project_path + "/autogen.sh"):
         config_command = "./autogen.sh;"
@@ -48,6 +50,14 @@ def config_project(project_path, is_llvm, custom_config_command=None):
         config_command += "CXXFLAGS=" + CXX_FLAGS
 
     elif os.path.exists(project_path + "/configure.ac"):
+        config_command = "autoreconf -i;"
+        config_command += "CC=" + CC + " "
+        config_command += "CXX=" + CXX + " "
+        config_command += "./configure "
+        config_command += "CFLAGS=" + C_FLAGS + " "
+        config_command += "CXXFLAGS=" + CXX_FLAGS
+
+    elif os.path.exists(project_path + "/configure.in"):
         config_command = "autoreconf -i;"
         config_command += "CC=" + CC + " "
         config_command += "CXX=" + CXX + " "

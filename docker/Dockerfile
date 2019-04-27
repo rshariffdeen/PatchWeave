@@ -81,6 +81,7 @@ RUN cd /llvm/llvm-34/build; make -j32; make install
 
 # Libraries for Experiments
 RUN apt-get install -y \
+    libfreetype6-dev \
     libtiff5-dev
 
 RUN git clone https://gitlab.com/akihe/radamsa.git /radamsa

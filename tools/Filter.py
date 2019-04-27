@@ -6,6 +6,7 @@ import sys
 import Finder
 import Emitter
 import Extractor
+import Merger
 import Logger
 from common.Utilities import error_exit
 import collections
@@ -16,11 +17,12 @@ def filter_trace_list_by_loc(trace_list, estimate_loc):
     Emitter.normal("\t\t\tfiltering trace based on estimation point")
     # print(trace_list)
     # print(estimate_loc)
+    if estimate_loc is None:
+        return trace_list
     source_path, line_number, count_instant = estimate_loc.split(":")
     count_instant = int(count_instant)
     estimate_loc = source_path + ":" + str(line_number)
-    if estimate_loc is None:
-        return trace_list
+
     estimated_div_point = 0
     for n in range(0, len(trace_list), 1):
         if estimate_loc == trace_list[n]:
@@ -93,70 +95,6 @@ def filter_function_list_using_trace(source_function_map, trace_list):
     return trace_function_info
 
 
-def merge_ast_script(ast_script, ast_node_a, ast_node_b, mapping_ba):
-    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    Emitter.normal("\t\tmerging AST script")
-    merged_ast_script = list()
-    inserted_node_list = list()
-    deleted_node_list = list()
-    # print(ast_script)
-    for script_line in ast_script:
-        # print(script_line)
-        if "Insert" in script_line:
-            node_id_a = int(((script_line.split(" into ")[0]).split("(")[1]).split(")")[0])
-            node_id_b = int(((script_line.split(" into ")[1]).split("(")[1]).split(")")[0])
-            if node_id_b not in inserted_node_list:
-                merged_ast_script.append(script_line)
-            inserted_node_list.append(node_id_a)
-        elif "Delete" in script_line:
-            node_id = int((script_line.split("(")[1]).split(")")[0])
-            if node_id in deleted_node_list:
-                continue
-            node = Finder.search_ast_node_by_id(ast_node_a, node_id)
-            child_id_list = Extractor.extract_child_id_list(node)
-            deleted_node_list = deleted_node_list + child_id_list
-            merged_ast_script.append(script_line)
-        elif "Move" in script_line:
-            # print(script_line)
-            move_position = int((script_line.split(" at ")[1]))
-            move_node_str = (script_line.split(" into ")[0]).replace("Move ", "")
-            move_node_id = int((move_node_str.split("(")[1]).split(")")[0])
-            move_node_b = Finder.search_ast_node_by_id(ast_node_b, move_node_id)
-            move_node_a = Finder.search_ast_node_by_id(ast_node_a, move_node_id)
-            move_node_type_b = move_node_b['type']
-            move_node_type_a = move_node_a['type']
-            if move_node_type_b == "CaseStmt":
-                continue
-            target_node_id_b = int(((script_line.split(" into ")[1]).split("(")[1]).split(")")[0])
-            if target_node_id_b in inserted_node_list:
-                continue
-            # print(move_node_type)
-            target_node_id_a = mapping_ba[target_node_id_b]
-            # print(target_node_id_a)
-            target_node_a = Finder.search_ast_node_by_id(ast_node_a, target_node_id_a)
-            target_node_str = target_node_a['type'] + "(" + str(target_node_a['id']) + ")"
-            # print(target_node_a)
-            # print(move_node_type_a)
-            # print(move_node_type_b)
-            if len(target_node_a['children']) <= move_position:
-                script_line = "Insert " + move_node_str + " into " + target_node_str + " at " + str(move_position)
-
-            elif move_node_type_a != move_node_type_b:
-                script_line = "Insert " + move_node_str + " into " + target_node_str + " at " + str(move_position)
-            else:
-                replacing_node = target_node_a['children'][move_position]
-                replacing_node_id = replacing_node['id']
-                replacing_node_str = replacing_node['type'] + "(" + str(replacing_node['id']) + ")"
-                script_line = "Replace " + replacing_node_str + " with " + move_node_str
-                deleted_node_list.append(replacing_node_id)
-                child_id_list = Extractor.extract_child_id_list(replacing_node)
-                deleted_node_list = deleted_node_list + child_id_list
-            # print(script_line)
-            merged_ast_script.append(script_line)
-
-    return merged_ast_script
-
-
 def filter_ast_script(ast_script, info_a, info_b, mapping_ba):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Emitter.normal("\t\tfiltering AST script by merging and grouping")
@@ -168,7 +106,7 @@ def filter_ast_script(ast_script, info_a, info_b, mapping_ba):
     line_numbers_a = set(range(int(line_range_start_a), int(line_range_end_a) + 1))
     line_numbers_b = set(range(int(line_range_start_b), int(line_range_end_b) + 1))
     # print(ast_script)
-    merged_ast_script = merge_ast_script(ast_script, ast_node_a, ast_node_b, mapping_ba)
+    merged_ast_script = Merger.merge_ast_script(ast_script, ast_node_a, ast_node_b, mapping_ba)
     # print(merged_ast_script)
     for script_line in merged_ast_script:
         if "Insert" in script_line:
@@ -200,7 +138,6 @@ def filter_ast_script(ast_script, info_a, info_b, mapping_ba):
             intersection = line_numbers_a.intersection(node_line_numbers)
             if intersection:
                 filtered_ast_script.append(script_line)
-    # print(filtered_ast_script)
     return filtered_ast_script
 
 
@@ -241,7 +178,8 @@ def filter_ast_script_by_skip_line(ast_script, ast_node_a, ast_node_b, skip_line
                         filtered_ast_script.append(script_line)
             else:
                 filtered_ast_script.append(script_line)
-
+        else:
+            filtered_ast_script.append(script_line)
     return filtered_ast_script
 
 
@@ -265,7 +203,8 @@ def filter_ast_script_by_node_type(ast_script, ast_node_a, ast_node_b):
                 continue
             else:
                 filtered_ast_script.append(script_line)
-
+        else:
+            filtered_ast_script.append(script_line)
     return filtered_ast_script
 
 

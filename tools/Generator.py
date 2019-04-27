@@ -150,8 +150,11 @@ def generate_candidate_function_list(estimate_loc, var_info_a,
                                       )
 
         var_value_map = Collector.collect_values(var_value_log)
+        # print(var_value_map)
         var_expr_map = Collector.collect_symbolic_expressions(var_expr_log)
+        # print(var_expr_map)
         var_info_b = Merger.merge_var_info(var_expr_map, var_value_map)
+        # print(var_info_b)
         # print(sym_expr_map)
         var_map = Mapper.map_variable(var_info_a, var_info_b)
         function_id = source_path + ":" + function_name

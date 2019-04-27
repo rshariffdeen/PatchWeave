@@ -13,7 +13,7 @@ import Extractor
 import Finder
 import Generator
 
-STANDARD_DATA_TYPES = ["int", "char", "float", "unsigned int"]
+STANDARD_DATA_TYPES = ["int", "char", "float", "unsigned int", "uint32_t", "uint8_t"]
 
 
 def identify_missing_labels(ast_map, ast_node, source_path_b, source_path_d, skip_list):
@@ -95,6 +95,7 @@ def identify_missing_data_types(insert_node_b, var_info, target_path, ast_node_b
     Emitter.normal("\t\t\tidentifying missing data-types")
     missing_data_type_list = dict()
     type_loc_node_list = Extractor.extract_typeloc_node_list(insert_node_b)
+    # print(type_loc_node_list)
     ref_list = Extractor.extract_reference_node_list(insert_node_b)
     type_def_node_list_b = Extractor.extract_typedef_node_list(ast_node_b)
     type_def_node_list_c = Extractor.extract_typedef_node_list(ast_node_c)
@@ -106,20 +107,27 @@ def identify_missing_data_types(insert_node_b, var_info, target_path, ast_node_b
             ref_type = str(ref_node['ref_type'])
             if ref_type == "VarDecl":
                 identifier = str(ref_node['data_type'])
+                # print(identifier)
                 var_name = str(ref_node['value'])
+                # print(var_name)
                 if var_name not in var_info.keys():
                     continue
                 if identifier in STANDARD_DATA_TYPES:
                     continue
+                # print("cont")
                 if identifier not in type_def_node_list_c:
                     if identifier not in missing_data_type_list.keys():
                         info = dict()
                         info['target'] = target_path
                         info['ast-node'] = type_def_node_list_b[identifier]
                         missing_data_type_list[identifier] = info
-    for type_loc_node in type_loc_node_list:
+    for type_loc_name in type_loc_node_list:
+        # print(type_loc_name)
+        type_loc_node = type_loc_node_list[type_loc_name]
         identifier = str(type_loc_node['value'])
         if identifier not in type_def_node_list_c:
+            if identifier in STANDARD_DATA_TYPES:
+                continue
             if identifier not in missing_data_type_list.keys():
                 info = dict()
                 info['target'] = target_path
@@ -144,7 +152,8 @@ def identify_missing_headers(ast_node, target_file):
                 error_exit("UNKNOWN RETURN TYPE")
     else:
         data_type_list = Extractor.extract_data_type_list(ast_node)
-        if "uint_fast8_t" in data_type_list:
+        std_int_list = ["uint_fast32_t", "uint_fast8_t"]
+        if any(x in data_type_list for x in std_int_list):
             if "stdint.h" not in missing_header_list.keys():
                 missing_header_list["stdint.h"] = target_file
             else:
@@ -180,45 +189,16 @@ def identify_missing_definitions(function_node, missing_function_list):
 def identify_missing_macros(ast_node, source_file, target_file, skip_line_list):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Emitter.normal("\t\t\tidentifying missing macros")
+    # print(ast_node)
     missing_macro_list = dict()
-    ref_list = Extractor.extract_reference_node_list(ast_node)
-    # print(ref_list)
-    for ref_node in ref_list:
-        node_type = str(ref_node['type'])
-        if node_type == "Macro":
-            # print(ref_node)
-            identifier = str(ref_node['value'])
-            start_line = int(ref_node['start line'])
-            if start_line in skip_line_list:
-                continue
-            node_child_count = len(ref_node['children'])
-            if identifier in Values.STANDARD_MACRO_LIST:
-                continue
-            if node_child_count:
-                for child_node in ref_node['children']:
-                    identifier = str(child_node['value'])
-                    if identifier in Values.STANDARD_MACRO_LIST:
-                        continue
-                    if identifier not in missing_macro_list.keys():
-                        info = dict()
-                        info['source'] = source_file
-                        info['target'] = target_file
-                        missing_macro_list[identifier] = info
-                    else:
-                        error_exit("MACRO REQUIRED MULTIPLE TIMES!!")
-            else:
-
-                token_list = identifier.split(" ")
-                for token in token_list:
-                    if token in ["/", "+", "-"]:
-                        continue
-                    if identifier not in missing_macro_list.keys():
-                        info = dict()
-                        info['source'] = source_file
-                        info['target'] = target_file
-                        missing_macro_list[token] = info
-                    else:
-                        error_exit("MACRO REQUIRED MULTIPLE TIMES!!")
+    node_type = str(ast_node['type'])
+    if node_type == "Macro":
+        missing_macro_list = Extractor.extract_macro_definition(ast_node, skip_line_list, source_file, target_file)
+    else:
+        macro_node_list = Extractor.extract_macro_node_list(ast_node)
+        for macro_node in macro_node_list:
+            missing_macro_list = missing_macro_list + Extractor.extract_macro_definition(ast_node, skip_line_list, source_file, target_file)
+    # print(missing_macro_list)
     return missing_macro_list
 
 
@@ -323,7 +303,7 @@ def identify_divergent_point(byte_list, sym_path_info, trace_list, stack_info):
     length = len(sym_path_info) - 1
     count_common = len(byte_list)
     candidate_list = list()
-    estimated_loc = ""
+    estimated_loc = None
     # print(length)
     # for n in range(length, 0, -1):
     #     print(n)
@@ -349,14 +329,56 @@ def identify_divergent_point(byte_list, sym_path_info, trace_list, stack_info):
     grab_nearest = False
     # print(candidate_list)
     # print(stack_info.keys())
+    # print(sym_path_info.keys())
     for n in range(0, length, 1):
         trace_loc = trace_list[n]
         # print(trace_loc)
         source_path, line_number = trace_loc.split(":")
         source_path = os.path.abspath(source_path)
         # trace_loc = source_path + ":" + str(line_number)
-        if trace_loc in sym_path_info.keys():
-            sym_path_list = sym_path_info[trace_loc]
+        trace_loc_0 = trace_loc
+        trace_loc_1 = source_path + ":" + str(int(line_number) + 1)
+        trace_loc_2 = source_path + ":" + str(int(line_number) - 1)
+        if trace_loc_0 in sym_path_info.keys():
+            sym_path_list = sym_path_info[trace_loc_0]
+            # print(len(sym_path_list))
+            sym_path_latest = sym_path_list[-1]
+            bytes_latest = Extractor.extract_input_bytes_used(sym_path_latest)
+            count_latest = len(list(set(byte_list).intersection(bytes_latest)))
+            if count_latest == count_common:
+                count_instant = 1
+                for sym_path in sym_path_list:
+                    # print(sym_path)
+                    bytes_temp = Extractor.extract_input_bytes_used(sym_path)
+                    # print(byte_list)
+                    # print(bytes_temp)
+                    count = len(list(set(byte_list).intersection(bytes_temp)))
+                    # print(count_common, count)
+                    if count == count_common:
+                        return str(trace_loc_0), count_instant
+                    else:
+                        count_instant = count_instant + 1
+        elif trace_loc_1 in sym_path_info.keys():
+            sym_path_list = sym_path_info[trace_loc_1]
+            # print(len(sym_path_list))
+            sym_path_latest = sym_path_list[-1]
+            bytes_latest = Extractor.extract_input_bytes_used(sym_path_latest)
+            count_latest = len(list(set(byte_list).intersection(bytes_latest)))
+            if count_latest == count_common:
+                count_instant = 1
+                for sym_path in sym_path_list:
+                    # print(sym_path)
+                    bytes_temp = Extractor.extract_input_bytes_used(sym_path)
+                    # print(byte_list)
+                    # print(bytes_temp)
+                    count = len(list(set(byte_list).intersection(bytes_temp)))
+                    # print(count_common, count)
+                    if count == count_common:
+                        return str(trace_loc), count_instant
+                    else:
+                        count_instant = count_instant + 1
+        elif trace_loc_2 in sym_path_info.keys():
+            sym_path_list = sym_path_info[trace_loc_2]
             # print(len(sym_path_list))
             sym_path_latest = sym_path_list[-1]
             bytes_latest = Extractor.extract_input_bytes_used(sym_path_latest)

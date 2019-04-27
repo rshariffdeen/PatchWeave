@@ -123,6 +123,23 @@ def weave_definitions(missing_definition_list, modified_source_list):
                 if "#define" in macro_def:
                     if def_name in macro_def.split(" "):
                         transplant_code += "\n" + macro_def + "\n"
+
+        if transplant_code == "":
+            header_file = Finder.find_header_file(def_name, source_file)
+            # print(header_file)
+            if header_file is not None:
+                macro_def_list = Extractor.extract_macro_definitions(header_file)
+                # print(macro_def_list)
+                transplant_code = ""
+                for macro_def in macro_def_list:
+                    if def_name in macro_def:
+                        # print(macro_def)
+                        if "#define" in macro_def:
+                            if def_name in macro_def.split(" "):
+                                transplant_code += "\n" + macro_def + "\n"
+                            elif str(macro_def).count(def_name) == 1:
+                                transplant_code += "\n" + macro_def + "\n"
+
         backup_file(target_file, FILENAME_BACKUP)
         insert_code(transplant_code, target_file, def_insert_line)
         if target_file not in modified_source_list:
@@ -247,7 +264,7 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
         var_info_b = Merger.merge_var_info(var_expr_map_b, var_value_map_b)
         # print(var_info_b)
         var_info_b_filtered = Filter.filter_new_variables(var_info_b, ast_map_a, ast_map_b)
-        # print(var_info_b)
+        # print(var_info_b_filtered)
         Emitter.sub_sub_title("generating candidate function list")
         insertion_function_list = Generator.generate_candidate_function_list(estimate_loc,
                                                                              var_info_b_filtered,
@@ -438,13 +455,16 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
         var_info_a = Merger.merge_var_info(var_expr_map_a, var_value_map_a)
         # print(var_info_a)
 
-        for var_a in var_info_a:
-            if var_a not in var_info_b:
-                var_info_b[var_a] = var_info_a[var_a]
+        var_info_b_filtered = Filter.filter_new_variables(var_info_b, ast_map_a, ast_map_b)
+        # print(var_info_b_filtered)
 
+        for var_a in var_info_a:
+            if var_a not in var_info_b_filtered:
+                var_info_b_filtered[var_a] = var_info_a[var_a]
+        # print(var_info_b_filtered)
         Emitter.sub_sub_title("generating candidate function list")
         insertion_function_list = Generator.generate_candidate_function_list(estimate_loc,
-                                                                             var_info_b,
+                                                                             var_info_b_filtered,
                                                                              bit_size,
                                                                              sym_poc_path,
                                                                              poc_path,
@@ -516,7 +536,9 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
         ast_map_b = ASTGenerator.get_ast_json(source_path_b)
         ast_map_a = ASTGenerator.get_ast_json(source_path_a)
         Emitter.sub_sub_title("transplanting code")
+        # print(ast_script)
         for script_line in ast_script:
+            Emitter.special("\t\t" + script_line)
             translated_command = script_line
             if "Insert" in script_line:
                 inserting_node_str = script_line.split(" into ")[0]
@@ -552,11 +574,22 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                 replacing_node_str = (script_line.split(" with ")[0]).replace("Replace ", "")
                 replacing_node_id = (replacing_node_str.split("(")[1]).split(")")[0]
                 replacing_node = Finder.search_ast_node_by_id(ast_map_a, int(replacing_node_id))
+
+                replace_node_str = script_line.split(" with ")[1]
+                replace_node_id = (replace_node_str.split("(")[1]).split(")")[0]
+                replace_node = Finder.search_ast_node_by_id(ast_map_b, int(replace_node_id))
+                # print(replacing_node)
+                # print(function_node_c)
                 target_node_str = Finder.search_matching_node(function_node_c, replacing_node, var_map_ac)
                 if target_node_str is None:
+                    # print(replacing_node)
+                    # print(function_node_c)
+                    Emitter.warning("\t\twarning: couldn't find target node to replace")
                     continue
                 elif "Macro" in target_node_str:
                     print("inside macro")
+                    target_node_id = int((target_node_str.split("(")[1]).split(")")[0])
+                    target_node = Finder.search_ast_node_by_id(ast_map_c, target_node_id)
                     target_node_id = int((target_node_str.split("(")[1]).split(")")[0])
                     target_node = Finder.search_ast_node_by_id(ast_map_c, target_node_id)
                     ast_script_c.append(translated_command)
@@ -570,7 +603,13 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                     print(translated_patch)
                     insert_code(translated_patch, source_path_c, line_number_c)
                 else:
-                    translated_command = script_line.replace(replacing_node_str, target_node_str)
+                    target_node_id = int((target_node_str.split("(")[1]).split(")")[0])
+                    target_node = Finder.search_ast_node_by_id(ast_map_c, target_node_id)
+                    translated_command = "Replace " + target_node_str + " with " + replace_node_str
+                    missing_macro_list.update(Identifier.identify_missing_macros(replace_node,
+                                                                                 source_path_b,
+                                                                                 source_path_d,
+                                                                                 skip_line_list))
                     ast_script_c.append(translated_command)
         # print(var_map_ac)
         # print(missing_var_list)
@@ -581,6 +620,7 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
             ast_op += " into " + position_c
             ast_script_c.append(ast_op)
         ast_script_c.reverse()
+        # print(ast_script)
         var_map_abc = Merger.merge_var_map(var_map_ac, var_map_bc)
         Emitter.emit_var_map(var_map_abc)
         Emitter.emit_ast_script(ast_script_c)

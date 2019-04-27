@@ -46,10 +46,13 @@ FILE_TEMP_FIX = ""
 def get_sym_path_cond(source_location):
     sym_path_cond = ""
     if Values.PATH_A in source_location:
+        # print(Concolic.sym_path_a.keys())
         for path in Trace.list_trace_a:
+            # print(path)
             if path in Concolic.sym_path_a.keys():
                 sym_path_cond = Concolic.sym_path_a[path]
-            if path == source_location:
+            if path == source_location and sym_path_cond != "":
+                # print(sym_path_cond)
                 break
     elif Values.PATH_B in source_location:
         for path in Trace.list_trace_b:
@@ -65,6 +68,7 @@ def get_sym_path_cond(source_location):
                 break
     if sym_path_cond == "":
         Emitter.warning("\t\tWarning: no sym path found for " + source_location)
+        return sym_path_cond
     return str(sym_path_cond[0])
 
 

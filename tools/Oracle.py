@@ -45,6 +45,24 @@ def is_node_equal(node_a, node_b, var_map):
             return True
         else:
             return False
+    elif node_type_a == "ArraySubscriptExpr":
+        # print(node_a)
+        # print(node_b)
+        node_value_a, node_type_a = Converter.convert_array_subscript(node_a, True)
+        node_value_b, node_type_b = Converter.convert_array_subscript(node_b, True)
+        if node_value_a == node_value_b or node_value_a == var_map[node_value_b] or \
+                node_value_b == var_map[node_value_a]:
+            return True
+        else:
+            return False
+    elif node_type_a == "IntegerLiteral":
+        node_value_a = int(node_a['value'])
+        node_value_b = int(node_b['value'])
+        if node_value_a == node_value_b:
+            return True
+        else:
+            return False
+
     elif node_type_a == "MemberExpr":
         node_value_a, node_type_a = Converter.convert_member_expr(node_a, True)
         node_value_b, node_type_b = Converter.convert_member_expr(node_b, True)
@@ -55,7 +73,10 @@ def is_node_equal(node_a, node_b, var_map):
                 return True
             else:
                 return False
-
+    elif node_type_a == "ParenExpr":
+        child_node_a = node_a['children'][0]
+        child_node_b = node_b['children'][0]
+        return is_node_equal(child_node_a, child_node_b, var_map)
     elif node_type_a == "BinaryOperator":
         left_child_a = node_a['children'][0]
         right_child_a = node_a['children'][1]
@@ -81,6 +102,8 @@ def is_function_important(source_path, function_call_node, sym_path_list):
     function_node, file_path = Extractor.extract_complete_function_node(function_def_node, source_path)
     # print(file_path)
     # print(function_node)
+    if function_node is None:
+        return False
     file_path = os.path.abspath(file_path)
     start_line = function_node['start line']
     end_line = function_node['end line']

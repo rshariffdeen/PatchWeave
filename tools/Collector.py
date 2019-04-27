@@ -6,6 +6,7 @@ import sys
 import os
 import Emitter
 import Logger
+import collections
 
 
 def collect_symbolic_expressions(trace_file_path):
@@ -116,15 +117,16 @@ def collect_trace(file_path, project_path, suspicious_loc_list):
 def collect_suspicious_points(trace_log):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Emitter.normal("\tcollecting suspicious points")
-    suspect_list = list()
+    suspect_list = collections.OrderedDict()
     if os.path.exists(trace_log):
         with open(trace_log, 'r') as trace_file:
             for read_line in trace_file:
                 if "runtime error:" in read_line:
                     crash_location = read_line.split(": runtime error: ")[0]
+                    crash_reason = read_line.split(": runtime error: ")[1]
                     crash_location = ":".join(crash_location.split(":")[:-1])
                     if crash_location not in suspect_list:
-                        suspect_list.append(crash_location)
+                        suspect_list[crash_location] = crash_reason
     return suspect_list
 
 
