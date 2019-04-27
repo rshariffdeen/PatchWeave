@@ -32,6 +32,14 @@ def config_project(project_path, is_llvm, custom_config_command=None):
             config_command += "CXX=" + CXX + " "
             config_command += custom_config_command
 
+    elif os.path.exists(project_path + "/autogen.sh"):
+        config_command = "./autogen.sh;"
+        config_command += "CC=" + CC + " "
+        config_command += "CXX=" + CXX + " "
+        config_command += "./configure "
+        config_command += "CFLAGS=" + C_FLAGS + " "
+        config_command += "CXXFLAGS=" + CXX_FLAGS
+
     elif os.path.exists(project_path + "/configure"):
         config_command = "CC=" + CC + " "
         config_command += "CXX=" + CXX + " "
