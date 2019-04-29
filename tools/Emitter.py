@@ -125,7 +125,6 @@ def start():
 
 
 def end(time_info):
-    Logger.end(time_info)
     statistics("\nRun time statistics:\n-----------------------\n")
     statistics("Initialization: " + time_info[Definitions.KEY_DURATION_INITIALIZATION] + " seconds")
     statistics("Build: " + time_info[Definitions.KEY_DURATION_EXPLOIT] + " seconds")

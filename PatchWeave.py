@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import time
-from tools import Emitter
+from tools import Emitter, Logger
 from common import Definitions
 from common.Utilities import error_exit, create_directories
 from phases import Trace, Weave, Concolic, Slice, Analyse, Verify, Initialize, Exploit
@@ -55,6 +55,7 @@ def run_patchweave():
     # Final running time and exit message
     time_info[Definitions.KEY_DURATION_TOTAL] = str(time.time() - start_time)
     Emitter.end(time_info)
+    Logger.end(time_info)
 
 
 if __name__ == "__main__":

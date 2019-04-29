@@ -3,7 +3,8 @@
 import time
 import datetime
 import os
-from common import Definitions
+from common import Definitions, Values
+from shutil import copyfile
 
 
 def create():
@@ -73,4 +74,5 @@ def end(time_duration):
     output("Transplantation: " + time_duration[Definitions.KEY_DURATION_TRANSPLANTATION] + " seconds")
     output("Verification: " + time_duration[Definitions.KEY_DURATION_VERIFICATION] + " seconds")
     output("\nPatchWeave finished successfully after " + time_duration[Definitions.KEY_DURATION_TOTAL] + " seconds\n")
+    copyfile(Definitions.FILE_MAIN_LOG, Definitions.DIRECTORY_OUTPUT + "/main-log")
 
