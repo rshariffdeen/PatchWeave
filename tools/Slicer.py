@@ -31,7 +31,8 @@ def slice_code_from_trace(diff_info, trace_list, path_a, path_b):
                     if Oracle.is_declaration_line(source_file, line_number):
                         skip_lines.append(line_number)
                     statement = get_code(source_file, line_number)
-
+                    if "if" not in statement:
+                        skip_lines.append(line_number)
                     if "}" not in statement:
                         skip_lines.append(line_number)
         diff_loc_info['skip-lines'] = skip_lines
