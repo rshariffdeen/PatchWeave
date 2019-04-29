@@ -25,7 +25,7 @@ def extract_goto_node(ast_node, line_number):
     else:
         if len(ast_node['children']) > 0:
             for child_node in ast_node['children']:
-                goto_node_list += extract_return_node(child_node, line_number)
+                goto_node_list += extract_goto_node(child_node, line_number)
 
     if node_type == "FunctionDecl":
         for goto_node in goto_node_list:
@@ -141,7 +141,7 @@ def fix_syntax_errors(source_file):
         error_type = (read_line.split(" [")[-1]).replace("]", "")
         if "return-type" in error_type:
             fix_return_type(source_file, source_location)
-        elif "use of undeclared label" in error_type:
+        elif "use of undeclared label" in read_line:
             fix_label_error(source_file, source_location)
 
 
