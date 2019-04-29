@@ -30,7 +30,7 @@ def estimate_divergent_point(path_cond_a, path_cond_b, target_sym_path, target_t
                                                        stack_info
                                                        )
     Emitter.highlight("\testimated divergent point:" + estimate_loc + "," + str(count_instant))
-    Logger.highlight("\testimated divergent point:" + estimate_loc + "," + str(count_instant))
+    Logger.information("\testimated divergent point:" + estimate_loc + "," + str(count_instant))
     return estimate_loc, count_instant
 
 
