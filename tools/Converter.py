@@ -206,9 +206,11 @@ def convert_member_expr(ast_node, only_string=False):
     var_list = list()
     var_name = ""
     var_data_type = ""
+    # print(ast_node)
     if 'value' in ast_node.keys():
         node_value = ast_node['value']
         var_name = str(node_value.split(":")[-1])
+        # print(var_name)
         var_data_type = str(ast_node['data_type'])
         if "union" in node_value:
             var_name = "." + var_name
@@ -220,19 +222,33 @@ def convert_member_expr(ast_node, only_string=False):
         if child_node_type == "DeclRefExpr":
             var_name = str(child_node['value']) + var_name
         elif child_node_type == "ArraySubscriptExpr":
+            # array_var_name, array_var_data_type, \
+            # iterating_var_list = convert_array_subscript(child_node)
+            # var_list = var_list + iterating_var_list
+            # if var_name[:2] == "->":
+            #     var_name = "." + var_name[2:]
+            # var_name = array_var_name + var_name
             iterating_var_node = child_node['children'][1]
-            iterating_var_name = iterating_var_node['value']
-            iterating_var_type = iterating_var_node['type']
-            iterating_var_data_type = iterating_var_node['data_type']
-            if var_data_type == "":
-                var_data_type = iterating_var_data_type
-            if iterating_var_type == "DeclRefExpr":
-                iterating_var_ref_type = iterating_var_node['ref_type']
-                if iterating_var_ref_type in ["VarDecl", "ParmVarDecl"]:
-                    var_list.append((iterating_var_name, iterating_var_data_type))
-                    if var_name[:2] == "->":
-                        var_name = "." + var_name[2:]
-                    var_name = "[" + iterating_var_name + "]" + var_name
+
+            # iterating_var_name = iterating_var_node['value']
+            # iterating_var_type = iterating_var_node['type']
+            # iterating_var_data_type = iterating_var_node['data_type']
+            iterating_var_name, iterating_var_list = convert_array_iterator(iterating_var_node)
+
+            # if var_data_type == "":
+            #     var_data_type = iterating_var_data_type
+
+            var_list = var_list + iterating_var_list
+            if var_name[:2] == "->":
+                var_name = "." + var_name[2:]
+            var_name = iterating_var_name + var_name
+            # if iterating_var_type == "DeclRefExpr":
+            #     iterating_var_ref_type = iterating_var_node['ref_type']
+            #     if iterating_var_ref_type in ["VarDecl", "ParmVarDecl"]:
+            #         var_list.append((iterating_var_name, iterating_var_data_type))
+            #         if var_name[:2] == "->":
+            #             var_name = "." + var_name[2:]
+            #         var_name = "[" + iterating_var_name + "]" + var_name
         elif child_node_type == "ParenExpr":
             param_node = child_node['children'][0]
             param_node_type = param_node['type']
