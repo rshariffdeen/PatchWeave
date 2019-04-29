@@ -7,6 +7,7 @@ import os
 
 from common.Utilities import error_exit
 import Emitter
+import collections
 from common import Values
 import Logger
 import Extractor
@@ -252,7 +253,7 @@ def identify_missing_macros_in_func(function_node, source_file, target_file):
 def identify_insertion_points(candidate_function):
 
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
-    insertion_point_list = dict()
+    insertion_point_list = collections.OrderedDict()
     function_id, function_info = candidate_function
     source_path, function_name = function_id.split(":")
     start_line = int(function_info['start-line'])
