@@ -15,6 +15,29 @@ FILE_SYNTAX_ERRORS = ""
 FILENAME_BACKUP = "backup-syntax-fix"
 
 
+def extract_goto_node(ast_node, line_number):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    node_type = str(ast_node["type"])
+    goto_node_list = list()
+    if node_type == "GotoStmt":
+        goto_node_list.append(ast_node)
+        return goto_node_list
+    else:
+        if len(ast_node['children']) > 0:
+            for child_node in ast_node['children']:
+                goto_node_list += extract_return_node(child_node, line_number)
+
+    if node_type == "FunctionDecl":
+        for goto_node in goto_node_list:
+            start_line = int(goto_node['start line'])
+            end_line = int(goto_node['end line'])
+            # print(start_line, line_number, end_line)
+            if start_line <= line_number <= end_line:
+                return goto_node
+    else:
+        return goto_node_list
+
+
 def extract_return_node(ast_node, line_number):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     node_type = str(ast_node["type"])
@@ -80,6 +103,35 @@ def fix_return_type(source_file, source_location):
     # check_syntax_errors()
 
 
+def fix_label_error(source_file, source_location):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    Emitter.normal("\t\tfixing label errors")
+    line_number = int(source_location.split(":")[1])
+    ast_map = ASTGenerator.get_ast_json(source_file)
+    function_node = Finder.search_function_node_by_loc(ast_map, int(line_number), source_file)
+    goto_node = extract_goto_node(function_node, line_number)
+    function_definition = function_node['value']
+    function_name = function_node['identifier']
+    function_return_type = (function_definition.replace(function_name, "")).split("(")[1]
+    start_line = goto_node['start line']
+    end_line = goto_node['end line']
+    original_statement = ""
+    if function_return_type.strip() == "void":
+        new_statement = "return;\n"
+        backup_file(source_file, FILENAME_BACKUP)
+        replace_code(new_statement, source_file, start_line)
+        backup_file_path = Definitions.DIRECTORY_BACKUP + "/" + FILENAME_BACKUP
+        show_partial_diff(backup_file_path, source_file)
+    elif function_return_type.strip() == "int":
+        new_statement = "return -1;\n"
+        backup_file(source_file, FILENAME_BACKUP)
+        replace_code(new_statement, source_file, start_line)
+        backup_file_path = Definitions.DIRECTORY_BACKUP + "/" + FILENAME_BACKUP
+        show_partial_diff(backup_file_path, source_file)
+    else:
+        error_exit("NEW RETURN TYPE!")
+
+
 def fix_syntax_errors(source_file):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Emitter.normal("\t\tfixing syntax errors")
@@ -89,6 +141,8 @@ def fix_syntax_errors(source_file):
         error_type = (read_line.split(" [")[-1]).replace("]", "")
         if "return-type" in error_type:
             fix_return_type(source_file, source_location)
+        elif "use of undeclared label" in error_type:
+            fix_label_error(source_file, source_location)
 
 
 def check_syntax_errors(modified_source_list):
