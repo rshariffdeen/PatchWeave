@@ -26,15 +26,21 @@ def slice_code_from_trace(diff_info, trace_list, path_a, path_b):
             line_numbers = set(range(int(start_line), int(end_line) + 1))
             # print(line_numbers)
             for line_number in line_numbers:
+                # print(line_number)
                 loc_id = source_file + ":" + str(line_number)
                 if loc_id not in trace_list:
                     if Oracle.is_declaration_line(source_file, line_number):
                         skip_lines.append(line_number)
                     statement = get_code(source_file, line_number)
-                    if "if" not in statement:
-                        skip_lines.append(line_number)
-                    if "}" not in statement:
-                        skip_lines.append(line_number)
+                    # print(statement)
+                    if "if" in statement:
+                        continue
+                    if "}" in statement:
+                        continue
+                    if "{" in statement:
+                        continue
+                    skip_lines.append(line_number)
+                    # print(skip_lines)
         diff_loc_info['skip-lines'] = skip_lines
         diff_info[diff_loc] = diff_loc_info
     # print(diff_info)

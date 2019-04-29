@@ -25,6 +25,7 @@ def instrument_klee_var_expr(source_path, start_line, end_line, stack_info, skip
     instrument_code = ""
     # print(source_path, start_line, end_line)
     # print(orig_variable_list)
+    # print(skip_lines)
     for variable, line_number, data_type in orig_variable_list:
         if line_number in skip_lines:
             continue
@@ -42,12 +43,12 @@ def instrument_klee_var_expr(source_path, start_line, end_line, stack_info, skip
     ast_map = ASTGenerator.get_ast_json(source_path)
     function_node = Finder.search_function_node_by_loc(ast_map, start_line, source_path)
     function_name = function_node['identifier']
-    # print(sorted_insert_code)
     if os.path.exists(source_path):
         with open(source_path, 'r') as source_file:
             content = source_file.readlines()
             for insert_line in sorted_insert_code:
                 instrument_code = sorted_insert_code[insert_line]
+                # print(instrument_code, insert_line)
                 if Values.PATH_B not in source_path:
                     if Oracle.is_loc_on_stack(source_path, function_name, insert_line, stack_info):
                         instrument_code += "exit(1);\n"
