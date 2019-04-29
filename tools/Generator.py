@@ -117,8 +117,10 @@ def generate_candidate_function_list(estimate_loc, var_info_a,
         error_exit("No variable to map")
     best_score = 0
     Emitter.warning("\t\texpected score: " + str(expected_score))
+    function_count = 0
     for function_id in trace_function_list:
         Emitter.special("\t\t" + function_id)
+        function_count = function_count + 1
 
         source_path, function_name = str(function_id).split(":")
         function_info = trace_function_list[function_id]
@@ -175,6 +177,7 @@ def generate_candidate_function_list(estimate_loc, var_info_a,
             info['last-line'] = last_line
             info['exec-lines'] = function_info['lines']
             info['score'] = score
+            info['attempt'] = function_count
             # info['order'] = trace_order
             candidate_function_list[function_id] = info
             return candidate_function_list
