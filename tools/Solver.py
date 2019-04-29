@@ -20,9 +20,11 @@ def estimate_divergent_point(path_cond_a, path_cond_b, target_sym_path, target_t
     bytes_a = Extractor.extract_input_bytes_used(path_cond_a)
     Emitter.normal("\textracting input bytes from last path condition in Pc")
     bytes_c = Extractor.extract_input_bytes_used(path_cond_b)
-    # print(bytes_c)
+    Emitter.highlight("\tlast sym-path byte list:")
+    print("\t\t" + bytes_c)
     byte_list = Extractor.extract_common_bytes(bytes_a, bytes_c)
-    # print(byte_list)
+    Emitter.highlight("\tcommon byte list:")
+    print("\t\t" + byte_list)
     Emitter.normal("\testimating divergent point")
     estimate_loc, count_instant = Identifier.identify_divergent_point(byte_list,
                                                        target_sym_path,
