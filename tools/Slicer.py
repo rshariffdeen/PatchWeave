@@ -33,8 +33,8 @@ def slice_code_from_trace(diff_info, trace_list, path_a, path_b):
                         skip_lines.append(line_number)
                     statement = get_code(source_file, line_number)
                     # print(statement)
-                    if "if" in statement:
-                        continue
+                    # if "if" in statement:
+                    #     continue
                     if "}" in statement:
                         continue
                     if "{" in statement:
