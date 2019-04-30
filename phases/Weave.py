@@ -121,7 +121,7 @@ def transplant_code():
     stack_info_a = Trace.stack_a
     stack_info_c = Trace.stack_c
     suspicious_lines_c = Exploit.target_suspect_line_list
-    print(suspicious_lines_c)
+    # print(suspicious_lines_c)
     # print(Analyse.diff_info)
     for diff_loc in Analyse.diff_info.keys():
         Emitter.normal(diff_loc)
