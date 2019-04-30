@@ -18,6 +18,8 @@ def estimate_divergent_point(path_cond_a, path_cond_b, target_sym_path, target_t
     if path_cond_a == "":
         return None, 0
     bytes_a = Extractor.extract_input_bytes_used(path_cond_a)
+    Emitter.highlight("\tdiv loc byte list:")
+    print("\t\t" + str(bytes_a))
     Emitter.normal("\textracting input bytes from last path condition in Pc")
     bytes_c = Extractor.extract_input_bytes_used(path_cond_b)
     Emitter.highlight("\tlast sym-path byte list:")
