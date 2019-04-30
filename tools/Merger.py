@@ -178,7 +178,8 @@ def merge_ast_script(ast_script, ast_node_a, ast_node_b, mapping_ba):
             target_node_id_b = int(((script_line.split(" into ")[1]).split("(")[1]).split(")")[0])
             if target_node_id_b in inserted_node_list:
                 continue
-            # print(move_node_type)
+            # print(move_node_type_b)
+            # print(move_node_type_a)
             target_node_id_a = mapping_ba[target_node_id_b]
             # print(target_node_id_a)
             target_node_a = Finder.search_ast_node_by_id(ast_node_a, target_node_id_a)
@@ -186,6 +187,8 @@ def merge_ast_script(ast_script, ast_node_a, ast_node_b, mapping_ba):
             # print(target_node_a)
             # print(move_node_type_a)
             # print(move_node_type_b)
+            if move_node_type_a != move_node_type_b:
+                script_line = "Insert " + move_node_str + " into " + target_node_str + " at " + str(move_position)
             if len(target_node_a['children']) <= move_position:
                 script_line = "Insert " + move_node_str + " into " + target_node_str + " at " + str(move_position)
 
@@ -204,9 +207,6 @@ def merge_ast_script(ast_script, ast_node_a, ast_node_b, mapping_ba):
                     deleted_node_list.append(replacement_node_id)
                     child_id_list = Extractor.extract_child_id_list(possible_replacement_node)
                     deleted_node_list = deleted_node_list + child_id_list
-
-            elif move_node_type_a != move_node_type_b:
-                script_line = "Insert " + move_node_str + " into " + target_node_str + " at " + str(move_position)
 
             else:
                 replacing_node = target_node_a['children'][move_position]
@@ -251,4 +251,5 @@ def merge_ast_script(ast_script, ast_node_a, ast_node_b, mapping_ba):
                 second_merged_ast_script.append(script_line)
         else:
             second_merged_ast_script.append(script_line)
+
     return second_merged_ast_script
