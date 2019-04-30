@@ -217,7 +217,7 @@ def weave_functions(missing_function_list, modified_source_list):
 
 def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                bit_size, sym_poc_path, poc_path, file_info, trace_list,
-               estimate_loc, modified_source_list, stack_info_a, stack_info_c):
+               estimate_loc, modified_source_list, stack_info_a, stack_info_c, suspicious_lines_c):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     out_file_info, log_file_info = file_info
     skip_list_file, ast_script_file, var_map_file = out_file_info
@@ -309,7 +309,8 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
 
         start_line_c = function_node_c['start line']
         position_c = Finder.find_ast_node_position(function_node_c, int(line_number_c))
-        if Oracle.is_loc_on_stack(source_path_c, function_node_c['identifier'], line_number_c, stack_info_c):
+        if Oracle.is_loc_on_stack(source_path_c, function_node_c['identifier'], line_number_c, stack_info_c) or \
+            Oracle.is_loc_on_sanitizer(source_path_c, line_number_c, suspicious_lines_c):
             Emitter.warning("\t\twarning: insertion loc is on crash stack")
             position_number = int(position_c.split(" at ")[1]) - 1
             position_c = str(position_c.split(" at ")[0] + " at " + str(position_number))

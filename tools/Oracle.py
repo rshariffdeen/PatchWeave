@@ -158,3 +158,13 @@ def is_loc_on_stack(source_path, function_name, line_number, stack_info):
                 # print(line_number)
                 return True
     return False
+
+
+def is_loc_on_sanitizer(source_path, line_number, suspicious_lines):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    print(source_path, line_number)
+    print(suspicious_lines)
+    source_loc = source_path + ":" + str(line_number)
+    if source_loc in suspicious_lines.keys():
+        return True
+    return False

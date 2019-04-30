@@ -9,7 +9,8 @@ from common import Definitions, Values
 import Concolic
 import Analyse
 import Trace
-from tools import Logger, Solver, Fixer, Emitter, Weaver, Merger, Collector
+import Exploit
+from tools import Logger, Solver, Fixer, Emitter, Weaver, Merger
 
 function_list_a = list()
 function_list_b = list()
@@ -119,6 +120,8 @@ def transplant_code():
     trace_list = Trace.list_trace_c
     stack_info_a = Trace.stack_a
     stack_info_c = Trace.stack_c
+    suspicious_lines_c = Exploit.target_suspect_line_list
+    print(suspicious_lines_c)
     # print(Analyse.diff_info)
     for diff_loc in Analyse.diff_info.keys():
         Emitter.normal(diff_loc)
@@ -142,20 +145,21 @@ def transplant_code():
         identified_missing_macro_list,\
         identified_missing_header_list,\
         identified_missing_data_type_list = Weaver.weave_code(diff_loc,
-                                                          diff_loc_info,
-                                                          path_a,
-                                                          path_b,
-                                                          path_c,
-                                                          path_d,
-                                                          bit_size,
-                                                          sym_poc_path,
-                                                          poc_path,
-                                                          file_info,
-                                                          trace_list,
-                                                          estimate_loc,
-                                                          modified_source_list,
-                                                          stack_info_a,
-                                                          stack_info_c)
+                                                              diff_loc_info,
+                                                              path_a,
+                                                              path_b,
+                                                              path_c,
+                                                              path_d,
+                                                              bit_size,
+                                                              sym_poc_path,
+                                                              poc_path,
+                                                              file_info,
+                                                              trace_list,
+                                                              estimate_loc,
+                                                              modified_source_list,
+                                                              stack_info_a,
+                                                              stack_info_c,
+                                                              suspicious_lines_c)
         # print(identified_missing_function_list)
         if missing_function_list:
             if identified_missing_function_list:
