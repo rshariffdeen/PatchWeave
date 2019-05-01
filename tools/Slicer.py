@@ -67,7 +67,7 @@ def slice_skipped_diff_locs(diff_info):
     return filtered_diff_info
 
 
-def slice_ast_script(diff_info, project_path_a, project_path_b):
+def slice_ast_script(diff_info, project_path_a, project_path_b, trace_list):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     filtered_diff_info = dict()
     for diff_loc in diff_info:
@@ -92,7 +92,8 @@ def slice_ast_script(diff_info, project_path_a, project_path_b):
         # print(filtered_ast_script)
         filtered_ast_script = Filter.filter_ast_script_by_node_type(filtered_ast_script,
                                                                     ast_map_a,
-                                                                    ast_map_b
+                                                                    ast_map_b,
+                                                                    trace_list
                                                                     )
         # print(filtered_ast_script)
         diff_loc_info['ast-script'] = filtered_ast_script

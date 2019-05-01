@@ -23,7 +23,7 @@ def remove_code():
     diff_info = Analyse.diff_info
 
     diff_info = Slicer.slice_code_from_trace(diff_info, trace_list, path_a, path_b)
-    diff_info = Slicer.slice_ast_script(diff_info, Values.PATH_A, Values.PATH_B)
+    diff_info = Slicer.slice_ast_script(diff_info, Values.PATH_A, Values.PATH_B, trace_list)
     Analyse.diff_info = Slicer.slice_skipped_diff_locs(diff_info)
 
 
