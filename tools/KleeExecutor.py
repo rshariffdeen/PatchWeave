@@ -50,7 +50,7 @@ def generate_var_expressions(binary_arguments, binary_dir, binary_name, bit_size
     ret_code = execute_command(trace_command)
     if int(ret_code) != 0:
         Emitter.warning("\t\tWarning: CONCOLIC EXECUTION FAILED with code " + ret_code)
-        print("Log Path: " + log_path)
+        print("\t\t\tLog Path: " + log_path)
 
 
 def generate_values(binary_arguments, binary_dir, binary_name, bit_size, poc_path, log_path, is_error_on_exit, klee_flags):
