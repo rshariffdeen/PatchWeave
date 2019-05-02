@@ -280,8 +280,8 @@ def identify_insertion_points(candidate_function):
                                                              start_line,
                                                              exec_line,
                                                              False)
-        print(source_path, start_line, exec_line)
-        print(available_var_list)
+        # print(source_path, start_line, exec_line)
+        # print(available_var_list)
         unique_var_name_list = list()
         for (var_name, line_num, var_type) in available_var_list:
             if var_name not in unique_var_name_list:
