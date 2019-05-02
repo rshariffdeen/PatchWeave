@@ -183,7 +183,7 @@ def filter_ast_script_by_skip_line(ast_script, ast_node_a, ast_node_b, skip_line
     return filtered_ast_script
 
 
-def filter_ast_script_by_node_type(ast_script, ast_node_a, ast_node_b):
+def filter_ast_script_by_node_type(ast_script, ast_node_a, ast_node_b, trace_list, source_path):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Emitter.normal("\t\tfiltering AST script using node types")
     filtered_ast_script = list()
@@ -203,6 +203,22 @@ def filter_ast_script_by_node_type(ast_script, ast_node_a, ast_node_b):
                 continue
             elif node_type_b == "BreakStmt":
                 continue
+            elif node_type_b == "Macro":
+                node_value = node_b['value']
+                if "assert(" in node_value:
+                    continue
+                else:
+                    filtered_ast_script.append(script_line)
+            elif node_type_b == "IfStmt":
+                body_node = node_b['children'][1]
+                count = 0
+                for child_node in body_node['children']:
+                    line_number = int(child_node['start line'])
+                    source_loc = source_path + ":" + str(line_number)
+                    if source_loc in trace_list:
+                        count = count + 1
+                if count != 0:
+                    filtered_ast_script.append(script_line)
             else:
                 filtered_ast_script.append(script_line)
         else:
