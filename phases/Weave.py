@@ -51,26 +51,35 @@ def get_sym_path_cond(source_location):
         for path in Trace.list_trace_a:
             # print(path)
             if path in Concolic.sym_path_a.keys():
-                sym_path_cond = Concolic.sym_path_a[path]
+                if Exploit.donor_crashed:
+                    sym_path_cond = Concolic.sym_path_a[path][-1]
+                else:
+                    sym_path_cond = Concolic.sym_path_a[path][0]
             if path == source_location and sym_path_cond != "":
                 # print(sym_path_cond)
                 break
     elif Values.PATH_B in source_location:
         for path in Trace.list_trace_b:
             if path in Concolic.sym_path_b.keys():
-                sym_path_cond = Concolic.sym_path_b[path]
+                if Exploit.donor_crashed:
+                    sym_path_cond = Concolic.sym_path_b[path][-1]
+                else:
+                    sym_path_cond = Concolic.sym_path_b[path][0]
             if path == source_location:
                 break
     elif Values.PATH_C in source_location:
         for path in Trace.list_trace_c:
             if path in Concolic.sym_path_c.keys():
-                sym_path_cond = Concolic.sym_path_c[path]
+                if Exploit.target_crashed:
+                    sym_path_cond = Concolic.sym_path_c[path][-1]
+                else:
+                    sym_path_cond = Concolic.sym_path_c[path][0]
             if path == source_location:
                 break
     if sym_path_cond == "":
         Emitter.warning("\t\tWarning: no sym path found for " + source_location)
         return sym_path_cond
-    return str(sym_path_cond[0])
+    return str(sym_path_cond)
 
 
 def transplant_missing_header():
