@@ -48,12 +48,14 @@ def identify_missing_functions(ast_map, ast_node, source_path_b, source_path_d, 
             if function_name not in missing_function_list.keys():
                 info = dict()
                 info['node_id'] = function_node['id']
+                info['ref_node_id'] = function_ref_node['id']
                 info['source_b'] = source_path_b
                 info['source_d'] = source_path_d
                 missing_function_list[function_name] = info
             else:
                 info = dict()
                 info['node_id'] = function_node['id']
+                info['ref_node_id'] = function_ref_node['id']
                 info['source_b'] = source_path_b
                 info['source_d'] = source_path_d
                 if info != missing_function_list[function_name]:

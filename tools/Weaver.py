@@ -175,7 +175,7 @@ def weave_data_type(missing_data_type_list, modified_source_list):
     return modified_source_list
 
 
-def weave_functions(missing_function_list, modified_source_list):
+def weave_functions(missing_function_list, modified_source_list, sym_path_list):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     if not missing_function_list:
         Emitter.normal("\t-none-")
@@ -189,6 +189,11 @@ def weave_functions(missing_function_list, modified_source_list):
         source_path_d = info['source_d']
         Emitter.normal(function_name)
         ast_map_b = ASTGenerator.get_ast_json(source_path_b)
+        function_ref_node_id = int(info['ref_node_id'])
+        function_ref_node = Finder.search_ast_node_by_id(ast_map_b, function_ref_node_id)
+        if not Oracle.is_function_important(source_path_b, function_ref_node, sym_path_list):
+            Emitter.warning("\t\twarning: function not important, hence skipping")
+            continue
         function_def_node = Finder.search_ast_node_by_id(ast_map_b, int(node_id))
         function_node, function_source_file = Extractor.extract_complete_function_node(function_def_node,
                                                                                        source_path_b)
