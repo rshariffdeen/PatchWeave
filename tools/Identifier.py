@@ -267,7 +267,10 @@ def identify_insertion_points(candidate_function):
     target_var_list = list()
     for var_a in var_map:
         var_b = var_map[var_a]
-        target_var_list.append(")".join(var_b.split(")")[1:]))
+        if "(" in var_b:
+            target_var_list.append(")".join(var_b.split(")")[1:]))
+        else:
+            target_var_list.append(var_b)
     # print(target_var_list)
     for exec_line in exec_line_list:
         # if exec_line == last_line:
