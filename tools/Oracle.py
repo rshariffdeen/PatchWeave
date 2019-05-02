@@ -94,7 +94,10 @@ def is_node_in_if_cond(ast_tree, ast_node):
     parent_node_id = int(ast_node['parent_id'])
     parent_node = Finder.search_ast_node_by_id(ast_tree, parent_node_id)
     parent_node_type = parent_node['type']
+    node_type = ast_node['type']
     if parent_node_type == "IfStmt":
+        if node_type == "CompoundStmt":
+            return False
         return True
     elif parent_node_type == "FunctionDecl":
         return False
