@@ -460,9 +460,9 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
         var_info_b_filtered = Filter.filter_new_variables(var_info_b, ast_map_a, ast_map_b)
         # print(var_info_b_filtered)
 
-        for var_a in var_info_a:
-            if var_a not in var_info_b_filtered:
-                var_info_b_filtered[var_a] = var_info_a[var_a]
+        # for var_a in var_info_a:
+        #     if var_a not in var_info_b_filtered:
+        #         var_info_b_filtered[var_a] = var_info_a[var_a]
         # print(var_info_b_filtered)
         Emitter.sub_sub_title("generating candidate function list")
         insertion_function_list = Generator.generate_candidate_function_list(estimate_loc,
