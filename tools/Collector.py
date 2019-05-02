@@ -41,7 +41,7 @@ def collect_values(trace_file_path):
         with open(trace_file_path, 'r') as trace_file:
             for line in trace_file:
                 if '[var-expr]' in line:
-                    line = line.replace("[var-expr] ", "")
+                    line = line.split("[var-expr] ")[-1]
                     var_name, var_value = line.split(":")
                     var_value = var_value.replace("\n", "")
                     var_value = var_value.split(" ")[1]
@@ -50,7 +50,7 @@ def collect_values(trace_file_path):
                         var_value_map[var_name]['value_list'] = list()
                     var_value_map[var_name]['value_list'].append(var_value)
                 if '[var-type]' in line:
-                    line = line.replace("[var-type]: ", "")
+                    line = line.split("[var-type]: ")[-1]
                     var_name = line.split(":")[0]
                     var_type = line.split(":")[1]
                     var_type = var_type.replace("\n", "")
