@@ -105,7 +105,8 @@ def transplant_missing_functions():
     global missing_header_list, missing_macro_list, modified_source_list
     missing_header_list_func, \
     missing_macro_list_func, modified_source_list = Weaver.weave_functions(missing_function_list,
-                                                                     modified_source_list)
+                                                                           modified_source_list,
+                                                                           Concolic.sym_path_b)
 
     missing_macro_list = Merger.merge_macro_info(missing_macro_list, missing_macro_list_func)
     missing_header_list = Merger.merge_header_info(missing_header_list, missing_header_list_func)
