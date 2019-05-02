@@ -278,6 +278,7 @@ def identify_insertion_points(candidate_function):
         # if exec_line == last_line:
         #     continue
         Emitter.special("\t\t" + source_path + "-" + function_name + ":" + str(exec_line))
+        Emitter.special("\t\t" + source_path + "-" + function_name + ":" + str(exec_line))
         available_var_list = Extractor.extract_variable_list(source_path,
                                                              start_line,
                                                              exec_line,
@@ -311,6 +312,7 @@ def identify_divergent_point(byte_list, sym_path_info, trace_list, stack_info):
     count_common = len(byte_list)
     candidate_list = list()
     estimated_loc = None
+    trace_list = Extractor.extract_unique_in_order(trace_list)
     # print(length)
     # for n in range(length, 0, -1):
     #     print(n)
