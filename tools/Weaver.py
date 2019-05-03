@@ -5,7 +5,7 @@
 import sys
 import os
 from common.Utilities import execute_command, backup_file, show_partial_diff, get_code, error_exit
-from common import Definitions
+from common import Definitions, Values
 import phases.Concolic
 from ast import ASTGenerator
 from phases import Trace
@@ -549,6 +549,9 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
             Emitter.special("\t\t" + script_line)
             translated_command = script_line
             if "Insert" in script_line:
+                if len(var_map_bc.keys()) == 0 and Values.BACKPORT:
+                    ast_script_c.append(script_line)
+                    continue
                 inserting_node_str = script_line.split(" into ")[0]
                 inserting_node_id = int((inserting_node_str.split("(")[1]).split(")")[0])
                 inserting_node = Finder.search_ast_node_by_id(ast_map_b, inserting_node_id)
