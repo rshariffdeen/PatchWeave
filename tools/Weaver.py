@@ -314,6 +314,7 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
 
         start_line_c = function_node_c['start line']
         position_c = Finder.find_ast_node_position(function_node_c, int(line_number_c))
+        var_map = best_candidate_function_info['var-map']
         if Oracle.is_loc_on_stack(source_path_c, function_node_c['identifier'], line_number_c, stack_info_c) or \
             Oracle.is_loc_on_sanitizer(source_path_c, line_number_c, suspicious_lines_c):
             Emitter.warning("\t\twarning: insertion loc is on crash stack")
@@ -326,7 +327,19 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
             inserting_node_str = script_line.split(" into ")[0]
             inserting_node_id = int((inserting_node_str.split("(")[1]).split(")")[0])
             inserting_node = Finder.search_ast_node_by_id(ast_map_b, inserting_node_id)
-            translated_command = inserting_node_str + " into " + position_c + "\n"
+            if len(var_map.keys()) == 0 and Values.BACKPORT:
+                insert_index = int(script_line.split(" at ")[-1])
+                target_node_b_str = (script_line.split(" into ")[1]).split(" at ")[0]
+                target_node_b_id = int((target_node_b_str.split("(")[1]).split(")")[0])
+                map_bc = Mapper.map_ast_from_source(source_path_b, source_path_c,
+                                                    Definitions.DIRECTORY_TMP + "/tmp-match")
+                target_node_c_id = map_bc[target_node_b_id]
+                target_node_c = Finder.search_ast_node_by_id(ast_map_c, target_node_c_id)
+                target_node_str = str(target_node_c['type']) + "(" + str(target_node_c_id) + ")"
+                translated_command = inserting_node_str + " into " + target_node_str + " at " + insert_index
+
+            else:
+                translated_command = inserting_node_str + " into " + position_c + "\n"
             missing_function_list.update(Identifier.identify_missing_functions(ast_map_a,
                                                                                inserting_node,
                                                                                source_path_b,
@@ -397,7 +410,7 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
         #
         # Emitter.sub_sub_title("generating variable mapping from donor to target")
         # var_map = Mapper.map_variable(var_info_b_filtered, var_info_c)
-        var_map = best_candidate_function_info['var-map']
+
 
         # print(var_map)
         # print(ast_script_c)
