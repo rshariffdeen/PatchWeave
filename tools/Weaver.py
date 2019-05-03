@@ -331,7 +331,7 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                 insert_index = int(script_line.split(" at ")[-1])
                 target_node_b_str = (script_line.split(" into ")[1]).split(" at ")[0]
                 target_node_b_id = int((target_node_b_str.split("(")[1]).split(")")[0])
-                map_bc = Mapper.map_ast_from_source(source_path_b, source_path_c,
+                map_bc = Mapper.map_ast_from_source(source_path_c, source_path_b,
                                                     Definitions.DIRECTORY_TMP + "/tmp-match")
                 target_node_c_id = map_bc[target_node_b_id]
                 target_node_c = Finder.search_ast_node_by_id(ast_map_c, target_node_c_id)
@@ -569,7 +569,7 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                     insert_index = int(script_line.split(" at ")[-1])
                     target_node_b_str = (script_line.split(" into ")[1]).split(" at ")[0]
                     target_node_b_id = int((target_node_b_str.split("(")[1]).split(")")[0])
-                    map_bc = Mapper.map_ast_from_source(source_path_b, source_path_c, Definitions.DIRECTORY_TMP + "/tmp-match")
+                    map_bc = Mapper.map_ast_from_source(source_path_c, source_path_b, Definitions.DIRECTORY_TMP + "/tmp-match")
                     target_node_c_id = map_bc[target_node_b_id]
                     target_node_c = Finder.search_ast_node_by_id(ast_map_c, target_node_c_id)
                     target_node_str = str(target_node_c['type']) + "(" + str(target_node_c_id) + ")"
@@ -614,7 +614,7 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                 # print(replacing_node)
                 # print(function_node_c)
                 if len(var_map_bc.keys()) == 0 and Values.BACKPORT:
-                    map_bc = Mapper.map_ast_from_source(source_path_b, source_path_c, Definitions.DIRECTORY_TMP + "/tmp-match")
+                    map_bc = Mapper.map_ast_from_source(source_path_c, source_path_b, Definitions.DIRECTORY_TMP + "/tmp-match")
                     target_node_c_id = map_bc[replacing_node_id]
                     target_node_c = Finder.search_ast_node_by_id(ast_map_c, target_node_c_id)
                     target_node_str = str(target_node_c['type']) + "(" + str(target_node_c_id) + ")"
