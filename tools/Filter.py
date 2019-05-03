@@ -160,7 +160,7 @@ def filter_ast_script_by_skip_line(ast_script, ast_node_a, ast_node_b, skip_line
                 continue
             if node_type_b in ["IfStmt"]:
                 body_node = node_b['children'][1]
-                if str(body_node['children']) != "CompoundStmt":
+                if str(body_node['type']) != "CompoundStmt":
                     if int(body_node['start line']) not in skip_lines:
                         filtered_ast_script.append(script_line)
                 else:
