@@ -600,37 +600,46 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                 replace_node = Finder.search_ast_node_by_id(ast_map_b, int(replace_node_id))
                 # print(replacing_node)
                 # print(function_node_c)
-                target_node_str = Finder.search_matching_node(function_node_c, replacing_node, var_map_ac)
-                if target_node_str is None:
-                    # print(replacing_node)
-                    # print(function_node_c)
-                    Emitter.warning("\t\twarning: couldn't find target node to replace")
-                    continue
-                elif "Macro" in target_node_str:
-                    print("inside macro")
-                    target_node_id = int((target_node_str.split("(")[1]).split(")")[0])
-                    target_node = Finder.search_ast_node_by_id(ast_map_c, target_node_id)
-                    target_node_id = int((target_node_str.split("(")[1]).split(")")[0])
-                    target_node = Finder.search_ast_node_by_id(ast_map_c, target_node_id)
-                    ast_script_c.append(translated_command)
-                    start_line = target_node["start line"]
-                    end_line = target_node["end line"]
-                    original_patch = ""
-                    for i in range(int(start_line), int(end_line + 1)):
-                        original_patch += get_code(source_path_b, int(i)) + "\n"
-                        print(original_patch)
-                    translated_patch = translate_code(original_patch, var_map_ac)
-                    print(translated_patch)
-                    insert_code(translated_patch, source_path_c, line_number_c)
-                else:
-                    target_node_id = int((target_node_str.split("(")[1]).split(")")[0])
-                    target_node = Finder.search_ast_node_by_id(ast_map_c, target_node_id)
+                if len(var_map_bc.keys()) == 0 and Values.BACKPORT:
+                    map_bc = Mapper.map_ast_from_source(source_path_b, source_path_c, Definitions.DIRECTORY_TMP + "/tmp-match")
+                    target_node_c_id = map_bc[replace_node_id]
+                    target_node_c = Finder.search_ast_node_by_id(ast_map_c, target_node_c_id)
+                    target_node_str = str(target_node_c['type']) + "(" + str(target_node_c_id) + ")"
                     translated_command = "Replace " + target_node_str + " with " + replace_node_str
-                    missing_macro_list.update(Identifier.identify_missing_macros(replace_node,
-                                                                                 source_path_b,
-                                                                                 source_path_d,
-                                                                                 skip_line_list))
                     ast_script_c.append(translated_command)
+
+                else:
+                    target_node_str = Finder.search_matching_node(function_node_c, replacing_node, var_map_ac)
+                    if target_node_str is None:
+                        # print(replacing_node)
+                        # print(function_node_c)
+                        Emitter.warning("\t\twarning: couldn't find target node to replace")
+                        continue
+                    elif "Macro" in target_node_str:
+                        print("inside macro")
+                        target_node_id = int((target_node_str.split("(")[1]).split(")")[0])
+                        target_node = Finder.search_ast_node_by_id(ast_map_c, target_node_id)
+                        target_node_id = int((target_node_str.split("(")[1]).split(")")[0])
+                        target_node = Finder.search_ast_node_by_id(ast_map_c, target_node_id)
+                        ast_script_c.append(translated_command)
+                        start_line = target_node["start line"]
+                        end_line = target_node["end line"]
+                        original_patch = ""
+                        for i in range(int(start_line), int(end_line + 1)):
+                            original_patch += get_code(source_path_b, int(i)) + "\n"
+                            print(original_patch)
+                        translated_patch = translate_code(original_patch, var_map_ac)
+                        print(translated_patch)
+                        insert_code(translated_patch, source_path_c, line_number_c)
+                    else:
+                        target_node_id = int((target_node_str.split("(")[1]).split(")")[0])
+                        target_node = Finder.search_ast_node_by_id(ast_map_c, target_node_id)
+                        translated_command = "Replace " + target_node_str + " with " + replace_node_str
+                        missing_macro_list.update(Identifier.identify_missing_macros(replace_node,
+                                                                                     source_path_b,
+                                                                                     source_path_d,
+                                                                                     skip_line_list))
+                        ast_script_c.append(translated_command)
         # print(var_map_ac)
         # print(missing_var_list)
         for var in missing_var_list:
