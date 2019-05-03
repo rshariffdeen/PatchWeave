@@ -197,6 +197,7 @@ def diff_ast(diff_info, project_path_a, project_path_b, script_file_path):
                                                            mapping_ba
                                                            )
         if filtered_ast_script is None:
+            dict(diff_info).pop(diff_loc)
             continue
         diff_info[diff_loc]['ast-script'] = filtered_ast_script
     return diff_info
