@@ -620,6 +620,10 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                     target_node_str = str(target_node_c['type']) + "(" + str(target_node_c_id) + ")"
                     translated_command = "Replace " + target_node_str + " with " + replace_node_str
                     ast_script_c.append(translated_command)
+                    missing_macro_list.update(Identifier.identify_missing_macros(replace_node,
+                                                                                 source_path_b,
+                                                                                 source_path_d,
+                                                                                 skip_line_list))
 
                 else:
                     target_node_str = Finder.search_matching_node(function_node_c, replacing_node, var_map_ac)
