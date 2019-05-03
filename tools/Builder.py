@@ -84,14 +84,14 @@ def config_project(project_path, is_llvm, custom_config_command=None):
 
 def apply_flags(build_command):
     c_flags = C_FLAGS
-    if "CFLAGS" in build_command:
-        c_flags_old = (build_command.split("CFLAGS='")[1]).split("'")[0]
+    if "XCFLAGS" in build_command:
+        c_flags_old = (build_command.split("XCFLAGS='")[1]).split("'")[0]
         if "-fPIC" in c_flags_old:
             c_flags = c_flags.replace("-static", "")
         c_flags_new = c_flags.replace("'", "") + " " + c_flags_old
         build_command = build_command.replace(c_flags_old, c_flags_new)
-    elif "XCFLAGS" in build_command:
-        c_flags_old = (build_command.split("XCFLAGS='")[1]).split("'")[0]
+    elif "CFLAGS" in build_command:
+        c_flags_old = (build_command.split("CFLAGS='")[1]).split("'")[0]
         if "-fPIC" in c_flags_old:
             c_flags = c_flags.replace("-static", "")
         c_flags_new = c_flags.replace("'", "") + " " + c_flags_old
@@ -100,14 +100,14 @@ def apply_flags(build_command):
         new_command = "make CFLAGS=" + c_flags + " "
         build_command = build_command.replace("make", new_command)
 
-    if "CXXFLAGS" in build_command:
-        c_flags_old = (build_command.split("CXXFLAGS='")[1]).split("'")[0]
+    if "XCXXFLAGS" in build_command:
+        c_flags_old = (build_command.split("XCXXFLAGS='")[1]).split("'")[0]
         if "-fPIC" in c_flags_old:
             c_flags = c_flags.replace("-static", "")
         c_flags_new = c_flags.replace("'", "") + " " + c_flags_old
         build_command = build_command.replace(c_flags_old, c_flags_new)
-    elif "XCXXFLAGS" in build_command:
-        c_flags_old = (build_command.split("XCXXFLAGS='")[1]).split("'")[0]
+    elif "CXXFLAGS" in build_command:
+        c_flags_old = (build_command.split("CXXFLAGS='")[1]).split("'")[0]
         if "-fPIC" in c_flags_old:
             c_flags = c_flags.replace("-static", "")
         c_flags_new = c_flags.replace("'", "") + " " + c_flags_old
