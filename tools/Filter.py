@@ -209,6 +209,8 @@ def filter_ast_script_by_node_type(ast_script, ast_node_a, ast_node_b, trace_lis
                 continue
             elif node_type_b == "GotoStmt":
                 continue
+            elif node_type_b == "TypeLoc":
+                continue
             elif node_type_b == "BreakStmt":
                 continue
             elif node_type_b == "Macro":
