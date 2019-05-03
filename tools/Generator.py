@@ -168,8 +168,11 @@ def generate_candidate_function_list(estimate_loc, var_info_a,
             best_score = score
         if (expected_score == score) and (len(set(var_map.values())) == score):
             if len(var_map.values()) == 1:
-                if len(var_map.values()[0].split(")")[1]) == 1:
-                    continue
+                var = var_map.values()[0]
+                if ")" in var:
+                    if len(var_map.values()[0].split(")")[1]) == 1:
+                        continue
+
             info = dict()
             info['var-map'] = var_map
             info['start-line'] = start_line

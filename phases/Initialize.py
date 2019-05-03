@@ -82,6 +82,8 @@ def read_conf():
                 Values.FILE_CONFIGURATION = str(arg).replace(Definitions.ARG_CONF_FILE, '')
             elif Definitions.ARG_SKIP_SYM_TRACE_GEN in arg:
                 Values.SKIP_SYM_TRACE_GEN = True
+            elif Definitions.ARG_BACKPORTING in arg:
+                Values.BACKPORT = True
             elif Definitions.ARG_ONLY_VERIFY in arg:
                 Values.ONLY_VERIFY = True
                 Values.SKIP_SYM_TRACE_GEN = True
