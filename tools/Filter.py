@@ -159,12 +159,12 @@ def filter_ast_script_by_skip_line(ast_script, ast_node_a, ast_node_b, skip_line
             if node_line_start in skip_lines:
                 continue
             if node_type_b in ["IfStmt"]:
-                if len(node_b['children']) == 1:
-                    body_node = node_b['children'][1]
-                    if int(body_node['start line']) not in skip_lines:
+                body_node = node_b['children'][1]
+                if len(body_node['children']) == 1:
+                    child_node = body_node['children'][0]
+                    if int(child_node['start line']) not in skip_lines:
                         filtered_ast_script.append(script_line)
                 else:
-                    body_node = node_b['children'][1]
                     count = 0
                     for child_node in body_node['children']:
                         if int(child_node['start line']) not in skip_lines:
