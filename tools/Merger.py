@@ -100,8 +100,11 @@ def merge_ast_script(ast_script, ast_node_a, ast_node_b, mapping_ba):
     inserted_node_list = list()
     deleted_node_list = list()
     replace_node_list = list()
-    ast_tree_a = AST.load_from_map(ast_node_a)
-    ast_tree_b = AST.load_from_map(ast_node_b)
+    try:
+        ast_tree_a = AST.load_from_map(ast_node_a)
+        ast_tree_b = AST.load_from_map(ast_node_b)
+    except:
+        return None
     # print(ast_script)
     for script_line in ast_script:
         # print(script_line)
