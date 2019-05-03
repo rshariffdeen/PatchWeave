@@ -162,8 +162,12 @@ def diff_ast(diff_info, project_path_a, project_path_b, script_file_path):
             source_path_b = str(source_path_a).replace(project_path_a,
                                                        project_path_b)
             ast_script = get_ast_script(source_path_a, source_path_b, script_file_path)
-            ast_map_a = ASTGenerator.get_ast_json(source_path_a)
-            ast_map_b = ASTGenerator.get_ast_json(source_path_b)
+            try:
+                ast_map_a = ASTGenerator.get_ast_json(source_path_a)
+                ast_map_b = ASTGenerator.get_ast_json(source_path_b)
+            except:
+                Emitter.warning("\t\twarning: no AST generated")
+                continue
             mapping_ba = Mapper.map_ast_from_source(source_path_a, source_path_b, script_file_path)
         Emitter.normal("\tline number:" + line_number)
         diff_loc_info = diff_info[diff_loc]
