@@ -142,7 +142,7 @@ def generate_candidate_function_list(estimate_loc, var_info_a,
 
         if Values.BACKPORT and expected_score == 0:
             info = dict()
-            info['var-map'] = var_map
+            info['var-map'] = dict()
             info['start-line'] = start_line
             info['begin-line'] = begin_line
             info['last-line'] = last_line
