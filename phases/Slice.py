@@ -72,5 +72,6 @@ def slice():
     Emitter.title("Slicing code")
     if not Values.SKIP_SLICE:
         safe_exec(remove_code, "slicing code not in trace")
-        safe_exec(remove_func_calls, "slicing function calls")
+        if not Values.BACKPORT:
+            safe_exec(remove_func_calls, "slicing function calls")
         safe_exec(remove_redundancy, "slicing redundant diff")
