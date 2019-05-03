@@ -187,6 +187,11 @@ def convert_call_expr(ast_node, only_string=False):
         elif operand_node_type == "DeclRefExpr":
             operand_var_name = str(operand_node['value'])
             operand_list.append(operand_var_name)
+        elif operand_node_type == "Macro":
+            operand_var_name = str(operand_node['value'])
+            operand_list.append(operand_var_name)
+        else:
+            error_exit("unhandled operand for call expr convert")
 
     var_name = function_name + "("
     for operand in operand_list:
