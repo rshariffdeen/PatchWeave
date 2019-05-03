@@ -87,6 +87,8 @@ def slice_ast_script(diff_info, project_path_a, project_path_b, trace_list):
             ast_map_b = ASTGenerator.get_ast_json(source_path_b)
         except:
             continue
+        if ast_map_a is None or ast_map_b is None:
+            continue
         filtered_ast_script = Filter.filter_ast_script_by_skip_line(ast_script,
                                                                     ast_map_a,
                                                                     ast_map_b,
