@@ -220,13 +220,17 @@ def filter_ast_script_by_node_type(ast_script, ast_node_a, ast_node_b, trace_lis
             elif node_type_b == "IfStmt":
                 body_node = node_b['children'][1]
                 count = 0
-                for child_node in body_node['children']:
-                    line_number = int(child_node['start line'])
-                    source_loc = source_path + ":" + str(line_number)
-                    if source_loc in trace_list:
-                        count = count + 1
-                if count != 0:
-                    filtered_ast_script.append(script_line)
+                if str(body_node['type']) != "CompoundStmt":
+                    if int(body_node['start line']) in trace_list:
+                        filtered_ast_script.append(script_line)
+                else:
+                    for child_node in body_node['children']:
+                        line_number = int(child_node['start line'])
+                        source_loc = source_path + ":" + str(line_number)
+                        if source_loc in trace_list:
+                            count = count + 1
+                    if count != 0:
+                        filtered_ast_script.append(script_line)
             else:
                 filtered_ast_script.append(script_line)
         else:
