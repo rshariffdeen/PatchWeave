@@ -52,8 +52,8 @@ def get_ast_json(file_path):
     ast_dump(file_path, json_file)
     if os.stat(json_file).st_size == 0:
         return None
-    with io.open(json_file, 'r', encoding='utf8',errors="ignore").read() as f:
-        ast_json = json.load(f)
+    with io.open(json_file, 'r', encoding='utf8',errors="ignore") as f:
+        ast_json = json.load(f.read())
     return ast_json['root']
 
 
