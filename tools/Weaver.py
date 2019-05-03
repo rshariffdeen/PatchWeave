@@ -615,7 +615,7 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                 # print(function_node_c)
                 if len(var_map_bc.keys()) == 0 and Values.BACKPORT:
                     map_bc = Mapper.map_ast_from_source(source_path_b, source_path_c, Definitions.DIRECTORY_TMP + "/tmp-match")
-                    target_node_c_id = map_bc[replace_node_id]
+                    target_node_c_id = map_bc[replacing_node_id]
                     target_node_c = Finder.search_ast_node_by_id(ast_map_c, target_node_c_id)
                     target_node_str = str(target_node_c['type']) + "(" + str(target_node_c_id) + ")"
                     translated_command = "Replace " + target_node_str + " with " + replace_node_str
