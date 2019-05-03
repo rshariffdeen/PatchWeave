@@ -116,14 +116,20 @@ def apply_flags(build_command):
         new_command = "make CXXFLAGS=" + c_flags + " "
         build_command = build_command.replace("make", new_command)
 
-    if "CC" in build_command:
+    if "XCC" in build_command:
+        cc_old = (build_command.split("XCC='")[1]).split("'")[0]
+        build_command = build_command.replace(cc_old, CC)
+    elif "CC" in build_command:
         cc_old = (build_command.split("CC='")[1]).split("'")[0]
         build_command = build_command.replace(cc_old, CC)
     else:
         new_command = "make CC=" + CC + " "
         build_command = build_command.replace("make", new_command)
 
-    if "CXX" in build_command:
+    if "XCXX" in build_command:
+        cc_old = (build_command.split("XCXX='")[1]).split("'")[0]
+        build_command = build_command.replace(cc_old, CXX)
+    elif "CXX" in build_command:
         cc_old = (build_command.split("CXX='")[1]).split("'")[0]
         build_command = build_command.replace(cc_old, CXX)
     else:
