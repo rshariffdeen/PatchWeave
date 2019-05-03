@@ -123,19 +123,6 @@ def generate_candidate_function_list(estimate_loc, var_info_a,
         Emitter.special("\t\t" + function_id)
         function_count = function_count + 1
 
-        if Values.BACKPORT and expected_score == 0:
-            info = dict()
-            info['var-map'] = var_map
-            info['start-line'] = start_line
-            info['begin-line'] = begin_line
-            info['last-line'] = last_line
-            info['exec-lines'] = function_info['lines']
-            info['score'] = score
-            info['attempt'] = function_count
-            # info['order'] = trace_order
-            candidate_function_list[function_id] = info
-            return candidate_function_list
-
         source_path, function_name = str(function_id).split(":")
         function_info = trace_function_list[function_id]
         begin_line = function_info['begin']
@@ -152,6 +139,19 @@ def generate_candidate_function_list(estimate_loc, var_info_a,
                                                            source_path)
         start_line = function_node['start line']
         # print(function_node)
+
+        if Values.BACKPORT and expected_score == 0:
+            info = dict()
+            info['var-map'] = var_map
+            info['start-line'] = start_line
+            info['begin-line'] = begin_line
+            info['last-line'] = last_line
+            info['exec-lines'] = function_info['lines']
+            info['score'] = 0
+            info['attempt'] = function_count
+            # info['order'] = trace_order
+            candidate_function_list[function_id] = info
+            return candidate_function_list
 
         generate_symbolic_expressions(source_path,
                                       start_line,
