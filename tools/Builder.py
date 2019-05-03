@@ -84,13 +84,13 @@ def config_project(project_path, is_llvm, custom_config_command=None):
 
 def apply_flags(build_command):
     c_flags = C_FLAGS
-    if "XCFLAGS" in build_command:
+    if "XCFLAGS=" in build_command:
         c_flags_old = (build_command.split("XCFLAGS='")[1]).split("'")[0]
         if "-fPIC" in c_flags_old:
             c_flags = c_flags.replace("-static", "")
         c_flags_new = c_flags.replace("'", "") + " " + c_flags_old
         build_command = build_command.replace(c_flags_old, c_flags_new)
-    elif "CFLAGS" in build_command:
+    elif "CFLAGS=" in build_command:
         c_flags_old = (build_command.split("CFLAGS='")[1]).split("'")[0]
         if "-fPIC" in c_flags_old:
             c_flags = c_flags.replace("-static", "")
@@ -100,13 +100,13 @@ def apply_flags(build_command):
         new_command = "make CFLAGS=" + c_flags + " "
         build_command = build_command.replace("make", new_command)
 
-    if "XCXXFLAGS" in build_command:
+    if "XCXXFLAGS=" in build_command:
         c_flags_old = (build_command.split("XCXXFLAGS='")[1]).split("'")[0]
         if "-fPIC" in c_flags_old:
             c_flags = c_flags.replace("-static", "")
         c_flags_new = c_flags.replace("'", "") + " " + c_flags_old
         build_command = build_command.replace(c_flags_old, c_flags_new)
-    elif "CXXFLAGS" in build_command:
+    elif "CXXFLAGS=" in build_command:
         c_flags_old = (build_command.split("CXXFLAGS='")[1]).split("'")[0]
         if "-fPIC" in c_flags_old:
             c_flags = c_flags.replace("-static", "")
@@ -116,20 +116,20 @@ def apply_flags(build_command):
         new_command = "make CXXFLAGS=" + c_flags + " "
         build_command = build_command.replace("make", new_command)
 
-    if "XCC" in build_command:
+    if "XCC=" in build_command:
         cc_old = (build_command.split("XCC='")[1]).split("'")[0]
         build_command = build_command.replace(cc_old, CC)
-    elif "CC" in build_command:
+    elif "CC=" in build_command:
         cc_old = (build_command.split("CC='")[1]).split("'")[0]
         build_command = build_command.replace(cc_old, CC)
     else:
         new_command = "make CC=" + CC + " "
         build_command = build_command.replace("make", new_command)
 
-    if "XCXX" in build_command:
+    if "XCXX=" in build_command:
         cc_old = (build_command.split("XCXX='")[1]).split("'")[0]
         build_command = build_command.replace(cc_old, CXX)
-    elif "CXX" in build_command:
+    elif "CXX=" in build_command:
         cc_old = (build_command.split("CXX='")[1]).split("'")[0]
         build_command = build_command.replace(cc_old, CXX)
     else:
