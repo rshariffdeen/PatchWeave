@@ -549,13 +549,22 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
             Emitter.special("\t\t" + script_line)
             translated_command = script_line
             if "Insert" in script_line:
-                if len(var_map_bc.keys()) == 0 and Values.BACKPORT:
-                    ast_script_c.append(script_line)
-                    continue
                 inserting_node_str = script_line.split(" into ")[0]
                 inserting_node_id = int((inserting_node_str.split("(")[1]).split(")")[0])
                 inserting_node = Finder.search_ast_node_by_id(ast_map_b, inserting_node_id)
-                translated_command = inserting_node_str + " into " + position_c
+                if len(var_map_bc.keys()) == 0 and Values.BACKPORT:
+                    insert_index = int(script_line.split(" at ")[-1])
+                    target_node_b_str = (script_line.split(" into ")[1]).split(" at ")[0]
+                    target_node_b_id = int((target_node_b_str.split("(")[1]).split(")")[0])
+                    map_bc = Mapper.map_ast_from_source(source_path_b, source_path_c, Definitions.DIRECTORY_TMP + "/tmp-match")
+                    target_node_c_id = map_bc[target_node_b_id]
+                    target_node_c = Finder.search_ast_node_by_id(ast_map_c, target_node_c_id)
+                    target_node_str = str(target_node_c['type']) + "(" + str(target_node_c_id) + ")"
+                    translated_command = inserting_node_str + " into " + target_node_str + " at " + insert_index
+
+                else:
+                    translated_command = inserting_node_str + " into " + position_c
+
                 missing_function_list = Identifier.identify_missing_functions(ast_map_a,
                                                                               inserting_node,
                                                                               source_path_b,
