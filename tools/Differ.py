@@ -168,6 +168,7 @@ def diff_ast(diff_info, project_path_a, project_path_b, script_file_path):
                 mapping_ba = Mapper.map_ast_from_source(source_path_a, source_path_b, script_file_path)
             except:
                 Emitter.warning("\t\twarning: no AST generated")
+                dict(diff_info).pop(diff_loc)
                 continue
 
         Emitter.normal("\tline number:" + line_number)
