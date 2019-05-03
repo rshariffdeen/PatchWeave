@@ -168,7 +168,7 @@ def diff_ast(diff_info, project_path_a, project_path_b, script_file_path):
                 mapping_ba = Mapper.map_ast_from_source(source_path_a, source_path_b, script_file_path)
             except:
                 Emitter.warning("\t\twarning: no AST generated")
-                dict(diff_info).pop(diff_loc)
+                del diff_info[diff_loc]
                 continue
 
         Emitter.normal("\tline number:" + line_number)
@@ -197,7 +197,7 @@ def diff_ast(diff_info, project_path_a, project_path_b, script_file_path):
                                                            mapping_ba
                                                            )
         if filtered_ast_script is None:
-            dict(diff_info).pop(diff_loc)
+            del diff_info[diff_loc]
             continue
         diff_info[diff_loc]['ast-script'] = filtered_ast_script
     return diff_info
