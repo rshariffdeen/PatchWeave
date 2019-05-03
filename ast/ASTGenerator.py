@@ -53,7 +53,7 @@ def get_ast_json(file_path):
     if os.stat(json_file).st_size == 0:
         return None
     with io.open(json_file, 'r', encoding='utf8',errors="ignore") as f:
-        ast_json = json.load(f.read())
+        ast_json = json.loads(f.read())
     return ast_json['root']
 
 
