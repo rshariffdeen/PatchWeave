@@ -9,6 +9,7 @@ from six.moves import cStringIO
 from pysmt.smtlib.parser import SmtLibParser
 from common.Utilities import backup_file, restore_file, reset_git, error_exit
 from pysmt.shortcuts import get_model
+from common import Values
 import Logger
 import Emitter
 import Instrumentor
@@ -112,7 +113,7 @@ def generate_candidate_function_list(estimate_loc, var_info_a,
                 expected_score += 1
                 break
 
-    if expected_score == 0:
+    if expected_score == 0 and (not Values.BACKPORT):
         print(var_info_a)
         error_exit("No variable to map")
     best_score = 0
@@ -121,6 +122,19 @@ def generate_candidate_function_list(estimate_loc, var_info_a,
     for function_id in trace_function_list:
         Emitter.special("\t\t" + function_id)
         function_count = function_count + 1
+
+        if Values.BACKPORT and expected_score == 0:
+            info = dict()
+            info['var-map'] = var_map
+            info['start-line'] = start_line
+            info['begin-line'] = begin_line
+            info['last-line'] = last_line
+            info['exec-lines'] = function_info['lines']
+            info['score'] = score
+            info['attempt'] = function_count
+            # info['order'] = trace_order
+            candidate_function_list[function_id] = info
+            return candidate_function_list
 
         source_path, function_name = str(function_id).split(":")
         function_info = trace_function_list[function_id]
