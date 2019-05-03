@@ -297,7 +297,7 @@ def identify_insertion_points(candidate_function):
         insertion_point_list[exec_line] = score
         if score > best_score:
             best_score = score
-    if best_score == 0:
+    if best_score == 0 and not Values.BACKPORT:
         print(unique_var_name_list)
         print(target_var_list)
         error_exit("no matching line")
