@@ -90,8 +90,30 @@ def apply_flags(build_command):
             c_flags = c_flags.replace("-static", "")
         c_flags_new = c_flags.replace("'", "") + " " + c_flags_old
         build_command = build_command.replace(c_flags_old, c_flags_new)
+    elif "XCFLAGS" in build_command:
+        c_flags_old = (build_command.split("XCFLAGS='")[1]).split("'")[0]
+        if "-fPIC" in c_flags_old:
+            c_flags = c_flags.replace("-static", "")
+        c_flags_new = c_flags.replace("'", "") + " " + c_flags_old
+        build_command = build_command.replace(c_flags_old, c_flags_new)
     else:
         new_command = "make CFLAGS=" + c_flags + " "
+        build_command = build_command.replace("make", new_command)
+
+    if "CXXFLAGS" in build_command:
+        c_flags_old = (build_command.split("CXXFLAGS='")[1]).split("'")[0]
+        if "-fPIC" in c_flags_old:
+            c_flags = c_flags.replace("-static", "")
+        c_flags_new = c_flags.replace("'", "") + " " + c_flags_old
+        build_command = build_command.replace(c_flags_old, c_flags_new)
+    elif "XCXXFLAGS" in build_command:
+        c_flags_old = (build_command.split("XCXXFLAGS='")[1]).split("'")[0]
+        if "-fPIC" in c_flags_old:
+            c_flags = c_flags.replace("-static", "")
+        c_flags_new = c_flags.replace("'", "") + " " + c_flags_old
+        build_command = build_command.replace(c_flags_old, c_flags_new)
+    else:
+        new_command = "make CXXFLAGS=" + c_flags + " "
         build_command = build_command.replace("make", new_command)
 
     if "CC" in build_command:
@@ -99,6 +121,13 @@ def apply_flags(build_command):
         build_command = build_command.replace(cc_old, CC)
     else:
         new_command = "make CC=" + CC + " "
+        build_command = build_command.replace("make", new_command)
+
+    if "CXX" in build_command:
+        cc_old = (build_command.split("CXX='")[1]).split("'")[0]
+        build_command = build_command.replace(cc_old, CXX)
+    else:
+        new_command = "make CXX=" + CXX + " "
         build_command = build_command.replace("make", new_command)
 
     return build_command
