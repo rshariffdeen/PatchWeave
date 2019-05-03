@@ -222,7 +222,7 @@ def filter_ast_script_by_node_type(ast_script, ast_node_a, ast_node_b, trace_lis
                 if "assert(" in node_value:
                     continue
                 elif target_node_type == "TypeLoc":
-                    if Oracle.is_node_in_function(ast_node_b, target_node):
+                    if not Oracle.is_node_in_function(ast_node_b, target_node):
                         continue
                     else:
                         filtered_ast_script.append(script_line)
