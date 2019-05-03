@@ -82,8 +82,11 @@ def slice_ast_script(diff_info, project_path_a, project_path_b, trace_list):
         source_path_a, line_number_a = diff_loc.split(":")
         source_path_b = str(source_path_a).replace(project_path_a,
                                                    project_path_b)
-        ast_map_a = ASTGenerator.get_ast_json(source_path_a)
-        ast_map_b = ASTGenerator.get_ast_json(source_path_b)
+        try:
+            ast_map_a = ASTGenerator.get_ast_json(source_path_a)
+            ast_map_b = ASTGenerator.get_ast_json(source_path_b)
+        except:
+            continue
         filtered_ast_script = Filter.filter_ast_script_by_skip_line(ast_script,
                                                                     ast_map_a,
                                                                     ast_map_b,
