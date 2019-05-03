@@ -8,6 +8,7 @@ import Emitter
 import Extractor
 import Merger
 import Logger
+import Oracle
 from common.Utilities import error_exit
 import collections
 
@@ -198,6 +199,9 @@ def filter_ast_script_by_node_type(ast_script, ast_node_a, ast_node_b, trace_lis
             node_id_b = int(((script_line.split(" into ")[0]).split("(")[1]).split(")")[0])
             node_b = Finder.search_ast_node_by_id(ast_node_b, node_id_b)
             node_type_b = node_b['type']
+            target_node_id = int((((script_line.split(" into ")[1]).split(" at ")[0]).split("(")[1]).split(")")[0])
+            target_node = Finder.search_ast_node_by_id(ast_node_b, target_node_id)
+            target_node_type = target_node['type']
             node_line_start = int(node_b['start line'])
             node_line_end = int(node_b['end line']) + 1
             # print(node_line_start)
@@ -217,6 +221,11 @@ def filter_ast_script_by_node_type(ast_script, ast_node_a, ast_node_b, trace_lis
                 node_value = node_b['value']
                 if "assert(" in node_value:
                     continue
+                elif target_node_type == "TypeLoc":
+                    if Oracle.is_node_in_function(ast_node_b, target_node):
+                        continue
+                    else:
+                        filtered_ast_script.append(script_line)
                 else:
                     filtered_ast_script.append(script_line)
             elif node_type_b == "IfStmt":
