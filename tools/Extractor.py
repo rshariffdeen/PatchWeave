@@ -225,6 +225,8 @@ def extract_var_ref_list(ast_node, start_line, end_line, only_in_range):
         if not is_intersect(node_start_line, node_end_line, start_line, end_line):
             return var_list
 
+    if node_type in ["ReturnStmt"]:
+        return var_list
     if node_type == "BinaryOperator":
         insert_line_number = int(ast_node['end line'])
         node_value = ast_node['value']
