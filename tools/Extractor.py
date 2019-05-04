@@ -314,6 +314,8 @@ def extract_var_ref_list(ast_node, start_line, end_line, only_in_range):
                         var_list.append((str(aux_var_name), line_number, aux_var_type))
                 elif child_node_type == "Macro":
                     var_name = str(child_node['value'])
+                    if "?" in var_name:
+                        continue
                     var_type = "int"
                     var_list.append((str(var_name), line_number, var_type))
                 else:
