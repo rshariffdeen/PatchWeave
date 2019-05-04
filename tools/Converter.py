@@ -189,6 +189,8 @@ def convert_call_expr(ast_node, only_string=False):
             operand_list.append(operand_var_name)
         elif operand_node_type == "Macro":
             operand_var_name = str(operand_node['value'])
+            if "?" in operand_var_name:
+                continue
             operand_list.append(operand_var_name)
         else:
             error_exit("unhandled operand for call expr convert")
