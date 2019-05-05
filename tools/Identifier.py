@@ -82,7 +82,7 @@ def identify_missing_var(function_node_a, function_node_b, insert_node_b, skip_l
             identifier = str(ref_node['value'])
             if ref_type == "VarDecl":
                 if identifier not in dec_list:
-                    if identifier not in missing_var_list.keys():
+                    if identifier not in missing_var_list.keys() and identifier in dec_node_list_b.keys():
                         info = dict()
                         info['ref_list'] = list()
                         info['ast-node'] = dec_node_list_b[identifier]
