@@ -285,9 +285,18 @@ def extract_var_ref_list(ast_node, start_line, end_line, only_in_range):
                 var_list.append((str(var_name), insert_line, var_type))
         var_list = var_list + extract_var_ref_list(body_node, start_line, end_line, only_in_range)
         return var_list
-    if node_type in ["CaseStmt"]:
+    # if node_type in ["CaseStmt"]:
+    #     return var_list
+    if node_type in ["IfStmt"]:
+        condition_node = ast_node['children'][0]
+        body_node = ast_node['children'][1]
+        insert_line = body_node['start line']
+        condition_node_var_list = extract_var_ref_list(condition_node, start_line, end_line, only_in_range)
+        for var_name, line_number, var_type in condition_node_var_list:
+            var_list.append((str(var_name), insert_line, var_type))
+        var_list = var_list + extract_var_ref_list(body_node, start_line, end_line, only_in_range)
         return var_list
-    if node_type in ["IfStmt", "SwitchStmt"]:
+    if node_type in ["SwitchStmt"]:
         condition_node = ast_node['children'][0]
         body_node = ast_node['children'][1]
         insert_line = body_node['start line']
