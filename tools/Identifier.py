@@ -82,18 +82,19 @@ def identify_missing_var(function_node_a, function_node_b, insert_node_b, skip_l
         if node_start_line in skip_list:
             continue
         if node_type == "DeclRefExpr":
-            ref_type = str(ref_node['ref_type'])
-            identifier = str(ref_node['value'])
-            if ref_type == "VarDecl":
-                if identifier not in dec_list:
-                    if identifier not in missing_var_list.keys() and identifier in dec_node_list_b.keys():
-                        info = dict()
-                        info['ref_list'] = list()
-                        info['ast-node'] = dec_node_list_b[identifier]
-                        missing_var_list[identifier] = info
-            elif ref_type == "FunctionDecl":
-                if identifier in Values.STANDARD_FUNCTION_LIST:
-                    continue
+            if "ref_type" in ref_node.keys():
+                ref_type = str(ref_node['ref_type'])
+                identifier = str(ref_node['value'])
+                if ref_type == "VarDecl":
+                    if identifier not in dec_list:
+                        if identifier not in missing_var_list.keys() and identifier in dec_node_list_b.keys():
+                            info = dict()
+                            info['ref_list'] = list()
+                            info['ast-node'] = dec_node_list_b[identifier]
+                            missing_var_list[identifier] = info
+                elif ref_type == "FunctionDecl":
+                    if identifier in Values.STANDARD_FUNCTION_LIST:
+                        continue
     return missing_var_list
 
 
