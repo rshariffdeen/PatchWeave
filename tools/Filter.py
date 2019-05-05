@@ -9,6 +9,7 @@ import Extractor
 import Merger
 import Logger
 import Oracle
+from common import Values
 from common.Utilities import error_exit
 import collections
 
@@ -27,11 +28,14 @@ def filter_trace_list_by_loc(trace_list, estimate_loc):
     estimated_div_point = 0
     for n in range(0, len(trace_list), 1):
         if estimate_loc == trace_list[n]:
-            estimated_div_point = n
-            if count_instant == 1:
-                return trace_list[n:]
+            if Values.BACKPORT:
+                estimated_div_point = n
             else:
-                count_instant = count_instant - 1
+                estimated_div_point = n
+                if count_instant == 1:
+                    return trace_list[n:]
+                else:
+                    count_instant = count_instant - 1
 
     return trace_list[estimated_div_point:]
 
