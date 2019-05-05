@@ -539,6 +539,16 @@ def extract_typedef_node_list(ast_node):
     return typedef_node_list
 
 
+def extract_function_node_list(ast_node):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    function_node_list = dict()
+    node_type = str(ast_node["type"])
+    if node_type in ["FunctionDecl"]:
+        identifier = str(ast_node['identifier'])
+        function_node_list[identifier] = ast_node
+    return function_node_list
+
+
 def extract_typeloc_node_list(ast_node):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     typeloc_node_list = dict()
