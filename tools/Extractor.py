@@ -322,7 +322,8 @@ def extract_var_ref_list(ast_node, start_line, end_line, only_in_range):
                     var_list.append((str(var_name), line_number, var_type))
                 else:
                     child_var_list = extract_var_ref_list(child_node, start_line, end_line, only_in_range)
-                    var_list = var_list + child_var_list
+                    for var_name, child_line, var_type in child_var_list:
+                        var_list.append(var_name, line_number, var_type)
         return var_list
     if child_count:
         for child_node in ast_node['children']:
