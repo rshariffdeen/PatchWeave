@@ -13,7 +13,7 @@ SYMBOLIC_ENGINE = "klee "
 SYMBOLIC_ARGUMENTS_FOR_PATH = "-print-path  -write-smt2s  --libc=uclibc --posix-runtime --external-calls=all --only-replay-seeds --seed-out=$KTEST -max-time=180 -max-memory=2048"
 SYMBOLIC_ARGUMENTS_FOR_EXPR = " --resolve-path --libc=uclibc --posix-runtime --external-calls=all --only-replay-seeds --seed-out=$KTEST  -max-time=180 -max-memory=2048"
 SYMBOLIC_ARGUMENTS_FOR_VALUE = " --resolve-path --libc=uclibc --posix-runtime --external-calls=all  -max-time=180 -max-memory=2048"
-SYMBOLIC_ARGUMENTS_FOR_TRACE = "--posix-runtime --libc=uclibc --print-trace --print-stack "
+SYMBOLIC_ARGUMENTS_FOR_TRACE = "--posix-runtime --libc=uclibc --print-trace --print-stack -max-time=180 -max-memory=2048 "
 
 
 def generate_path_condition(binary_arguments, binary_path, binary_name, bit_size, poc_path, log_path, klee_flags):
