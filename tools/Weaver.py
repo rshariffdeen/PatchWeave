@@ -327,7 +327,7 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
             inserting_node_str = script_line.split(" into ")[0]
             inserting_node_id = int((inserting_node_str.split("(")[1]).split(")")[0])
             inserting_node = Finder.search_ast_node_by_id(ast_map_b, inserting_node_id)
-            if len(var_map.keys()) == 0 and Values.BACKPORT:
+            if len(var_map.keys()) == 0 or Values.BACKPORT:
                 insert_index = int(script_line.split(" at ")[-1])
                 target_node_b_str = (script_line.split(" into ")[1]).split(" at ")[0]
                 target_node_b_id = int((target_node_b_str.split("(")[1]).split(")")[0])
