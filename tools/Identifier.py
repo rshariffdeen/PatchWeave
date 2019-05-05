@@ -112,6 +112,8 @@ def identify_missing_data_types(insert_node_b, var_info, target_path, ast_node_b
         node_type = str(ref_node['type'])
         node_start_line = int(ref_node['start line'])
         if node_type == "DeclRefExpr":
+            if "ref_type" not in ref_node.keys():
+                continue
             ref_type = str(ref_node['ref_type'])
             if ref_type == "VarDecl":
                 identifier = str(ref_node['data_type'])
