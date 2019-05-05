@@ -13,6 +13,7 @@ import Logger
 import Extractor
 import Finder
 import Generator
+import Oracle
 
 STANDARD_DATA_TYPES = ["int", "char", "float", "unsigned int", "uint32_t", "uint8_t", "char *"]
 
@@ -277,6 +278,8 @@ def identify_insertion_points(candidate_function):
     for exec_line in exec_line_list:
         # if exec_line == last_line:
         #     continue
+        if Oracle.is_declaration_line(source_path, exec_line):
+            continue
         Emitter.special("\t\t" + source_path + "-" + function_name + ":" + str(exec_line))
         Emitter.special("\t\t" + source_path + "-" + function_name + ":" + str(exec_line))
         available_var_list = Extractor.extract_variable_list(source_path,
