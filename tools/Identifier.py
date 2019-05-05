@@ -95,6 +95,14 @@ def identify_missing_var(function_node_a, function_node_b, insert_node_b, skip_l
                 elif ref_type == "FunctionDecl":
                     if identifier in Values.STANDARD_FUNCTION_LIST:
                         continue
+            else:
+                identifier = str(ref_node['value'])
+                if identifier not in dec_list:
+                    if identifier not in missing_var_list.keys() and identifier in dec_node_list_b.keys():
+                        info = dict()
+                        info['ref_list'] = list()
+                        info['ast-node'] = dec_node_list_b[identifier]
+                        missing_var_list[identifier] = info
     return missing_var_list
 
 
