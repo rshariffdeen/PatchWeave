@@ -10,9 +10,9 @@ import Logger
 
 SYMBOLIC_CONVERTER = "gen-bout"
 SYMBOLIC_ENGINE = "klee "
-SYMBOLIC_ARGUMENTS_FOR_PATH = "-print-path  -write-smt2s  --libc=uclibc --posix-runtime --external-calls=all --only-replay-seeds --seed-out=$KTEST -max-time=300 -max-memory=2048"
-SYMBOLIC_ARGUMENTS_FOR_EXPR = " --resolve-path --libc=uclibc --posix-runtime --external-calls=all --only-replay-seeds --seed-out=$KTEST  -max-time=300 -max-memory=2048"
-SYMBOLIC_ARGUMENTS_FOR_VALUE = " --resolve-path --libc=uclibc --posix-runtime --external-calls=all  -max-time=300 -max-memory=2048"
+SYMBOLIC_ARGUMENTS_FOR_PATH = "-print-path  -write-smt2s  --libc=uclibc --posix-runtime --external-calls=all --only-replay-seeds --seed-out=$KTEST -max-time=180 -max-memory=2048"
+SYMBOLIC_ARGUMENTS_FOR_EXPR = " --resolve-path --libc=uclibc --posix-runtime --external-calls=all --only-replay-seeds --seed-out=$KTEST  -max-time=180 -max-memory=2048"
+SYMBOLIC_ARGUMENTS_FOR_VALUE = " --resolve-path --libc=uclibc --posix-runtime --external-calls=all  -max-time=180 -max-memory=2048"
 SYMBOLIC_ARGUMENTS_FOR_TRACE = "--posix-runtime --libc=uclibc --print-trace --print-stack "
 
 
