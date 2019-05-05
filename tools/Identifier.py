@@ -281,7 +281,7 @@ def identify_insertion_points(candidate_function):
     for exec_line in exec_line_list:
         # if exec_line == last_line:
         #     continue
-        if Oracle.is_declaration_line(source_path, exec_line):
+        if Oracle.is_declaration_line(source_path, int(exec_line)):
             continue
         Emitter.special("\t\t" + source_path + "-" + function_name + ":" + str(exec_line))
         Emitter.special("\t\t" + source_path + "-" + function_name + ":" + str(exec_line))
