@@ -50,6 +50,32 @@ def convert_paren_node_to_expr(ast_node):
     return var_name, list(set(var_list))
 
 
+def convert_unary_node_to_expr(ast_node):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    var_name = ""
+    var_list = list()
+    # print(ast_node)
+    child_node = ast_node['children'][0]
+    # print(left_child)
+    child_value = ""
+    child_type = str(child_node['type'])
+    if child_type in ["DeclRefExpr", "IntegerLiteral"]:
+        child_value = str(child_node['value'])
+    elif child_type == "BinaryOperator":
+        child_value, child_var_list = convert_binary_node_to_expr(child_node)
+        var_list = var_list + child_var_list
+    elif child_type == "MemberExpr":
+        child_value, child_data_type, child_var_list = convert_member_expr(child_node)
+        var_list = var_list + child_var_list
+    elif child_type == "ParenExpr":
+        child_value, child_var_list = convert_paren_node_to_expr(child_node)
+        var_list = var_list + child_var_list
+    operation = str(ast_node['value'])
+    # print(operation)
+    var_name = child_value + operation
+    return var_name, list(set(var_list))
+
+
 def convert_binary_node_to_expr(ast_node):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     var_name = ""
@@ -105,6 +131,9 @@ def convert_array_iterator(iterator_node):
         iterator_value = str(iterator_node['value'])
         var_name = "[" + iterator_value + "]"
     elif iterator_node_type in ["BinaryOperator"]:
+        iterator_value, var_list = convert_binary_node_to_expr(iterator_node)
+        var_name = "[" + iterator_value + "]"
+    elif iterator_node_type in ["UnaryOperator"]:
         iterator_value, var_list = convert_binary_node_to_expr(iterator_node)
         var_name = "[" + iterator_value + "]"
     elif iterator_node_type in ["MemberExpr"]:
