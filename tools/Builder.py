@@ -149,7 +149,8 @@ def build_project(project_path, build_command=None):
             build_command = build_command.replace("make", "bear make")
         if CC == "wllvm":
             build_command = remove_fsanitize(build_command)
-        build_command = apply_flags(build_command)
+        if "-j" not in build_command:
+            build_command = apply_flags(build_command)
     build_command = dir_command + build_command
     # print(build_command)
     ret_code = execute_command(build_command)
