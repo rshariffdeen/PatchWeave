@@ -596,7 +596,7 @@ def extract_decl_node_list(ast_node):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     dec_list = dict()
     node_type = str(ast_node["type"])
-    if node_type in ["FunctionDecl", "VarDecl", "ParmVarDecl", "EnumConstantDecl"]:
+    if node_type in ["FunctionDecl", "VarDecl", "ParmVarDecl"]:
         identifier = str(ast_node['identifier'])
         dec_list[identifier] = ast_node
 
@@ -611,7 +611,7 @@ def extract_enum_node_list(ast_tree):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     dec_list = dict()
     node_type = str(ast_tree["type"])
-    if node_type in [ "EnumConstantDecl"]:
+    if node_type in ["EnumConstantDecl"]:
         identifier = str(ast_tree['identifier'])
         dec_list[identifier] = ast_tree
 
