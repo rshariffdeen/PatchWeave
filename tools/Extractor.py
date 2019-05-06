@@ -607,6 +607,21 @@ def extract_decl_node_list(ast_node):
     return dec_list
 
 
+def extract_enum_node_list(ast_tree):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    dec_list = dict()
+    node_type = str(ast_tree["type"])
+    if node_type in [ "EnumConstantDecl"]:
+        identifier = str(ast_tree['identifier'])
+        dec_list[identifier] = ast_tree
+
+    if len(ast_tree['children']) > 0:
+        for child_node in ast_tree['children']:
+            child_dec_list = extract_enum_node_list(child_node)
+            dec_list.update(child_dec_list)
+    return dec_list
+
+
 def extract_reference_node_list(ast_node):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     ref_node_list = list()
