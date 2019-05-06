@@ -382,12 +382,6 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                 ast_op = "Insert " + ast_node['type'] + "(" + str(ast_node['id']) + ")"
                 ast_op += " into " + position_c
                 ast_script_c.append(ast_op)
-            else:
-                identifier = ast_node['identifier']
-                insert_pos = Finder.find_definition_insertion_point(source_path_d)
-                definition = "enum { " + identifier + "};"
-                insert_code(definition, source_path_d, insert_pos)
-
 
         ast_script_c.reverse()
         Writer.write_ast_script(ast_script_c, ast_script_file)
@@ -428,6 +422,17 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
         ret_code = execute_ast_transformation(source_path_b,
                                               source_path_d,
                                               out_file_info)
+
+        for var in missing_var_list:
+            # print(var)
+            var_info = missing_var_list[var]
+            ast_node = var_info['ast-node']
+            if "ref_type" not in ast_node.keys():
+                identifier = ast_node['identifier']
+                insert_pos = Finder.find_definition_insertion_point(source_path_d)
+                definition = "enum { " + identifier + "};"
+                insert_code(definition, source_path_d, insert_pos)
+
         if ret_code == 0:
             if source_path_d not in modified_source_list:
                 modified_source_list.append(source_path_d)
