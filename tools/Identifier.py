@@ -12,7 +12,7 @@ from common import Values
 import Logger
 import Extractor
 import Finder
-import Generator
+from ast import ASTGenerator
 import Oracle
 
 STANDARD_DATA_TYPES = ["int", "char", "float", "unsigned int", "uint32_t", "uint8_t", "char *"]
@@ -76,7 +76,8 @@ def identify_missing_var(function_node_a, function_node_b, insert_node_b, skip_l
     ref_list = Extractor.extract_reference_node_list(insert_node_b)
     dec_list = Extractor.extract_decl_list(function_node_a)
     dec_node_list_b = Extractor.extract_decl_node_list(function_node_b)
-    enum_list = Extractor.extract_enum_node_list(source_path_b)
+    ast_tree = ASTGenerator.get_ast_json(source_path_b)
+    enum_list = Extractor.extract_enum_node_list(ast_tree)
     for ref_node in ref_list:
         node_type = str(ref_node['type'])
         node_start_line = int(ref_node['start line'])
@@ -99,7 +100,7 @@ def identify_missing_var(function_node_a, function_node_b, insert_node_b, skip_l
             else:
                 identifier = str(ref_node['value'])
                 if identifier not in dec_list:
-                    if identifier not in missing_var_list.keys() and identifier in dec_node_list_b.keys():
+                    if identifier not in missing_var_list.keys() and identifier in enum_list.keys():
                         info = dict()
                         info['ref_list'] = list()
                         info['ast-node'] = dec_node_list_b[identifier]
