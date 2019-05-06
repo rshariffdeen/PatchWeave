@@ -85,4 +85,4 @@ RUN apt-get install -y \
     libtiff5-dev
 
 RUN git clone https://gitlab.com/akihe/radamsa.git /radamsa
-RUN cd /radamsa; make; make install
+RUN cd /radamsa; git checkout v0.5; make; make install
