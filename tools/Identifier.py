@@ -99,12 +99,11 @@ def identify_missing_var(function_node_a, function_node_b, insert_node_b, skip_l
                         continue
             else:
                 identifier = str(ref_node['value'])
-                if identifier not in dec_list:
-                    if identifier not in missing_var_list.keys() and identifier in enum_list.keys():
-                        info = dict()
-                        info['ref_list'] = list()
-                        info['ast-node'] = dec_node_list_b[identifier]
-                        missing_var_list[identifier] = info
+                if identifier not in missing_var_list.keys() and identifier in enum_list.keys():
+                    info = dict()
+                    info['ref_list'] = list()
+                    info['ast-node'] = enum_list[identifier]
+                    missing_var_list[identifier] = info
     return missing_var_list
 
 
