@@ -33,7 +33,7 @@ def config_project(project_path, is_llvm, custom_config_command=None):
             config_command += "CXX=" + CXX + " "
             config_command += custom_config_command
             if "--cc=" in config_command:
-                config_command.replace("--cc=clang-7", "--cc=" + CC)
+                config_command = config_command.replace("--cc=clang-7", "--cc=" + CC)
             # print(config_command)
 
     elif os.path.exists(project_path + "/autogen.sh"):
