@@ -325,6 +325,7 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
         for script_line in ast_script:
             Emitter.special("\t\t" + script_line)
             inserting_node_str = script_line.split(" into ")[0]
+            target_node_str = script_line.split(" into ")[1]
             inserting_node_id = int((inserting_node_str.split("(")[1]).split(")")[0])
             inserting_node = Finder.search_ast_node_by_id(ast_map_b, inserting_node_id)
             if len(var_map.keys()) == 0 or Values.BACKPORT:
@@ -338,7 +339,7 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                 target_node_str = str(target_node_c['type']) + "(" + str(target_node_c_id) + ")"
                 translated_command = inserting_node_str + " into " + target_node_str + " at " + str(insert_index)
             # TODO: need to handle separately
-            elif "BinaryOperator" in position_c:
+            elif "BinaryOperator" in target_node_str:
                 continue
             else:
                 translated_command = inserting_node_str + " into " + position_c + "\n"
