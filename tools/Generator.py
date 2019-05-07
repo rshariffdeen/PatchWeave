@@ -117,6 +117,8 @@ def generate_candidate_function_list(estimate_loc, var_info_a,
         print(var_info_a)
         error_exit("No variable to map")
     best_score = 0
+    best_function_info = ""
+    best_function_id = ""
     Emitter.warning("\t\texpected score: " + str(expected_score))
     function_count = 0
     for function_id in trace_function_list:
@@ -180,6 +182,16 @@ def generate_candidate_function_list(estimate_loc, var_info_a,
         Emitter.emit_var_map(var_map)
         if best_score < score:
             best_score = score
+            best_function_id = function_id
+            best_function_info = dict()
+            best_function_info['var-map'] = var_map
+            best_function_info['start-line'] = start_line
+            best_function_info['begin-line'] = begin_line
+            best_function_info['last-line'] = last_line
+            best_function_info['exec-lines'] = function_info['lines']
+            best_function_info['score'] = score
+            best_function_info['attempt'] = function_count
+
         if (expected_score == score) and (len(set(var_map.values())) == score):
             if len(var_map.values()) == 1:
                 var = var_map.values()[0]
@@ -200,8 +212,9 @@ def generate_candidate_function_list(estimate_loc, var_info_a,
             return candidate_function_list
 
     if not candidate_function_list:
-        Emitter.error("best score is " + str(best_score))
-        error_exit("no candidate function")
+        Emitter.error("\t\tbest score is " + str(best_score))
+        Emitter.warning("\t\tno candidate function, attempting with best score")
+        candidate_function_list[best_function_id] = best_function_info
     return candidate_function_list
 
 
