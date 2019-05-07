@@ -97,6 +97,7 @@ def convert_binary_node_to_expr(ast_node):
         left_child_value, left_child_data_type, left_child_var_list = convert_member_expr(left_child)
         var_list = var_list + left_child_var_list
     else:
+        print(left_child)
         error_exit("Unhandled child type in convert binary node")
     operation = str(ast_node['value'])
     # print(operation)
@@ -116,6 +117,7 @@ def convert_binary_node_to_expr(ast_node):
         left_child_value, left_child_data_type, left_child_var_list = convert_member_expr(left_child)
         var_list = var_list + left_child_var_list
     else:
+        print(left_child)
         error_exit("Unhandled child type in convert binary node")
     var_name = left_child_value + " " + operation + " " + right_child_value
     return var_name, list(set(var_list))
