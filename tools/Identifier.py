@@ -15,7 +15,7 @@ import Finder
 from ast import ASTGenerator
 import Oracle
 
-STANDARD_DATA_TYPES = ["int", "char", "float", "unsigned int", "uint32_t", "uint8_t", "char *", "uint32"]
+STANDARD_DATA_TYPES = ["int", "char", "float", "unsigned int", "uint32_t", "uint8_t", "char *"]
 
 
 def identify_missing_labels(ast_map, ast_node, source_path_b, source_path_d, skip_list):
