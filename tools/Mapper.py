@@ -42,6 +42,8 @@ def map_variable(var_map_a, var_map_b):
                 # print(value_list_b)
                 # print(sym_expr_list_b)
                 for index_b, value_b in enumerate(value_list_b):
+                    if index_b == len(sym_expr_list_b):
+                        break
                     # print(sym_expr_b)
                     sym_expr_b = sym_expr_list_b[index_b]
                     # print(value_b)
