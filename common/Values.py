@@ -51,6 +51,7 @@ ASAN_FLAG = ""
 KLEE_FLAG_A = ""
 KLEE_FLAG_C = ""
 FILE_CONFIGURATION = ""
+AST_DIFF_SIZE = "10"
 
 silence_emitter = False
 

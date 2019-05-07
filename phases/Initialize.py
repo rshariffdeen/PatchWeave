@@ -146,6 +146,8 @@ def read_conf():
             Values.KLEE_FLAG_A = configuration.replace(Definitions.CONF_KLEE_FLAGS_A, '')
         elif Definitions.CONF_KLEE_FLAGS_C in configuration:
             Values.KLEE_FLAG_C = configuration.replace(Definitions.CONF_KLEE_FLAGS_C, '')
+        elif Definitions.CONF_DIFF_SIZE in configuration:
+            Values.AST_DIFF_SIZE = configuration.replace(Definitions.CONF_DIFF_SIZE, '')
 
 
 def initialize():

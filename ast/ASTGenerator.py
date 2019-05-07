@@ -7,14 +7,13 @@ import ASTVector
 import AST
 from tools import Logger, Emitter
 import sys
-from common import Definitions
+from common import Definitions, Values
 import json
 import os
 import io
 
 APP_FORMAT_LLVM = "clang-format -style=LLVM "
 APP_AST_DIFF = "crochet-diff"
-AST_DIFF_SIZE = "10"
 
 
 interesting = ["VarDecl", "DeclRefExpr", "ParmVarDecl", "TypedefDecl",
@@ -148,7 +147,7 @@ def generate_ast_script(source_a, source_b, outfile_path, dump_matches=False):
     extra_args = " "
     if dump_matches:
         extra_args = " -dump-matches "
-    generate_command = APP_AST_DIFF + " -s=" + AST_DIFF_SIZE + extra_args
+    generate_command = APP_AST_DIFF + " -s=" + Values.AST_DIFF_SIZE + extra_args
     generate_command += source_a + " " + source_b
     if source_a[-1] == "h":
         generate_command += " --"
