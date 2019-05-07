@@ -651,7 +651,13 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                         # print(replacing_node)
                         # print(function_node_c)
                         Emitter.warning("\t\twarning: couldn't find target node to replace")
-                        continue
+                        Emitter.warning("\t\twarning: attempting insertion")
+                        translated_command = "Insert " + replace_node_str + " into " + position_c
+                        # missing_macro_list.update(Identifier.identify_missing_macros(replace_node,
+                        #                                                              source_path_b,
+                        #                                                              source_path_d,
+                        #                                                              skip_line_list))
+                        ast_script_c.append(translated_command)
                     elif "Macro" in target_node_str:
                         print("inside macro")
                         target_node_id = int((target_node_str.split("(")[1]).split(")")[0])
