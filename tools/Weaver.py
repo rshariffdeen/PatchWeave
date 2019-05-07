@@ -337,7 +337,9 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                 target_node_c = Finder.search_ast_node_by_id(ast_map_c, target_node_c_id)
                 target_node_str = str(target_node_c['type']) + "(" + str(target_node_c_id) + ")"
                 translated_command = inserting_node_str + " into " + target_node_str + " at " + str(insert_index)
-
+            # TODO: need to handle separately
+            elif "BinaryOperator" in position_c:
+                continue
             else:
                 translated_command = inserting_node_str + " into " + position_c + "\n"
             missing_function_list.update(Identifier.identify_missing_functions(ast_map_a,
