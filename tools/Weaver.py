@@ -289,6 +289,11 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                                                                              val_log_c,
                                                                              stack_info_c
                                                                              )
+        if insertion_function_list is None:
+            Emitter.warning("\t\twarning: no candidate function to proceed")
+            return modified_source_list, missing_function_list, missing_macro_list, \
+                   missing_header_list, missing_data_type_list
+
         best_candidate_function_id = Filter.filter_best_candidate_function(insertion_function_list)
 
         best_candidate_function_info = insertion_function_list[best_candidate_function_id]
@@ -517,6 +522,11 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                                                                              val_log_c,
                                                                              stack_info_c
                                                                              )
+        if insertion_function_list is None:
+            Emitter.warning("\t\twarning: no candidate function to proceed")
+            return modified_source_list, missing_function_list, missing_macro_list, \
+                   missing_header_list, missing_data_type_list
+
         best_candidate_function_id = Filter.filter_best_candidate_function(insertion_function_list)
 
         best_candidate_function_info = insertion_function_list[best_candidate_function_id]
