@@ -107,7 +107,7 @@ def identify_missing_var(function_node_a, function_node_b, insert_node_b, skip_l
     return missing_var_list
 
 
-def identify_missing_data_types(insert_node_b, var_info, target_path, ast_node_b, ast_node_c):
+def identify_missing_data_types(insert_node_b, var_info, target_path, ast_node_b, ast_node_c, source_path_b):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Emitter.normal("\t\t\tidentifying missing data-types")
     missing_data_type_list = dict()
@@ -115,7 +115,6 @@ def identify_missing_data_types(insert_node_b, var_info, target_path, ast_node_b
     # print(type_loc_node_list)
     ref_list = Extractor.extract_reference_node_list(insert_node_b)
     type_def_node_list_b = Extractor.extract_typedef_node_list(ast_node_b)
-    source_path_b = str(ast_node_b['filename'])
     type_def_node_list_c = Extractor.extract_typedef_node_list(ast_node_c)
     for ref_node in ref_list:
         # print(ref_node)

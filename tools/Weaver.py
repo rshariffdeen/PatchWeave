@@ -379,7 +379,8 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                                                                                  var_info_b,
                                                                                  source_path_d,
                                                                                  ast_map_b,
-                                                                                 ast_map_c))
+                                                                                 ast_map_c,
+                                                                                 source_path_b))
             # print(missing_data_type_list)
             ast_script_c.append(translated_command)
 
@@ -631,7 +632,8 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                                                                                      var_info_b,
                                                                                      source_path_d,
                                                                                      ast_map_b,
-                                                                                     ast_map_c))
+                                                                                     ast_map_c,
+                                                                                     source_path_b))
                 # print(missing_data_type_list)
                 ast_script_c.append(translated_command)
             elif "Replace" in script_line:
