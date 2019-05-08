@@ -360,7 +360,8 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                                                                     function_node_b,
                                                                     inserting_node,
                                                                     skip_line_list,
-                                                                    source_path_b
+                                                                    source_path_b,
+                                                                    var_map
                                                                     ))
             # print(missing_var_list)
 
@@ -618,7 +619,8 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                                                                    function_node_b,
                                                                    inserting_node,
                                                                    skip_line_list,
-                                                                   source_path_b
+                                                                   source_path_b,
+                                                                   var_map_bc
                                                                    )
                 missing_macro_list = Identifier.identify_missing_macros(inserting_node,
                                                                         source_path_b,
