@@ -115,6 +115,7 @@ def identify_missing_data_types(insert_node_b, var_info, target_path, ast_node_b
     # print(type_loc_node_list)
     ref_list = Extractor.extract_reference_node_list(insert_node_b)
     type_def_node_list_b = Extractor.extract_typedef_node_list(ast_node_b)
+    source_path_b = str(ast_node_b['filename'])
     type_def_node_list_c = Extractor.extract_typedef_node_list(ast_node_c)
     for ref_node in ref_list:
         # print(ref_node)
@@ -138,7 +139,16 @@ def identify_missing_data_types(insert_node_b, var_info, target_path, ast_node_b
                     if identifier not in missing_data_type_list.keys():
                         info = dict()
                         info['target'] = target_path
-                        info['ast-node'] = type_def_node_list_b[identifier]
+                        ast_node = type_def_node_list_b[identifier]
+                        source_file = str(ast_node['file'])
+                        if ".." in source_file:
+                            source_file = source_path_b + "/" + str(ast_node['file'])
+                            source_file = os.path.abspath(source_file)
+                            if not os.path.isfile(source_file):
+                                Emitter.warning("\t\tFile: " + str(source_file))
+                                error_exit("\t\tFile Not Found!")
+                        ast_node['file'] = source_file
+                        info['ast-node'] = ast_node
                         missing_data_type_list[identifier] = info
     for type_loc_name in type_loc_node_list:
         # print(type_loc_name)
@@ -150,7 +160,16 @@ def identify_missing_data_types(insert_node_b, var_info, target_path, ast_node_b
             if identifier not in missing_data_type_list.keys():
                 info = dict()
                 info['target'] = target_path
-                info['ast-node'] = type_def_node_list_b[identifier]
+                ast_node = type_def_node_list_b[identifier]
+                source_file = str(ast_node['file'])
+                if ".." in source_file:
+                    source_file = source_path_b + "/" + str(ast_node['file'])
+                    source_file = os.path.abspath(source_file)
+                    if not os.path.isfile(source_file):
+                        Emitter.warning("\t\tFile: " + str(source_file))
+                        error_exit("\t\tFile Not Found!")
+                ast_node['file'] = source_file
+                info['ast-node'] = ast_node
                 missing_data_type_list[identifier] = info
     return missing_data_type_list
 

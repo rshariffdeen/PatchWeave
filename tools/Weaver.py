@@ -162,13 +162,6 @@ def weave_data_type(missing_data_type_list, modified_source_list):
         def_end_line = int(ast_node['end line'])
         source_file = ast_node['file']
         target_file = data_type_info['target']
-        if ".." in source_file:
-            source_file = target_file.replace(Values.Project_D.path, Values.PATH_C)
-            source_file = source_file + str(ast_node['file'])
-            source_file = os.path.abspath(source_file)
-            if not os.path.isfile(source_file):
-                Emitter.warning("\t\tFile: " + str(source_file))
-                error_exit("\t\tFile Not Found!")
         def_insert_line = Finder.find_definition_insertion_point(target_file)
         transplant_code = "\n"
         for i in range(def_start_line, def_end_line + 1, 1):
