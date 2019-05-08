@@ -132,7 +132,9 @@ def is_node_in_function(ast_tree, ast_node):
 def is_function_important(source_path, function_call_node, sym_path_list):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     ast_tree = ASTGenerator.get_ast_json(source_path)
-    function_ref_node = function_call_node['children'][0]
+    function_ref_node = function_call_node
+    if len(function_call_node['children']) > 0:
+        function_ref_node = function_call_node['children'][0]
     function_name = function_ref_node['value']
 
     if is_node_in_if_cond(ast_tree, function_call_node):
