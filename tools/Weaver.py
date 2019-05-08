@@ -353,7 +353,8 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                                                                                inserting_node,
                                                                                source_path_b,
                                                                                source_path_d,
-                                                                               skip_line_list))
+                                                                               skip_line_list,
+                                                                               ast_map_c))
             # print(missing_function_list)
 
             missing_var_list.update(Identifier.identify_missing_var(function_node_a,
@@ -616,11 +617,12 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                 else:
                     translated_command = inserting_node_str + " into " + position_c
 
-                missing_function_list = Identifier.identify_missing_functions(ast_map_a,
+                missing_function_list.update(Identifier.identify_missing_functions(ast_map_a,
                                                                               inserting_node,
                                                                               source_path_b,
                                                                               source_path_d,
-                                                                              skip_line_list)
+                                                                              skip_line_list,
+                                                                                   ast_map_c))
                 missing_var_list = Identifier.identify_missing_var(function_node_a,
                                                                    function_node_b,
                                                                    inserting_node,
