@@ -94,6 +94,8 @@ def is_loc_in_if_cond(source_file, line_number):
     ast_tree = ASTGenerator.get_ast_json(source_file)
     ast_node = Finder.search_node_by_loc(ast_tree,
                                          int(line_number))
+    if ast_node is None:
+        return False
     return is_node_in_if_cond(ast_tree, ast_node)
 
 
