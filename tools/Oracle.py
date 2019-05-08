@@ -89,6 +89,14 @@ def is_node_equal(node_a, node_b, var_map):
             return False
 
 
+def is_loc_in_if_cond(source_file, line_number):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    ast_tree = ASTGenerator.get_ast_json(source_file)
+    ast_node = Finder.search_node_by_loc(ast_tree,
+                                         int(line_number))
+    return is_node_in_if_cond(ast_tree, ast_node)
+
+
 def is_node_in_if_cond(ast_tree, ast_node):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     parent_node_id = int(ast_node['parent_id'])

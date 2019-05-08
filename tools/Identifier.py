@@ -141,7 +141,7 @@ def identify_missing_data_types(insert_node_b, var_info, target_path, ast_node_b
                         ast_node = type_def_node_list_b[identifier]
                         source_file = str(ast_node['file'])
                         if ".." in source_file:
-                            source_file = source_path_b + "/" + str(ast_node['file'])
+                            source_file = source_path_b + "/../" + str(ast_node['file'])
                             source_file = os.path.abspath(source_file)
                             if not os.path.isfile(source_file):
                                 Emitter.warning("\t\tFile: " + str(source_file))
@@ -162,7 +162,7 @@ def identify_missing_data_types(insert_node_b, var_info, target_path, ast_node_b
                 ast_node = type_def_node_list_b[identifier]
                 source_file = str(ast_node['file'])
                 if ".." in source_file:
-                    source_file = source_path_b + "/" + str(ast_node['file'])
+                    source_file = source_path_b + "/../" + str(ast_node['file'])
                     source_file = os.path.abspath(source_file)
                     if not os.path.isfile(source_file):
                         Emitter.warning("\t\tFile: " + str(source_file))

@@ -31,6 +31,8 @@ def slice_code_from_trace(diff_info, trace_list, path_a, path_b):
                 if loc_id not in trace_list:
                     if Oracle.is_declaration_line(source_file, line_number):
                         skip_lines.append(line_number)
+                    if Oracle.is_loc_in_if_cond(source_file, line_number):
+                        continue
                     statement = get_code(source_file, line_number)
                     # print(statement)
                     # if "if" in statement:
