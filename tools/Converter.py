@@ -260,7 +260,7 @@ def convert_member_expr(ast_node, only_string=False):
         var_name = str(node_value.split(":")[-1])
         # print(var_name)
         var_data_type = str(ast_node['data_type'])
-        if "union" in node_value:
+        if "isArrow" not in ast_node.keys():
             var_name = "." + var_name
         else:
             var_name = "->" + var_name
@@ -317,7 +317,7 @@ def convert_member_expr(ast_node, only_string=False):
         elif child_node_type == "MemberExpr":
             child_node_value = child_node['value']
             # var_data_type = str(child_node['data_type'])
-            if "union" in child_node_value:
+            if "isArrow" not in child_node.keys():
                 var_name = "." + str(child_node_value.split(":")[-1]) + var_name
             else:
                 var_name = "->" + str(child_node_value.split(":")[-1]) + var_name
