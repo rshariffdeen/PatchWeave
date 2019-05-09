@@ -67,6 +67,8 @@ def map_variable(var_map_a, var_map_b):
             var_b_name, var_b_type = candidate_list[0]
             if var_b_type == var_a_type:
                 var_map[var_a_name] = var_b_name
+            elif var_a_type == "int16":
+                var_map[var_a_name] = var_b_name
             else:
                 var_map[var_a_name] = "(" + var_a_type + ")" + var_b_name
         elif len(candidate_list) > 1:
