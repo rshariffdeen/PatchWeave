@@ -353,7 +353,8 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                                                                                inserting_node,
                                                                                source_path_b,
                                                                                source_path_d,
-                                                                               skip_line_list))
+                                                                               skip_line_list,
+                                                                               ast_map_c))
             # print(missing_function_list)
 
             missing_var_list.update(Identifier.identify_missing_var(function_node_a,
@@ -587,6 +588,12 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
         ast_map_a = ASTGenerator.get_ast_json(source_path_a)
         Emitter.sub_sub_title("transplanting code")
         # print(ast_script)
+        if Oracle.is_loc_on_stack(source_path_c, function_node_c['identifier'], line_number_c, stack_info_c) or \
+                Oracle.is_loc_on_sanitizer(source_path_c, line_number_c, suspicious_lines_c):
+            Emitter.warning("\t\twarning: insertion loc is on crash stack")
+            position_number = int(position_c.split(" at ")[1]) - 1
+            position_c = str(position_c.split(" at ")[0] + " at " + str(position_number))
+            Emitter.warning("\t\tinsert location adjusted by 1")
         for script_line in ast_script:
             Emitter.special("\t\t" + script_line)
             translated_command = script_line
@@ -610,11 +617,12 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                 else:
                     translated_command = inserting_node_str + " into " + position_c
 
-                missing_function_list = Identifier.identify_missing_functions(ast_map_a,
+                missing_function_list.update(Identifier.identify_missing_functions(ast_map_a,
                                                                               inserting_node,
                                                                               source_path_b,
                                                                               source_path_d,
-                                                                              skip_line_list)
+                                                                              skip_line_list,
+                                                                                   ast_map_c))
                 missing_var_list = Identifier.identify_missing_var(function_node_a,
                                                                    function_node_b,
                                                                    inserting_node,
