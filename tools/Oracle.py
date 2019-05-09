@@ -101,6 +101,7 @@ def is_loc_in_if_cond(source_file, line_number):
 
 def is_node_in_if_cond(ast_tree, ast_node):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+
     parent_node_id = int(ast_node['parent_id'])
     parent_node = Finder.search_ast_node_by_id(ast_tree, parent_node_id)
     parent_node_type = parent_node['type']
@@ -110,6 +111,8 @@ def is_node_in_if_cond(ast_tree, ast_node):
             return False
         return True
     elif parent_node_type == "FunctionDecl":
+        return False
+    elif parent_node_type == "TranslationUnitDecl":
         return False
     else:
         return is_node_in_if_cond(ast_tree, parent_node)
