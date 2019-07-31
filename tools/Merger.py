@@ -223,6 +223,11 @@ def merge_ast_script(ast_script, ast_node_a, ast_node_b, mapping_ba):
                 inserted_node_list.append(replacing_node_id)
             # print(script_line)
             merged_ast_script.append(script_line)
+        elif "Update" in script_line:
+            # print(script_line)
+            update_line = str(script_line).replace("Update", "Replace").replace(" to ", " with ")
+            # print(update_line)
+            merged_ast_script.append(update_line)
 
     second_merged_ast_script = list()
     for script_line in merged_ast_script:
