@@ -117,6 +117,8 @@ def read_conf():
             Values.EXPLOIT_C = configuration.replace(Definitions.CONF_EXPLOIT_C, '')
         elif Definitions.CONF_PATH_POC in configuration:
             Values.PATH_POC = configuration.replace(Definitions.CONF_PATH_POC, '')
+            if "$HOME$" in Values.PATH_POC:
+                Values.PATH_POC = Values.PATH_POC.replace("$HOME$", Definitions.DIRECTORY_MAIN)
             if not os.path.isfile(Values.PATH_POC):
                 Emitter.error("[NOT FOUND] POC File")
                 exit()
