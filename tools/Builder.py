@@ -358,6 +358,8 @@ def restore_project(project_path):
         restore_command += "svn revert -R .; svn status --no-ignore | grep '^\?' | sed 's/^\?     //'  | xargs rm -rf"
     elif os.path.exists(project_path + "/.hg"):
         restore_command += "hg update --clean; hg st -un0 | xargs -0 rm"
+    else:
+        return
     # print(restore_command)
     execute_command(restore_command)
 
