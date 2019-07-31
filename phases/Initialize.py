@@ -122,10 +122,16 @@ def read_conf():
                 exit()
         elif Definitions.CONF_PATH_A in configuration:
             Values.PATH_A = configuration.replace(Definitions.CONF_PATH_A, '')
+            if "$HOME$" in Values.PATH_A:
+                Values.PATH_A = Values.PATH_A.replace("$HOME$", Definitions.DIRECTORY_MAIN)
         elif Definitions.CONF_PATH_B in configuration:
             Values.PATH_B = configuration.replace(Definitions.CONF_PATH_B, '')
+            if "$HOME$" in Values.PATH_B:
+                Values.PATH_B = Values.PATH_B.replace("$HOME$", Definitions.DIRECTORY_MAIN)
         elif Definitions.CONF_PATH_C in configuration:
             Values.PATH_C = configuration.replace(Definitions.CONF_PATH_C, '')
+            if "$HOME$" in Values.PATH_C:
+                Values.PATH_C = Values.PATH_C.replace("$HOME$", Definitions.DIRECTORY_MAIN)
         elif Definitions.CONF_EXPLOIT_PREPARE in configuration:
             Values.EXPLOIT_PREPARE = configuration.replace(Definitions.CONF_EXPLOIT_PREPARE, '')
         elif Definitions.CONF_FLAGS_A in configuration:
