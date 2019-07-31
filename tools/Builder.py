@@ -370,6 +370,8 @@ def soft_restore_project(project_path):
         restore_command += "svn revert -R .; "
     elif os.path.exists(project_path + "/.hg"):
         restore_command += "hg update --clean"
+    else:
+        return
     # print(restore_command)
     execute_command(restore_command)
 
