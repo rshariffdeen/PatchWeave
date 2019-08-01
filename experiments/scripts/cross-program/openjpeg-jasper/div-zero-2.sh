@@ -1,6 +1,6 @@
-bug_id=CVE-2016-8692-2
+project_name=openjpeg-jasper
+bug_id=div-zero-2
 dir_name=$1/$bug_id
-dir_name_docker=/data/$bug_id
 pa=openjpeg-1.3
 pb=openjpeg-1.4
 pc=jasper-1.900.2
@@ -13,7 +13,7 @@ opj_file=codec/j2k_to_image.c
 opj_input=J2K_CFMT
 
 
-mkdir $dir_name
+mkdir -p $dir_name
 cd $dir_name
 git clone $pa_url $pa
 cp -rf $pa $pb
@@ -41,7 +41,6 @@ git add libopenjpeg/j2k.c
 git commit -m "fix bug"
 cd ..
 
-
 git clone $pc_url $pc
 cd $pc
 git checkout $pc_commit
@@ -49,9 +48,10 @@ rm aclocal.m4
 git add aclocal.m4
 git commit -m "removing aclocal"
 
-docker exec patchweave bash -c "cd $dir_name_docker/$pc;autoreconf -i;./configure"
-docker exec patchweave bash -c "cd $dir_name_docker/$pc; bear make"
-docker exec patchweave python /patchweave/script/format.py $dir_name_docker/$pc
+cd $dir_name_docker/$pc;autoreconf -i;./configure
+cd $dir_name_docker/$pc; bear make
+python /patchweave/script/format.py $dir_name/$pc
+
 git add *.c
 git commit -m "format style"
 git reset --hard HEAD

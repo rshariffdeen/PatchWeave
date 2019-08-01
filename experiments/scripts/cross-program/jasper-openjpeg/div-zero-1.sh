@@ -13,7 +13,7 @@ opj_file=applications/codec/j2k_to_image.c
 opj_input=J2K_CFMT
 
 
-mkdir $dir_name
+mkdir -p $dir_name
 cd $dir_name
 git clone $pa_url $pa
 cp -rf $pa $pb
