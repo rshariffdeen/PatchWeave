@@ -1,5 +1,6 @@
-bug_id=CVE-2016-9387-3
-dir_name=$1/$bug_id
+project_name=jasper-openjpeg
+bug_id=unsigned-int-overlfow
+dir_name=$1/$project_name/$bug_id
 dir_name_docker=/data/$bug_id
 pa=jasper-1.900.13
 pb=jasper-1.900.14
@@ -13,7 +14,7 @@ opj_file=src/bin/jp2/opj_dump.c
 opj_input=JP2_CFMT
 
 
-mkdir $dir_name
+mkdir -p $dir_name
 cd $dir_name
 git clone $pa_url $pa
 cp -rf $pa $pb
@@ -32,10 +33,11 @@ sed -i "s/get_file_format(infile)/$opj_input/g" $opj_file
 git add $opj_file
 git commit -m "fix input format"
 
-docker exec patchweave bash -c "cd $dir_name_docker/$pc;cmake ."
-docker exec patchweave bash -c "cd $dir_name_docker/$pc; bear make"
-docker exec patchweave bash -c "rm -rf $dir_name_docker/$pc/CMakeFiles"
-docker exec patchweave python /patchweave/script/format.py $dir_name_docker/$pc
+cd $dir_name_docker/$pc;cmake .
+cd $dir_name_docker/$pc; bear make
+rm -rf $dir_name_docker/$pc/CMakeFiles
+python /patchweave/script/format.py $dir_name/$pc
+
 git add *.c
 git commit -m "format style"
 git reset --hard HEAD

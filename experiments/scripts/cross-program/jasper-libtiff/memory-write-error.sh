@@ -1,6 +1,6 @@
-bug_id=CVE-2016-8884-2
-dir_name=$1/$bug_id
-dir_name_docker=/data/$bug_id
+project_name=jasper-libtiff
+bug_id=memory-write-error
+dir_name=$1/$project_name/$bug_id
 pa=jasper-1.900.8
 pb=jasper-1.900.9
 pc=libtiff-3.7.5
@@ -11,7 +11,7 @@ pb_commit=5d66894d
 pc_commit=Release-v3-7-5
 
 
-mkdir $dir_name
+mkdir -p $dir_name
 cd $dir_name
 git clone $pa_url $pa
 cp -rf $pa $pb
@@ -30,9 +30,10 @@ cd $pc
 git checkout $pc_commit
 
 
-docker exec patchweave bash -c "cd $dir_name_docker/$pc;autoreconf -i;./configure"
-docker exec patchweave bash -c "cd $dir_name_docker/$pc; bear make"
-docker exec patchweave python /patchweave/script/format.py $dir_name_docker/$pc
+cd $dir_name_docker/$pc;autoreconf -i;./configure
+cd $dir_name_docker/$pc; bear make
+/patchweave/script/format.py $dir_name/$pc
+
 git add *.c
 git commit -m "format style"
 git reset --hard HEAD
