@@ -1,6 +1,7 @@
-bug_id=CVE-2016-9830-2
-dir_name=$1/$bug_id
-dir_name_docker=/data/$bug_id
+project_name=libwebp-jasper
+bug_id=shift-overflow
+dir_name=$1/$project_name/$bug_id
+
 pa=libwebp-0.2.0
 pb=libwebp-0.3.0
 pc=jasper-1.900.3
@@ -11,7 +12,7 @@ pb_commit=7a650c6a
 pc_commit=version-1.900.3
 
 
-mkdir $dir_name
+mkdir -p $dir_name
 cd $dir_name
 git clone $pa_url $pa
 cp -rf $pa $pb
@@ -40,9 +41,10 @@ cd $pc
 git checkout $pc_commit
 
 
-docker exec patchweave bash -c "cd $dir_name_docker/$pc;autoreconf -i;./configure"
-docker exec patchweave bash -c "cd $dir_name_docker/$pc; bear make"
-docker exec patchweave python /patchweave/script/format.py $dir_name_docker/$pc
+cd $dir_name/$pc;autoreconf -i;./configure"
+cd $dir_name/$pc; bear make"
+python /patchweave/script/python/format.py $dir_name/$pc
+
 git add *.c
 git commit -m "format style"
 git reset --hard HEAD

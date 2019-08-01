@@ -1,5 +1,5 @@
 project_name=jasper-openjpeg
-bug_id=unsigned-int-overlfow
+bug_id=unsigned-int-overlfow-1
 dir_name=$1/$project_name/$bug_id
 dir_name_docker=/data/$bug_id
 pa=jasper-1.900.13
@@ -33,10 +33,10 @@ sed -i "s/get_file_format(infile)/$opj_input/g" $opj_file
 git add $opj_file
 git commit -m "fix input format"
 
-cd $dir_name_docker/$pc;cmake .
-cd $dir_name_docker/$pc; bear make
-rm -rf $dir_name_docker/$pc/CMakeFiles
-python /patchweave/script/format.py $dir_name/$pc
+cd $dir_name/$pc;cmake .
+cd $dir_name/$pc; bear make
+rm -rf $dir_name/$pc/CMakeFiles
+python /patchweave/script/python/format.py $dir_name/$pc
 
 git add *.c
 git commit -m "format style"

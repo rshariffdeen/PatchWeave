@@ -33,9 +33,9 @@ sed -i "s/get_file_format(infile)/$opj_input/g" $opj_file
 git add $opj_file
 git commit -m "fix input format"
 
-cd $dir_name_docker/$pc;autoreconf -i;./configure
-cd $dir_name_docker/$pc; bear make
-python /patchweave/script/format.py $dir_name/$pc
+cd $dir_name/$pc;autoreconf -i;./configure
+cd $dir_name/$pc; bear make
+python /patchweave/script/python/format.py $dir_name/$pc
 
 git add *.c
 git commit -m "format style"
