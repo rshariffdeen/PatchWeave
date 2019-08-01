@@ -2,6 +2,7 @@ FROM rshariffdeen/patchweave:latest
 MAINTAINER Ridwan Shariffdeen <ridwan@comp.nus.edu.sg>
 
 RUN mkdir /data
+RUN cd /patchweave && git pull origin
 
 #openjpeg-jasper
 RUN bash /patchweave/experiments/scripts/cross-program/openjpeg-jasper/div-zero-1.sh /data
