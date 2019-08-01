@@ -1,15 +1,15 @@
-bug_id=CVE-2016-8691-1
-dir_name=$1/$bug_id
-dir_name_docker=/data/$bug_id
+project_name=jasper-openjpeg
+bug_id=div-zero-2
+dir_name=$1/$project_name/$bug_id
 pa=jasper-1.900.2
 pb=jasper-1.900.3
-pc=openjpeg-1.5.1
+pc=openjpeg-1.3
 pa_url=https://github.com/mdadams/jasper.git
 pc_url=https://github.com/uclouvain/openjpeg.git
 pa_commit=3c55b39
 pb_commit=d8c2604
-pc_commit=version.1.5.1
-opj_file=applications/codec/j2k_to_image.c
+pc_commit=version.1.3
+opj_file=codec/j2k_to_image.c
 opj_input=J2K_CFMT
 
 
@@ -36,10 +36,15 @@ git checkout $pc_commit
 sed -i "s/get_file_format(infile)/$opj_input/g" $opj_file
 git add $opj_file
 git commit -m "fix input format"
+sed -i "s/CFLAGS = -O3 -lstdc++ # -g -p -pg/CFLAGS = -O3 -lstdc++ # -g -p -pg\nCC = clang/g" codec/Makefile
+sed -i "s/gcc/\$(CC)/g" codec/Makefile
+git add codec/Makefile
+git commit -m "fix make error"
 
-docker exec patchweave bash -c "cd $dir_name_docker/$pc;autoreconf -i;./configure"
-docker exec patchweave bash -c "cd $dir_name_docker/$pc; bear make"
-docker exec patchweave python /patchweave/script/format.py $dir_name_docker/$pc
+
+
+cd $dir_name/$pc; bear make
+python /patchweave/script/format.py $dir_name/$pc
 git add *.c
 git commit -m "format style"
 git reset --hard HEAD
