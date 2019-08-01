@@ -1,6 +1,6 @@
 project_name=openjpeg-jasper
 bug_id=div-zero-2
-dir_name=$1/$bug_id
+dir_name=$1/$project_name/$bug_id
 pa=openjpeg-1.3
 pb=openjpeg-1.4
 pc=jasper-1.900.2
