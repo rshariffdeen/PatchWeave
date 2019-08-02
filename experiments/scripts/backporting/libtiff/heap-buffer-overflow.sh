@@ -1,14 +1,14 @@
-bug_id=CVE-2017-7596
-dir_name=$1/backport/$bug_id
-dir_name_docker=/data/backport/$bug_id
 project_name=libtiff
+bug_id=heap-buffer-overflow
+dir_name=$1/backport/$project_name/$bug_id
+
 project_url=https://github.com/vadz/libtiff.git
 pa=$project_name-4.0.7
 pb=$project_name-4.0.8
 pc=$project_name-4.0.0
 
-pa_commit=3cfd62d
-pb_commit=3144e577
+pa_commit=f3069a5
+pb_commit=5ed9fea5
 pc_commit=Release-v4-0-0
 
 
@@ -26,9 +26,10 @@ git checkout $pb_commit
 cd ../$pc
 git checkout $pc_commit
 
-docker exec patchweave bash -c "cd $dir_name_docker/$pc;autoreconf -i;./configure"
-docker exec patchweave bash -c "cd $dir_name_docker/$pc; bear make"
-docker exec patchweave python /patchweave/script/format.py $dir_name_docker/$pc
+cd $dir_name/$pc;autoreconf -i;./configure
+cd $dir_name/$pc; bear make
+python /patchweave/script/format.py $dir_name/$pc
+
 git add *.c
 git commit -m "format style"
 git reset --hard HEAD
