@@ -21,7 +21,10 @@ RUN bash /patchweave/experiments/scripts/cross-program/jasper-openjpeg/unsigned-
 #RUN bash /patchweave/experiments/scripts/cross-program/jasper-openjpeg/unsigned-int-overflow-2.sh /data
 
 #openjpeg-libwebp
-RUN bash /patchweave/experiments/scripts/cross-program/jasper-libwebp/shift-overflow.sh /data
+RUN bash /patchweave/experiments/scripts/cross-program/openjpeg-libwebp/signed-int-overflow.sh /data
 
 #jasper-libwebp
 RUN bash /patchweave/experiments/scripts/cross-program/jasper-libwebp/shift-overflow.sh /data
+
+#libwebp-jasper
+RUN bash /patchweave/experiments/scripts/cross-program/libwebp-jasper/shift-overflow.sh /data
