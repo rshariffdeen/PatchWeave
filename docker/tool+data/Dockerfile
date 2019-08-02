@@ -28,3 +28,12 @@ RUN bash /patchweave/experiments/scripts/cross-program/jasper-libwebp/shift-over
 
 #libwebp-jasper
 RUN bash /patchweave/experiments/scripts/cross-program/libwebp-jasper/shift-overflow.sh /data
+
+#jasper-libtiff
+RUN bash /patchweave/experiments/scripts/cross-program/jasper-libtiff/memory-write-error.sh /data
+
+#libtiff-jasper
+RUN bash /patchweave/experiments/scripts/cross-program/libtiff-jasper/memory-write-error.sh /data
+
+
+
