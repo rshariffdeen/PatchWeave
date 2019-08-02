@@ -9,7 +9,7 @@ RUN bash /patchweave/experiments/scripts/cross-program/openjpeg-jasper/div-zero-
 RUN bash /patchweave/experiments/scripts/cross-program/openjpeg-jasper/div-zero-2.sh /data
 RUN bash /patchweave/experiments/scripts/cross-program/openjpeg-jasper/null-ptr.sh /data
 RUN bash /patchweave/experiments/scripts/cross-program/openjpeg-jasper/signed-int-overflow.sh /data
-RUN bash /patchweave/experiments/scripts/cross-program/openjpeg-jasper/unsigned-int-overflow.sh /data
+#RUN bash /patchweave/experiments/scripts/cross-program/openjpeg-jasper/unsigned-int-overflow.sh /data
 
 
 #jasper-openjpeg
