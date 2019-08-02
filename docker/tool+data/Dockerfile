@@ -41,3 +41,6 @@ RUN bash /patchweave/experiments/scripts/backporting/jasper/int-overflow.sh /dat
 # libtiff backporting
 #RUN bash /patchweave/experiments/scripts/backporting/libtiff/heap-buffer-overflow.sh /data
 
+# libming backporting
+RUN bash /patchweave/experiments/scripts/backporting/libming/div-zero.sh /data
+RUN bash /patchweave/experiments/scripts/backporting/libming/negative-shift.sh /data
