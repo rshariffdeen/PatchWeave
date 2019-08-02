@@ -1,7 +1,7 @@
-bug_id=CVE-2016-9387
+bug_id=int-overflow
 project_name=jasper
 dir_name=$1/backport/$project_name/$bug_id
-dir_name_docker=/data/backport/$project_name/$bug_id
+
 
 project_url=https://github.com/mdadams/jasper.git
 pa=$project_name-1.900.12
@@ -13,7 +13,7 @@ pb_commit=d91198a
 pc_commit=version-1.900.2
 
 
-mkdir $dir_name
+mkdir -p $dir_name
 cd $dir_name
 git clone $project_url $pa
 cp -rf $pa $pb
@@ -31,9 +31,10 @@ rm aclocal.m4
 git add aclocal.m4
 git commit -m "removing aclocal"
 
-docker exec patchweave bash -c "cd $dir_name_docker/$pc;autoreconf -i;./configure"
-docker exec patchweave bash -c "cd $dir_name_docker/$pc; bear make"
-docker exec patchweave python /patchweave/script/format.py $dir_name_docker/$pc
+cd $dir_name/$pc;autoreconf -i;./configure
+cd $dir_name/$pc; bear make
+python /patchweave/script/format.py $dir_name/$pc
+
 git add *.c
 git commit -m "format style"
 git reset --hard HEAD

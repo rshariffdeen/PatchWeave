@@ -27,7 +27,7 @@ RUN bash /patchweave/experiments/scripts/cross-program/openjpeg-libwebp/signed-i
 RUN bash /patchweave/experiments/scripts/cross-program/jasper-libwebp/shift-overflow.sh /data
 
 #libwebp-jasper
-RUN bash /patchweave/experiments/scripts/cross-program/libwebp-jasper/shift-overflow.sh /data
+#RUN bash /patchweave/experiments/scripts/cross-program/libwebp-jasper/shift-overflow.sh /data
 
 #jasper-libtiff
 RUN bash /patchweave/experiments/scripts/cross-program/jasper-libtiff/memory-write-error.sh /data
