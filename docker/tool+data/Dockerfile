@@ -38,5 +38,6 @@ RUN bash /patchweave/experiments/scripts/cross-program/libtiff-jasper/memory-wri
 # jasper  backporting
 RUN bash /patchweave/experiments/scripts/backporting/jasper/int-overflow.sh /data
 
-
+# libtiff backporting
+RUN bash /patchweave/experiments/scripts/backporting/libtiff/heap-buffer-overflow.sh /data
 

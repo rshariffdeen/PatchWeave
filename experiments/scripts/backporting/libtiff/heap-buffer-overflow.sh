@@ -12,7 +12,7 @@ pb_commit=5ed9fea5
 pc_commit=Release-v4-0-0
 
 
-mkdir $dir_name
+mkdir -p $dir_name
 cd $dir_name
 git clone $project_url $pa
 cp -rf $pa $pb
