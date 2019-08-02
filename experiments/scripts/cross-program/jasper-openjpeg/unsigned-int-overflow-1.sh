@@ -1,5 +1,5 @@
 project_name=jasper-openjpeg
-bug_id=unsigned-int-overlfow-1
+bug_id=unsigned-int-overflow-1
 dir_name=$1/$project_name/$bug_id
 dir_name_docker=/data/$bug_id
 pa=jasper-1.900.13
