@@ -12,7 +12,7 @@ pb_commit=9b46957e
 pc_commit=rel-1-1
 
 
-mkdir $dir_name
+mkdir -p $dir_name
 cd $dir_name
 git clone $project_url $pa
 cp -rf $pa $pb
