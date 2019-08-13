@@ -1,7 +1,6 @@
-bug_id=CVE-2017-14107
+bug_id=memory-error
 project_name=libzip
 dir_name=$1/backport/$project_name/$bug_id
-dir_name_docker=/data/backport/$project_name/$bug_id
 
 project_url=https://github.com/nih-at/libzip.git
 pa=$project_name-1.2.0
@@ -28,10 +27,12 @@ cd ../$pc
 git checkout $pc_commit
 
 
-docker exec patchweave bash -c "cd $dir_name_docker/$pc;cmake ."
-docker exec patchweave bash -c "cd $dir_name_docker/$pc; bear make"
-docker exec patchweave bash -c "rm -rf $dir_name_docker/$pc/CMakeFiles"
-docker exec patchweave python /patchweave/script/format.py $dir_name_docker/$pc
+cd $dir_name/$pc;cmake .
+cd $dir_name/$pc; bear make
+rm -rf $dir_name/$pc/CMakeFiles
+
+python /patchweave/script/format.py $dir_name/$pc
+
 git add *.c
 git commit -m "format style"
 git reset --hard HEAD
