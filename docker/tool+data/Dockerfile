@@ -44,3 +44,7 @@ RUN bash /patchweave/experiments/scripts/backporting/jasper/int-overflow.sh /dat
 # libming backporting
 RUN bash /patchweave/experiments/scripts/backporting/libming/div-zero.sh /data
 RUN bash /patchweave/experiments/scripts/backporting/libming/negative-shift.sh /data
+
+# libzip backporting
+RUN bash /patchweave/experiments/scripts/backporting/libzip/memory-error.sh /data
+RUN bash /patchweave/experiments/scripts/backporting/libzip/use-after-free.sh /data
