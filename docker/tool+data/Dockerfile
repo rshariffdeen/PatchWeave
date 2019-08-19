@@ -4,6 +4,9 @@ MAINTAINER Ridwan Shariffdeen <ridwan@comp.nus.edu.sg>
 RUN mkdir /data
 RUN cd /patchweave && git pull origin
 
+RUN apt install -y \
+    bison
+
 #openjpeg-jasper
 RUN bash /patchweave/experiments/scripts/cross-program/openjpeg-jasper/div-zero-1.sh /data
 RUN bash /patchweave/experiments/scripts/cross-program/openjpeg-jasper/div-zero-2.sh /data
