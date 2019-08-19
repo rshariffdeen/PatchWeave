@@ -5,7 +5,9 @@ RUN mkdir /data
 RUN cd /patchweave && git pull origin
 
 RUN apt install -y \
-    bison
+    bison \
+    flex \
+    libfreetype6-dev
 
 #openjpeg-jasper
 RUN bash /patchweave/experiments/scripts/cross-program/openjpeg-jasper/div-zero-1.sh /data
