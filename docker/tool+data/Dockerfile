@@ -18,7 +18,7 @@ RUN bash /patchweave/experiments/scripts/cross-program/jasper-openjpeg/div-zero-
 RUN bash /patchweave/experiments/scripts/cross-program/jasper-openjpeg/null-ptr.sh /data
 RUN bash /patchweave/experiments/scripts/cross-program/jasper-openjpeg/signed-int-overflow.sh /data
 RUN bash /patchweave/experiments/scripts/cross-program/jasper-openjpeg/unsigned-int-overflow-1.sh /data
-#RUN bash /patchweave/experiments/scripts/cross-program/jasper-openjpeg/unsigned-int-overflow-2.sh /data
+RUN bash /patchweave/experiments/scripts/cross-program/jasper-openjpeg/unsigned-int-overflow-2.sh /data
 
 #openjpeg-libwebp
 RUN bash /patchweave/experiments/scripts/cross-program/openjpeg-libwebp/signed-int-overflow.sh /data
