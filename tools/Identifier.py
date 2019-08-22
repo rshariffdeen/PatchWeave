@@ -380,7 +380,8 @@ def identify_divergent_point(byte_list, sym_path_info, trace_list, stack_info):
     #             break
     #     print("finish")
     # print("FINISH")
-    length = len(trace_list) - 1
+    # TODO: not sure why it was reduced by 1
+    length = len(trace_list)
     # print(trace_list)
     # print(length)
     grab_nearest = False
