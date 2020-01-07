@@ -1,7 +1,7 @@
 import subprocess
 
-crash_word_list = ["abort", "core dumped", "crashed", "exception"]
-error_word_list = ["runtime error", "buffer-overflow", "unsigned integer overflow"]
+crash_word_list = ["abort", "core dumped", "crashed", "exception", "dumped core"]
+error_word_list = ["runtime error", "buffer-overflow", "unsigned integer overflow", "timeout"]
 PATH_POC = ""
 DIR_FUZZ_INPUT = ""
 DIR_FUZZ_OUTPUT_LOG = ""
@@ -68,7 +68,7 @@ def compare_test_output(output_c, output_d):
                         if any_runtime_error(program_output_d):
                             return -1
                         else:
-                            return 0
+                            return -1
                 else:
                     print(program_output_c)
                     print(program_output_d)
