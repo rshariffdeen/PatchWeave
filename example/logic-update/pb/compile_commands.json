@@ -1,0 +1,17 @@
+[
+    {
+        "command": "cc -c -g -O0 -o sort sort.c", 
+        "directory": "/home/ridwan/workspace/research-work/patch-transplant/PatchWeave/example/logic-update/pb", 
+        "file": "/home/ridwan/workspace/research-work/patch-transplant/PatchWeave/example/logic-update/pb/sort.c"
+    }, 
+    {
+        "command": "cc -c -g -O0 -o .sort.o sort.c", 
+        "directory": "/home/ridwan/workspace/research-work/patch-transplant/PatchWeave/example/logic-update/pb", 
+        "file": "/home/ridwan/workspace/research-work/patch-transplant/PatchWeave/example/logic-update/pb/sort.c"
+    }, 
+    {
+        "command": "cc -c -emit-llvm -g -O0 -o .sort.o.bc sort.c", 
+        "directory": "/home/ridwan/workspace/research-work/patch-transplant/PatchWeave/example/logic-update/pb", 
+        "file": "/home/ridwan/workspace/research-work/patch-transplant/PatchWeave/example/logic-update/pb/sort.c"
+    }
+]
