@@ -119,6 +119,24 @@
 
   {
     "category":"cross-program",
+    "donor":"openjpeg",
+    "target":"jasper",
+    "bug_name":"heap-overflow",
+    "poc_path":"/poc/jasper/CVE-2016-9390.j2k",
+    "cve_id":"CVE-2016-9390"
+  },
+
+  {
+    "category":"cross-program",
+    "donor":"jasper",
+    "target":"openjpeg",
+    "bug_name":"heap-overflow",
+    "poc_path":"/poc/jasper/CVE-2016-9390.j2k",
+    "cve_id":"CVE-2016-9390"
+  },
+
+  {
+    "category":"cross-program",
     "donor":"jasper",
     "target":"openjpeg",
     "bug_name":"unsigned-int-overflow-2",
