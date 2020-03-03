@@ -391,10 +391,11 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
             # print(var)
             var_info = missing_var_list[var]
             ast_node = var_info['ast-node']
-            if "ref_type" in ast_node.keys():
-                ast_op = "Insert " + ast_node['type'] + "(" + str(ast_node['id']) + ")"
-                ast_op += " into " + position_c
-                ast_script_c.append(ast_op)
+            # not sure why the if is required
+            # if "ref_type" in ast_node.keys():
+            ast_op = "Insert " + ast_node['type'] + "(" + str(ast_node['id']) + ")"
+            ast_op += " into " + position_c
+            ast_script_c.append(ast_op)
 
         ast_script_c.reverse()
         Writer.write_ast_script(ast_script_c, ast_script_file)
