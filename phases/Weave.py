@@ -133,9 +133,9 @@ def transplant_code():
     suspicious_lines_c = Exploit.target_suspect_line_list
     # print(suspicious_lines_c)
     # print(Analyse.diff_info)
-    for diff_loc in Analyse.diff_info.keys():
+    for diff_loc in Values.diff_info.keys():
         Emitter.normal(diff_loc)
-        diff_loc_info = Analyse.diff_info[diff_loc]
+        diff_loc_info = Values.diff_info[diff_loc]
         div_sym_path_cond = get_sym_path_cond(diff_loc)
         last_sym_path_cond = Concolic.last_sym_path_c
         # print(last_sym_path_cond)

@@ -6,8 +6,8 @@ import sys
 import time
 from common.Utilities import error_exit
 from common import Definitions, Values
-import Exploit
-from tools import Collector, Converter, KleeExecutor, Logger, Emitter, Builder
+from phases import Exploit
+from tools import Collector, Converter, KleeExecutor, Logger, Emitter, Builder, Reader
 
 
 FILE_EXPLOIT_OUTPUT_A = ""
@@ -137,6 +137,7 @@ def set_values():
     FILE_TRACE_LOG_A = Definitions.DIRECTORY_OUTPUT + "/trace-klee-pa"
     FILE_TRACE_LOG_B = Definitions.DIRECTORY_OUTPUT + "/trace-klee-pb"
     FILE_TRACE_LOG_C = Definitions.DIRECTORY_OUTPUT + "/trace-klee-pc"
+    Values.diff_info = Reader.read_json(Definitions.FILE_DIFF_INFO_JSON)
 
 
 def trace():
