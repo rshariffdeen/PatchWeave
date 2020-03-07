@@ -172,7 +172,7 @@ def merge_ast_script(ast_script, ast_node_a, ast_node_b, mapping_ba):
             move_position = int((script_line.split(" at ")[1]))
             move_node_str = (script_line.split(" into ")[0]).replace("Move ", "")
             move_node_id_b = int((move_node_str.split("(")[1]).split(")")[0])
-            move_node_id_a = mapping_ba[move_node_b]
+            move_node_id_a = mapping_ba[move_node_id_b]
             move_node_b = Finder.search_ast_node_by_id(ast_node_b, move_node_id_b)
             move_node_a = Finder.search_ast_node_by_id(ast_node_a, move_node_id_a)
             move_node_type_b = move_node_b['type']
