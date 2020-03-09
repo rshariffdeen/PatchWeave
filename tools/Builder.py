@@ -25,6 +25,9 @@ def config_project(project_path, is_llvm, custom_config_command=None):
     if custom_config_command is not None:
         if custom_config_command == "skip":
             return
+        elif "cmake" in custom_config_command:
+            config_command = custom_config_command.replace("clang", "wllvm")
+            config_command = config_command.replace("clang++", "wllvm++")
         else:
             if CC == "wllvm":
                 custom_config_command = remove_fsanitize(custom_config_command)
