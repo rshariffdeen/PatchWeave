@@ -20,11 +20,11 @@ def remove_code():
     path_a = Values.PATH_A
     path_b = Values.PATH_B
     trace_list = Trace.list_trace_b
-    diff_info = Analyse.diff_info
+    diff_info = Values.diff_info
 
     diff_info = Slicer.slice_code_from_trace(diff_info, trace_list, path_a, path_b)
     diff_info = Slicer.slice_ast_script(diff_info, Values.PATH_A, Values.PATH_B, trace_list)
-    Analyse.diff_info = Slicer.slice_skipped_diff_locs(diff_info)
+    Values.diff_info = Slicer.slice_skipped_diff_locs(diff_info)
 
 
 def remove_func_calls():
@@ -33,18 +33,18 @@ def remove_func_calls():
     path_a = Values.PATH_A
     path_b = Values.PATH_B
     sym_path_list = Concolic.sym_path_b.keys()
-    diff_info = Analyse.diff_info
+    diff_info = Values.diff_info
     diff_info = Slicer.slice_function_calls(diff_info, sym_path_list, path_a, path_b)
     diff_info = Slicer.slice_ast_script(diff_info, Values.PATH_A, Values.PATH_B, Trace.list_trace_b)
-    Analyse.diff_info = Slicer.slice_skipped_diff_locs(diff_info)
+    Values.diff_info = Slicer.slice_skipped_diff_locs(diff_info)
 
 
 def remove_redundancy():
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Emitter.normal("slicing redundant patches")
-    diff_info = Analyse.diff_info
+    diff_info = Values.diff_info
     suspicious_lines = Exploit.donor_suspect_line_list
-    Analyse.diff_info = Slicer.slice_redundant_patches(diff_info, suspicious_lines)
+    Values.diff_info = Slicer.slice_redundant_patches(diff_info, suspicious_lines)
 
 
 def safe_exec(function_def, title, *args):

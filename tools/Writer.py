@@ -3,7 +3,8 @@
 
 
 import sys
-import Logger
+from tools import Logger
+import json
 
 
 def write_var_map(var_map, output_file):
@@ -33,3 +34,10 @@ def write_ast_script(ast_script, output_file):
             if op != ast_script[-1] and not str(op).endswith("\n"):
                 content += "\n"
         script_file.writelines(content)
+
+
+def write_as_json(data_list, output_file_path):
+    Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
+    content = json.dumps(data_list)
+    with open(output_file_path, 'w') as out_file:
+        out_file.writelines(content)

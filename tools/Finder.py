@@ -54,6 +54,8 @@ def search_ast_node_by_id(ast_node, find_id):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     is_high = False
     is_low = False
+    if not ast_node:
+        error_exit("Id " + str(find_id) + " not found in AST")
     prev_child_node = None
     node_id = int(ast_node['id'])
     if node_id == find_id:

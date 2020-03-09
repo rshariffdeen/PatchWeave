@@ -40,6 +40,7 @@ FILE_DIFF_C = DIRECTORY_TMP + "/diff_C"
 FILE_DIFF_H = DIRECTORY_TMP + "/diff_H"
 FILE_DIFF_ALL = DIRECTORY_TMP + "/diff_all"
 
+FILE_DIFF_INFO_JSON = ""
 
 # ------------------- Configuration --------------------
 
