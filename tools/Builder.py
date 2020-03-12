@@ -244,11 +244,13 @@ def remove_fsanitize(build_command):
 def build_instrumented_code(source_directory):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Emitter.normal("\t\t\tbuilding instrumented code")
+    execute_command("export LLVM_COMPILER=clang")
     global CXX_FLAGS, C_FLAGS, CC, CXX
     CC = "wllvm"
     CXX = "wllvm++"
     CXX_FLAGS = "'-g -O0 -static -DNDEBUG '"
     C_FLAGS = "'-g -O0 -static  -L/klee/build/lib -lkleeRuntest'"
+    LD_FLAGS = "'-L/klee/build/lib -lkleeRuntest'"
 
     if os.path.exists(source_directory + "/" + "aclocal.m4"):
         pre_config_command = "cd " + source_directory + ";"
@@ -258,6 +260,9 @@ def build_instrumented_code(source_directory):
     elif os.path.exists(source_directory + "/autogen.sh"):
         pre_config_command = "./autogen.sh;"
         execute_command(pre_config_command)
+
+    if os.path.exists(source_directory + "/" + "CMakeLists.txt"):
+        execute_command("cmake -DCMAKE_EXE_LINKER_FLAGS=" + LD_FLAGS + " .")
 
     build_command = "cd " + source_directory + ";"
     custom_build_command = ""
