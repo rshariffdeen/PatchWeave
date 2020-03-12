@@ -7,8 +7,7 @@ import time
 from common.Utilities import error_exit
 from common import Values, Definitions
 from tools import Logger, Emitter, Verifier, Fuzzer
-import Trace
-import Exploit
+from phases import Trace, Exploit
 
 DIR_FUZZ_INPUT = ""
 DIR_FUZZ_OUTPUT_LOG = ""
