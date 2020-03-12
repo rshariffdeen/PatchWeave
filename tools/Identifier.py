@@ -6,11 +6,14 @@ import sys
 import os
 
 from common.Utilities import error_exit
-from tools import Emitter, Logger, Extractor, Finder, Oracle
+import Emitter
 import collections
 from common import Values
+import Logger
+import Extractor
+import Finder
 from ast import ASTGenerator
-
+import Oracle
 
 STANDARD_DATA_TYPES = ["int", "char", "float", "unsigned int", "uint32_t", "uint8_t", "char *"]
 

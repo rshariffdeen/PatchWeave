@@ -4,7 +4,8 @@
 
 import sys
 import os
-from tools import Emitter,  Logger
+import Emitter
+import Logger
 import collections
 
 

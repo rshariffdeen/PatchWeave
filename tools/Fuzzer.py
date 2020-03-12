@@ -3,7 +3,8 @@
 
 
 import sys
-from tools import Logger, Emitter
+import Logger
+import Emitter
 from common.Utilities import execute_command
 
 

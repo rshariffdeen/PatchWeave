@@ -3,7 +3,11 @@
 
 
 import sys
-from tools import Logger, Emitter, Builder, Exploiter, Comparer
+import Logger
+import Emitter
+import Builder
+import Exploiter
+import Comparer
 
 
 def run_compilation():

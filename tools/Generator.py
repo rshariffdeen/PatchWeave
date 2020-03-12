@@ -10,7 +10,18 @@ from pysmt.smtlib.parser import SmtLibParser
 from common.Utilities import backup_file, restore_file, reset_git, error_exit
 from pysmt.shortcuts import get_model
 from common import Values
-from tools import Logger, Emitter, Instrumentor, Builder, Extractor, KleeExecutor, Filter, Mapper, Finder, Collector, Converter,  Merger
+import Logger
+import Emitter
+import Instrumentor
+import Builder
+import Extractor
+import KleeExecutor
+import Filter
+import Mapper
+import Finder
+import Collector
+import Converter
+import Merger
 
 
 def generate_symbolic_expressions(source_path, start_line, end_line,

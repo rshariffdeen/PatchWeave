@@ -4,7 +4,8 @@
 
 import sys
 from common.Utilities import execute_command, error_exit
-from tools import Emitter, Logger
+import Emitter
+import Logger
 
 
 SYMBOLIC_CONVERTER = "gen-bout"

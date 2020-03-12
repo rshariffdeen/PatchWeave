@@ -4,9 +4,13 @@
 
 import sys
 import os
-import collections
 from common.Utilities import execute_command, error_exit
-from tools import Emitter,  Logger,  Finder, Extractor, Oracle
+import Emitter
+import Logger
+import collections
+import Finder
+import Extractor
+import Oracle
 from common import Values
 from ast import ASTGenerator
 
