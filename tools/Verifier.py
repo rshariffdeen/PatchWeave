@@ -69,8 +69,8 @@ def run_exploit(target_trace_info, exploit_command, project_path, poc_path,
                             )
             Emitter.success("\n\tprogram was repaired!!")
     else:
-        runtime_error_count_c = target_output.count("runtime error")
-        runtime_error_count_d = repaired_target_output.count("runtime error")
+        runtime_error_count_c = str(target_output).count("runtime error")
+        runtime_error_count_d = str(repaired_target_output).count("runtime error")
 
         if repaired_target_crashed:
             emit_comparison(target_output,
