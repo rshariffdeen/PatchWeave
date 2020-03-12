@@ -5,12 +5,7 @@
 import sys
 from common.Utilities import error_exit
 from ast import ASTGenerator
-import Generator
-import Extractor
-import Emitter
-import Logger
-import Oracle
-import Solver
+from tools import Generator, Extractor, Emitter, Logger, Oracle, Solver
 
 
 def map_variable(var_map_a, var_map_b):

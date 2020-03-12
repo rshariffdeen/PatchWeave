@@ -3,10 +3,7 @@
 
 
 import sys
-import Logger
-import Emitter
-import Extractor
-import Identifier
+from tools import Logger, Emitter, Extractor,  Identifier
 
 
 def estimate_divergent_point(path_cond_a, path_cond_b, target_sym_path, target_trace, stack_info):

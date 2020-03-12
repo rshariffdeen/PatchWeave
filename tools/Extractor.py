@@ -6,13 +6,9 @@ import sys
 import os
 sys.path.append('./ast/')
 from common.Utilities import error_exit, get_file_list, is_intersect, execute_command
-import Emitter
-import Logger
+from tools import Emitter, Logger, Generator, Converter, Finder
 from ast import ASTGenerator
 from common import Definitions, Values
-import Converter
-import Generator
-import Finder
 import collections
 
 

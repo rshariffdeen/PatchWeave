@@ -5,11 +5,7 @@
 import sys
 from common.Utilities import get_code, error_exit
 from ast import ASTGenerator
-import Extractor
-import Oracle
-import Logger
-import Filter
-import Emitter
+from tools import Extractor, Oracle,  Logger, Filter ,  Emitter
 
 
 def slice_code_from_trace(diff_info, trace_list, path_a, path_b):

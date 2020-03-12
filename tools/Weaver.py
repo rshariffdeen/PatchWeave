@@ -9,18 +9,8 @@ from common import Definitions, Values
 import phases.Concolic
 from ast import ASTGenerator
 from phases import Trace
-import Mapper
-import Identifier
-import Generator
-import Logger
-import Collector
-import Emitter
-import Writer
-import Finder
-import Filter
-import Extractor
-import Oracle
-import Merger
+from tools import Mapper, Identifier, Generator, Logger, Collector, Emitter
+from tools import Writer,  Finder, Filter, Extractor, Oracle, Merger
 
 TOOL_AST_PATCH = "patchweave"
 FILE_TEMP_FIX = Definitions.DIRECTORY_TMP + "/temp-fix"
