@@ -338,9 +338,13 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                 insert_index = int(script_line.split(" at ")[-1])
                 target_node_b_str = (script_line.split(" into ")[1]).split(" at ")[0]
                 target_node_b_id = int((target_node_b_str.split("(")[1]).split(")")[0])
-                map_bc = Mapper.map_ast_from_source(source_path_c, source_path_b,
+                map_ba = Mapper.map_ast_from_source(source_path_a, source_path_b,
                                                     Definitions.DIRECTORY_TMP + "/tmp-match")
-                target_node_c_id = map_bc[target_node_b_id]
+                map_ac = Mapper.map_ast_from_source(source_path_c, source_path_a,
+                                                    Definitions.DIRECTORY_TMP + "/tmp-match")
+
+                target_node_a_id = map_ba[target_node_b_id]
+                target_node_c_id = map_ac[target_node_a_id]
                 target_node_c = Finder.search_ast_node_by_id(ast_map_c, target_node_c_id)
                 target_node_str = str(target_node_c['type']) + "(" + str(target_node_c_id) + ")"
                 translated_command = inserting_node_str + " into " + target_node_str + " at " + str(insert_index)
@@ -607,8 +611,13 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                     insert_index = int(script_line.split(" at ")[-1])
                     target_node_b_str = (script_line.split(" into ")[1]).split(" at ")[0]
                     target_node_b_id = int((target_node_b_str.split("(")[1]).split(")")[0])
-                    map_bc = Mapper.map_ast_from_source(source_path_c, source_path_b, Definitions.DIRECTORY_TMP + "/tmp-match")
-                    target_node_c_id = map_bc[target_node_b_id]
+                    map_ba = Mapper.map_ast_from_source(source_path_a, source_path_b,
+                                                        Definitions.DIRECTORY_TMP + "/tmp-match")
+                    map_ac = Mapper.map_ast_from_source(source_path_c, source_path_a,
+                                                        Definitions.DIRECTORY_TMP + "/tmp-match")
+
+                    target_node_a_id = map_ba[target_node_b_id]
+                    target_node_c_id = map_ac[target_node_a_id]
                     target_node_c = Finder.search_ast_node_by_id(ast_map_c, target_node_c_id)
                     target_node_str = str(target_node_c['type']) + "(" + str(target_node_c_id) + ")"
                     translated_command = inserting_node_str + " into " + target_node_str + " at " + str(insert_index)
