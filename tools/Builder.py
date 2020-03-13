@@ -71,8 +71,8 @@ def config_project(project_path, is_llvm, custom_config_command=None):
         config_command += "CXXFLAGS=" + CXX_FLAGS
 
     elif os.path.exists(project_path + "/CMakeLists.txt"):
-        config_command = "cmake -DCMAKE_CC=" + CC + " "
-        config_command += "-DCMAKE_CXX=" + CXX + " "
+        config_command = "cmake -DCMAKE_C_COMPILER=" + CC + " "
+        config_command += "-DCMAKE_CPP_COMPILER=" + CXX + " "
         config_command += "-DCMAKE_C_FLAGS=" + C_FLAGS + " "
         config_command += "-DCMAKE_CXX_FLAGS=" + CXX_FLAGS + " . "
 

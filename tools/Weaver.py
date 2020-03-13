@@ -504,8 +504,10 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
         # print(var_expr_map_a)
         var_info_a = Merger.merge_var_info(var_expr_map_a, var_value_map_a)
         # print(var_info_a)
-
-        var_info_b_filtered = Filter.filter_new_variables(var_info_b, ast_map_a, ast_map_b)
+        # TODO: cannot detect variables inside Macro, hence if no variables use A [assuming all been same]
+        var_info_b_filtered = var_info_a
+        if var_info_b:
+            var_info_b_filtered = Filter.filter_new_variables(var_info_b, ast_map_a, ast_map_b)
         # print(var_info_b_filtered)
 
         # for var_a in var_info_a:

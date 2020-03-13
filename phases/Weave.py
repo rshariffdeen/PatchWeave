@@ -6,10 +6,7 @@ import sys
 import time
 from common.Utilities import error_exit
 from common import Definitions, Values
-import Concolic
-import Analyse
-import Trace
-import Exploit
+from phases import Concolic, Analyse, Trace, Exploit
 from tools import Logger, Solver, Fixer, Emitter, Weaver, Merger
 
 function_list_a = list()

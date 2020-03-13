@@ -6,11 +6,8 @@ import sys
 import time
 from common.Utilities import error_exit
 from common import Values
-import Trace
+from phases import Trace, Analyse, Exploit, Concolic
 from tools import Logger, Emitter, Slicer
-import Analyse
-import Exploit
-import Concolic
 
 
 def remove_code():
