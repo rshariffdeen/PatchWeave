@@ -88,6 +88,16 @@ def map_variable(var_map_a, var_map_b):
                 var_map[var_a_name] = var_b_name
             else:
                 var_map[var_a_name] = "(" + var_a_type + ")" + var_b_name
+        else:
+            for var_b_name in var_map_b:
+                sym_expr_list_b = var_map_b[var_b_name]["expr_list"]
+                value_list_b = var_map_b[var_b_name]["value_list"]
+                var_b_type = var_map_b[var_b_name]["data_type"]
+                if var_a_type == var_b_type:
+                    if set(sym_expr_list_a) == set(sym_expr_list_b):
+                        if set(value_list_a) == set(value_list_b):
+                            var_map[var_a_name] = var_b_name
+
     return var_map
 
 
