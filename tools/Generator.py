@@ -113,9 +113,9 @@ def generate_candidate_function_list(estimate_loc, var_info_a,
                 expected_score += 1
                 break
 
-    if expected_score == 0 and (not Values.BACKPORT):
-        Emitter.warning("\t\t No variable to map in source code")
-        return None
+    if expected_score == 0 :
+        Emitter.warning("\t\t No variable using input-bytes to map in source code")
+        expected_score = len(var_info_a.keys())
     best_score = 0
     best_function_info = ""
     best_function_id = ""
