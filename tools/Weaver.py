@@ -295,7 +295,7 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
         source_path, function_name = best_candidate_function_id.split(":")
         Emitter.success("\n\t\tBest candidate function: " + function_name + ', attempt=' + str(attempt) + '\n')
         Emitter.sub_sub_title("generating candidate insertion point list")
-        insertion_loc_list, loc_best_score = Identifier.identify_insertion_points(best_candidate_function)
+        insertion_loc_list, loc_best_score = Identifier.identify_insertion_points(best_candidate_function, suspicious_lines_c)
         best_candidate_insertion_loc = Filter.filter_best_candidate_loc(insertion_loc_list, loc_best_score)
 
         Emitter.success(
@@ -538,7 +538,7 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
         source_path_c, function_name = best_candidate_function_id.split(":")
         Emitter.success("\n\t\tBest candidate function: " + function_name + ', attempt=' + str(attempt) + '\n')
         Emitter.sub_sub_title("generating candidate insertion point list")
-        insertion_loc_list, loc_best_score = Identifier.identify_insertion_points(best_candidate_function)
+        insertion_loc_list, loc_best_score = Identifier.identify_insertion_points(best_candidate_function, suspicious_lines_c)
         best_candidate_insertion_loc = Filter.filter_best_candidate_loc(insertion_loc_list, loc_best_score)
         Emitter.success(
             "\n\t\tBest candidate location: " + function_name + ":" + str(best_candidate_insertion_loc) + '\n')

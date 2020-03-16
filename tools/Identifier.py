@@ -299,7 +299,7 @@ def identify_missing_macros_in_func(function_node, source_file, target_file):
     return missing_macro_list
 
 
-def identify_insertion_points(candidate_function):
+def identify_insertion_points(candidate_function, suspicious_lines):
 
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     insertion_point_list = collections.OrderedDict()
@@ -320,6 +320,15 @@ def identify_insertion_points(candidate_function):
         else:
             target_var_list.append(var_b)
     # print(target_var_list)
+
+    #check if buggy line is in the function and add as candidate line
+    for suspicious_loc in suspicious_lines:
+        sus_source_path, sus_line_number = suspicious_loc.split(":")
+        if sus_source_path == source_path.split("/")[-1]:
+            if int(sus_line_number) in range(start_line, last_line):
+                insertion_point_list[int(sus_line_number) - 1] = len(target_var_list)
+
+
     for exec_line in exec_line_list:
         # if exec_line == last_line:
         #     continue
