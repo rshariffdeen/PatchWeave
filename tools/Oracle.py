@@ -37,14 +37,32 @@ def is_node_equal(node_a, node_b, var_map):
     if node_type_a != node_type_b:
         return False
 
-    if node_type_a in ["DeclStmt", "DeclRefExpr", "VarDecl"]:
+    if node_type_a in ["DeclStmt", "VarDecl"]:
         node_value_a = node_a['value']
         node_value_b = node_b['value']
+
         if node_value_a == node_value_b or node_value_a == var_map[node_value_b] or \
                 node_value_b == var_map[node_value_a]:
             return True
         else:
             return False
+    elif node_type_a in ["DeclRefExpr"]:
+        ref_type_a = node_a['ref_type']
+        ref_type_b = node_b['ref_type']
+        if ref_type_a == ref_type_b:
+            node_value_a = node_a['value']
+            node_value_b = node_b['value']
+            if ref_type_a == "FunctionDecl":
+                if node_value_a == node_value_b:
+                    return True
+                else:
+                    return False
+
+            if node_value_a == node_value_b or node_value_a == var_map[node_value_b] or \
+                    node_value_b == var_map[node_value_a]:
+                return True
+            else:
+                return False
     elif node_type_a == "ArraySubscriptExpr":
         # print(node_a)
         # print(node_b)
