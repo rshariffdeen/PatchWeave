@@ -32,7 +32,7 @@ def instrument_klee_var_expr(source_path, start_line, end_line, stack_info, skip
             continue
         if "*" in data_type:
             print_code = data_type.replace("*","") + " " + variable + "-temp = *" + variable + ";\n"
-            print_code += "klee_print_expr(\"[var-expr] " + variable + "\", " + variable + "-temp);\n"
+            print_code += "klee_print_expr(\"[var-expr] *" + variable + "\", " + variable + "-temp);\n"
             type_print_code = "klee_print_stmt(\"[var-type]: *" + variable + ":" + data_type + "\");\n"
         else:
             print_code = "klee_print_expr(\"[var-expr] " + variable + "\", " + variable + ");\n"
