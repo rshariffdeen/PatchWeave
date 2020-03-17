@@ -23,10 +23,9 @@ def search_matching_node(ast_node, search_node, var_map):
             return node_type + "(" + str(node_id) + ")"
 
     for child_node in ast_node['children']:
-        if len(child_node['children']) > 0:
-            target_node_str = search_matching_node(child_node, search_node, var_map)
-            if target_node_str is not None:
-                return target_node_str
+        target_node_str = search_matching_node(child_node, search_node, var_map)
+        if target_node_str is not None:
+            return target_node_str
 
 
 def find_ast_node_position(ast_node, line_number):
