@@ -731,7 +731,7 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                 map_ac = Mapper.map_ast_from_source(source_path_c, source_path_a,
                                                     Definitions.DIRECTORY_TMP + "/tmp-match")
                 delete_node_id_c = map_ac[delete_node_id_a]
-                translated_command = script_line.replace(delete_node_id_a, delete_node_id_c)
+                translated_command = script_line.replace(str(delete_node_id_a), str(delete_node_id_c))
                 ast_script_c.append(translated_command)
 
         # print(var_map_ac)
