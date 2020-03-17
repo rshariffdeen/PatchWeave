@@ -26,17 +26,11 @@ def instrument_klee_var_expr(source_path, start_line, end_line, stack_info, skip
     # print(source_path, start_line, end_line)
     # print(orig_variable_list)
     # print(skip_lines)
-    print_code = ""
     for variable, line_number, data_type in orig_variable_list:
         if line_number in skip_lines:
             continue
-        if "*" in data_type:
-            print_code = data_type.replace("*","") + " " + variable.strip().replace(" ", "") + "_temp = *" + variable + ";\n"
-            print_code += "klee_print_expr(\"[var-expr] *" + variable + "\", " + variable + "_temp);\n"
-            type_print_code = "klee_print_stmt(\"[var-type]: *" + variable + ":" + data_type + "\");\n"
-        else:
-            print_code = "klee_print_expr(\"[var-expr] " + variable + "\", " + variable + ");\n"
-            type_print_code = "klee_print_stmt(\"[var-type]: " + variable + ":" + data_type + "\");\n"
+        print_code = "klee_print_expr(\"[var-expr] " + variable + "\", " + variable + ");\n"
+        type_print_code = "klee_print_stmt(\"[var-type]: " + variable + ":" + data_type + "\");\n"
         print_code = print_code + type_print_code
         if line_number in insert_code.keys():
             insert_code[
