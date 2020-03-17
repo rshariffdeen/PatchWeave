@@ -68,9 +68,8 @@ def map_variable(var_map_a, var_map_b):
                 value_list_b = var_map_b[var_b_name]["value_list"]
                 var_b_type = var_map_b[var_b_name]["data_type"]
                 if var_a_type == var_b_type:
-                    if "*" in var_a_type:
-                        if var_a_name == var_b_name:
-                            candidate_list.append((var_b_name, var_b_type))
+                    if var_a_name == var_b_name:
+                        candidate_list.append((var_b_name, var_b_type))
                     else:
                         if set(sym_expr_list_a) == set(sym_expr_list_b):
                             if set(value_list_a) == set(value_list_b):
