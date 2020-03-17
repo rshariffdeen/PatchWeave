@@ -727,7 +727,7 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                         ast_script_c.append(translated_command)
             elif "Delete" in script_line:
                 delete_node_str = script_line
-                delete_node_id_a = (delete_node_str.split("(")[1]).split(")")[0]
+                delete_node_id_a = int((delete_node_str.split("(")[1]).split(")")[0])
                 map_ac = Mapper.map_ast_from_source(source_path_c, source_path_a,
                                                     Definitions.DIRECTORY_TMP + "/tmp-match")
                 delete_node_id_c = map_ac[delete_node_id_a]
