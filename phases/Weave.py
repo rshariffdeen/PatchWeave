@@ -40,6 +40,7 @@ FILE_SKIP_LIST = ""
 FILE_AST_SCRIPT = ""
 FILE_TEMP_FIX = ""
 FILE_FINAL_DIFF_OUTPUT = ""
+FILE_LOCALIZATION_RESULT = ""
 
 
 def get_sym_path_cond(source_location):
@@ -240,6 +241,10 @@ def save_values():
         diff_file.writelines(Values.original_patch)
         diff_file.writelines(["\n\n=============================================\n\n"])
         diff_file.writelines(Values.transplanted_patch)
+    with open(FILE_LOCALIZATION_RESULT, 'w') as result_file:
+        diff_file.writelines(["Localized Count:" + str(len(Values.localized_function_list))])
+        diff_file.writelines(["Non-Localized Count:" + str(len(Values.non_localized_function_list))])
+        diff_file.writelines(["Find Count:" + str(Values.localization_iteration_no)])
 
 
 def weave():

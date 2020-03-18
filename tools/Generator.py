@@ -213,7 +213,7 @@ def generate_candidate_function_list(estimate_loc, var_info_a,
             # info['order'] = trace_order
             candidate_function_list[function_id] = info
             return candidate_function_list
-
+    Values.localization_iteration_no = function_count
     if not candidate_function_list:
         Emitter.error("\t\tbest score is " + str(best_score))
         Emitter.warning("\t\tno candidate function, attempting with best score")

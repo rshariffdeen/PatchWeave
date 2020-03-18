@@ -70,3 +70,4 @@ localized_function_list = list()
 fuzz_results = dict()
 original_patch = ""
 transplanted_patch = ""
+localization_iteration_no = 0
