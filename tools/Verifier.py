@@ -102,6 +102,8 @@ def run_exploit(target_trace_info, exploit_command, project_path, poc_path,
                             )
             Emitter.success("\n\tprogram partially repaired!!")
 
+    return target_output, repaired_target_output
+
 
 def differential_test(file_extension, input_directory, exploit_command,
                       project_c_path, project_d_path, output_directory):
