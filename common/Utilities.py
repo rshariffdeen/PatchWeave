@@ -105,7 +105,7 @@ def show_partial_diff(source_path_a, source_path_b):
         diff_line = diff_file.readline().strip()
         while diff_line:
             Emitter.special("\t\t\t" + diff_line)
-            Values.transplanted_patch += diff_line
+            Values.transplanted_patch += diff_line + "\n"
             diff_line = diff_file.readline().strip()
 
 

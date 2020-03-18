@@ -72,8 +72,8 @@ def diff_code(diff_file_path, output_file):
             Values.original_patch += "\n\n" + str(file_a) + "-" + str(file_b) + "\n------------------------------\n"
             with open(output_file, 'r') as temp_diff_file:
                 file_line = temp_diff_file.readline().strip()
-                Values.original_patch += file_line
                 while file_line:
+                    Values.original_patch += file_line + "\n"
                     operation = ""
                     # We only want lines starting with a line number
                     if 48 <= ord(file_line[0]) <= 57:
