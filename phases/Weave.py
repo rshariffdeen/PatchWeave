@@ -7,7 +7,7 @@ import time
 from common.Utilities import error_exit
 from common import Definitions, Values
 from phases import Concolic, Analyse, Trace, Exploit
-from tools import Logger, Solver, Fixer, Emitter, Weaver, Merger
+from tools import Logger, Solver, Fixer, Emitter, Weaver, Merger, Writer
 
 function_list_a = list()
 function_list_b = list()
@@ -39,6 +39,7 @@ FILE_VAR_MAP = ""
 FILE_SKIP_LIST = ""
 FILE_AST_SCRIPT = ""
 FILE_TEMP_FIX = ""
+FILE_FINAL_DIFF_OUTPUT = ""
 
 
 def get_sym_path_cond(source_location):
@@ -219,7 +220,7 @@ def set_values():
     global FILE_VAR_EXPR_LOG_A, FILE_VAR_EXPR_LOG_B, FILE_VAR_EXPR_LOG_C
     global FILE_VAR_VALUE_LOG_A, FILE_VAR_VALUE_LOG_B, FILE_VAR_VALUE_LOG_C
     global FILE_VAR_MAP, FILE_SKIP_LIST, FILE_AST_SCRIPT
-    global FILE_TEMP_FIX, FILE_MACRO_DEF
+    global FILE_TEMP_FIX, FILE_MACRO_DEF, FILE_FINAL_DIFF_OUTPUT
 
     FILE_VAR_EXPR_LOG_A = Definitions.DIRECTORY_OUTPUT + "/log-sym-expr-a"
     FILE_VAR_EXPR_LOG_B = Definitions.DIRECTORY_OUTPUT + "/log-sym-expr-b"
@@ -230,6 +231,15 @@ def set_values():
     FILE_VAR_MAP = Definitions.DIRECTORY_OUTPUT + "/var-map"
     FILE_SKIP_LIST = Definitions.DIRECTORY_OUTPUT + "/skip-list"
     FILE_AST_SCRIPT = Definitions.DIRECTORY_OUTPUT + "/gen-ast-script"
+    FILE_FINAL_DIFF_OUTPUT = Definitions.DIRECTORY_OUTPUT + "/patch-result"
+
+
+def save_values():
+    global FILE_FINAL_DIFF_OUTPUT
+    with open(FILE_FINAL_DIFF_OUTPUT, 'w') as diff_file:
+        diff_file.writelines(Values.original_patch)
+        diff_file.writelines(["\n\n=============================================\n\n"])
+        diff_file.writelines(Values.transplanted_patch)
 
 
 def weave():
@@ -243,3 +253,4 @@ def weave():
         safe_exec(transplant_missing_macros, "transplanting macros")
         safe_exec(transplant_missing_header, "transplanting header files")
         safe_exec(Fixer.check, "correcting syntax errors", modified_source_list)
+    save_values()

@@ -68,3 +68,5 @@ diff_info = dict()
 non_localized_function_list = list()
 localized_function_list = list()
 fuzz_results = dict()
+original_patch = ""
+transplanted_patch = ""

@@ -100,10 +100,12 @@ def show_partial_diff(source_path_a, source_path_b):
     output_file = Definitions.FILE_PARTIAL_PATCH
     diff_command = "diff -ENZBbwr " + source_path_a + " " + source_path_b + " > " + output_file
     execute_command(diff_command)
+    Values.transplanted_patch += "\n\n" + str(source_path_a) + "-" + str(source_path_b) + "\n-------------------------\n"
     with open(output_file, 'r') as diff_file:
         diff_line = diff_file.readline().strip()
         while diff_line:
             Emitter.special("\t\t\t" + diff_line)
+            Values.transplanted_patch += diff_line
             diff_line = diff_file.readline().strip()
 
 

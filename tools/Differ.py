@@ -5,6 +5,7 @@
 import sys
 from common.Utilities import execute_command, get_file_extension_list
 from ast import ASTGenerator
+from common import Values
 import Mapper
 import Logger
 import Filter
@@ -68,8 +69,10 @@ def diff_code(diff_file_path, output_file):
             execute_command(diff_command)
             pertinent_lines_a = []
             pertinent_lines_b = []
+            Values.original_patch += "\n\n" + str(file_a) + "-" + str(file_b) + "\n------------------------------\n"
             with open(output_file, 'r') as temp_diff_file:
                 file_line = temp_diff_file.readline().strip()
+                Values.original_patch += file_line
                 while file_line:
                     operation = ""
                     # We only want lines starting with a line number
