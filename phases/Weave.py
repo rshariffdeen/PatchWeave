@@ -221,7 +221,7 @@ def set_values():
     global FILE_VAR_EXPR_LOG_A, FILE_VAR_EXPR_LOG_B, FILE_VAR_EXPR_LOG_C
     global FILE_VAR_VALUE_LOG_A, FILE_VAR_VALUE_LOG_B, FILE_VAR_VALUE_LOG_C
     global FILE_VAR_MAP, FILE_SKIP_LIST, FILE_AST_SCRIPT
-    global FILE_TEMP_FIX, FILE_MACRO_DEF, FILE_FINAL_DIFF_OUTPUT
+    global FILE_TEMP_FIX, FILE_MACRO_DEF, FILE_FINAL_DIFF_OUTPUT, FILE_LOCALIZATION_RESULT
 
     FILE_VAR_EXPR_LOG_A = Definitions.DIRECTORY_OUTPUT + "/log-sym-expr-a"
     FILE_VAR_EXPR_LOG_B = Definitions.DIRECTORY_OUTPUT + "/log-sym-expr-b"
@@ -233,6 +233,7 @@ def set_values():
     FILE_SKIP_LIST = Definitions.DIRECTORY_OUTPUT + "/skip-list"
     FILE_AST_SCRIPT = Definitions.DIRECTORY_OUTPUT + "/gen-ast-script"
     FILE_FINAL_DIFF_OUTPUT = Definitions.DIRECTORY_OUTPUT + "/patch-result"
+    FILE_LOCALIZATION_RESULT = Definitions.DIRECTORY_OUTPUT + "/localization-result"
 
 
 def save_values():
@@ -242,9 +243,9 @@ def save_values():
         diff_file.writelines(["\n\n=============================================\n\n"])
         diff_file.writelines(Values.transplanted_patch)
     with open(FILE_LOCALIZATION_RESULT, 'w') as result_file:
-        diff_file.writelines(["Localized Count:" + str(len(Values.localized_function_list))])
-        diff_file.writelines(["Non-Localized Count:" + str(len(Values.non_localized_function_list))])
-        diff_file.writelines(["Find Count:" + str(Values.localization_iteration_no)])
+        result_file.writelines(["Localized Count:" + str(len(Values.localized_function_list))])
+        result_file.writelines(["Non-Localized Count:" + str(len(Values.non_localized_function_list))])
+        result_file.writelines(["Find Count:" + str(Values.localization_iteration_no)])
 
 
 def weave():
