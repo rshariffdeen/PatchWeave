@@ -98,14 +98,18 @@ def generate_candidate_function_list(estimate_loc, var_info_a,
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Emitter.normal("\t\tgenerating candidate function list")
     filtered_trace_list = Filter.filter_trace_list_by_loc(trace_list, estimate_loc)
-    source_list_c = Extractor.extract_source_list(filtered_trace_list)
-    source_function_map = Mapper.map_source_function(source_list_c)
-    trace_function_list = Filter.filter_function_list_using_trace(source_function_map,
+    filtered_source_list_c = Extractor.extract_source_list(filtered_trace_list)
+    filtered_source_function_map = Mapper.map_source_function(filtered_source_list_c)
+    trace_function_list = Filter.filter_function_list_using_trace(filtered_source_function_map,
                                                                   filtered_trace_list)
 
+    full_source_list_c = Extractor.extract_source_list(trace_list)
+    full_source_function_map = Mapper.map_source_function(full_source_list_c)
+    full__trace_function_list = Filter.filter_function_list_using_trace(full_source_function_map,
+                                                                        trace_list)
     # print(trace_function_list)
     Values.localized_function_list = trace_function_list
-    Values.non_localized_function_list = Filter.filter_function_list_using_trace(source_function_map, trace_list)
+    Values.non_localized_function_list = full__trace_function_list
     candidate_function_list = dict()
     expected_score = 0
     # print(var_info_a)
