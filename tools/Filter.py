@@ -198,7 +198,6 @@ def filter_ast_script_by_skip_line(ast_script, ast_node_a, ast_node_b, skip_line
             node_type_b = node_b['type']
             node_line_start = int(node_b['start line'])
             node_line_end = int(node_b['end line']) + 1
-            target_node_type = str((script_line.split(" into ")[1]).split("(")[0])
             # print(node_line_start)
             if node_line_start in skip_lines:
                 continue
