@@ -80,6 +80,7 @@ def slice_ast_script(diff_info, project_path_a, project_path_b, trace_list):
         skip_lines = diff_loc_info['skip-lines']
         # print(skip_lines)
         ast_script = diff_loc_info['ast-script']
+        operation = diff_loc_info['operation']
         # print(ast_script)
         source_path_a, line_number_a = diff_loc.split(":")
         source_path_b = str(source_path_a).replace(project_path_a,
@@ -94,7 +95,8 @@ def slice_ast_script(diff_info, project_path_a, project_path_b, trace_list):
         filtered_ast_script = Filter.filter_ast_script_by_skip_line(ast_script,
                                                                     ast_map_a,
                                                                     ast_map_b,
-                                                                    skip_lines
+                                                                    skip_lines,
+                                                                    operation
                                                                     )
         # print(filtered_ast_script)
         filtered_ast_script = Filter.filter_ast_script_by_node_type(filtered_ast_script,
