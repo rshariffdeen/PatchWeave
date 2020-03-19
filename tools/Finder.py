@@ -42,7 +42,7 @@ def find_ast_node_position(ast_node, line_number):
         if child_node_start_line == line_number:
             return str(node_type) + "(" + str(node_id) + ") at " + str(child_index)
         elif line_number in range(child_node_start_line, child_node_end_line):
-            return find_ast_node_position(prev_child_node, line_number)
+            return find_ast_node_position(child_node, line_number)
         child_index += 1
 
 
