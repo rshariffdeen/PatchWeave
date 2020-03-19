@@ -201,6 +201,7 @@ def filter_ast_script_by_skip_line(ast_script, ast_node_a, ast_node_b, skip_line
             # print(node_line_start)
             if node_line_start in skip_lines:
                 continue
+            filtered_ast_script.append(script_line)
 
         else:
             filtered_ast_script.append(script_line)
