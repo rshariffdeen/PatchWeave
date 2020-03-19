@@ -199,7 +199,7 @@ def generate_candidate_function_list(estimate_loc, var_info_a,
             best_function_info['score'] = score
             best_function_info['attempt'] = function_count
 
-        if (expected_score == score) and (len(set(var_map.values())) == score):
+        if (expected_score <= score) and (len(set(var_map.values())) == score):
             if len(var_map.values()) == 1:
                 var = var_map.values()[0]
                 if ")" in var:
