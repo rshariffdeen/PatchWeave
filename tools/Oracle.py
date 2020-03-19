@@ -58,8 +58,9 @@ def is_node_equal(node_a, node_b, var_map):
                 else:
                     return False
 
-            if node_value_a == node_value_b or node_value_a == var_map[node_value_b] or \
-                    node_value_b == var_map[node_value_a]:
+            if node_value_a == node_value_b or \
+                    (node_value_b in var_map and node_value_a == var_map[node_value_b]) or \
+                    (node_value_a in var_map and node_value_b == var_map[node_value_a]):
                 return True
             else:
                 return False
