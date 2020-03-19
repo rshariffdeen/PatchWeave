@@ -107,6 +107,7 @@ def verify():
     if not Values.ONLY_VERIFY:
         safe_exec(verify_compilation, "verifying compilation")
     safe_exec(verify_exploit, "verifying exploit")
-    safe_exec(verify_behavior, "verifying differential behavior")
+    if not Values.SKIP_VERIFY:
+        safe_exec(verify_behavior, "verifying differential behavior")
     save_values()
 
