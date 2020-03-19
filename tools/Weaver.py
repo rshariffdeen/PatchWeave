@@ -737,12 +737,13 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
 
         # print(var_map_ac)
         # print(missing_var_list)
-        for var in missing_var_list:
-            var_info = missing_var_list[var]
-            ast_node = var_info['ast-node']
-            ast_op = "Insert " + ast_node['type'] + "(" + str(ast_node['id']) + ")"
-            ast_op += " into " + position_c
-            ast_script_c.append(ast_op)
+        if position_c:
+            for var in missing_var_list:
+                var_info = missing_var_list[var]
+                ast_node = var_info['ast-node']
+                ast_op = "Insert " + ast_node['type'] + "(" + str(ast_node['id']) + ")"
+                ast_op += " into " + position_c
+                ast_script_c.append(ast_op)
         ast_script_c.reverse()
         # print(ast_script)
         var_map_abc = Merger.merge_var_map(var_map_ac, var_map_bc)
