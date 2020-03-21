@@ -203,7 +203,12 @@ def filter_ast_script_by_skip_line(ast_script, ast_node_a, ast_node_b, skip_line
                 continue
             filtered_ast_script.append(script_line)
         elif "Delete" in script_line:
+            node_id_a = int((script_line.split("(")[1]).split(")")[0])
+            node_a = Finder.search_ast_node_by_id(ast_node_a, node_id_a)
+            node_type_a = node_a['type']
             if operation == 'modify':
+                if node_type_a == "DeclRefExpr":
+                    filtered_ast_script.append(script_line)
                 continue
             filtered_ast_script.append(script_line)
 
