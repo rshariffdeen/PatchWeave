@@ -3,7 +3,9 @@ MAINTAINER Ridwan Shariffdeen <ridwan@comp.nus.edu.sg>
 
 RUN apt-get update && apt-get install -y \
     autoconf \
+    apt-transport-https \
     bison \
+    ca-certificates \
     cmake \
     curl \
     flex \
