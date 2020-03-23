@@ -113,16 +113,22 @@ def generate_candidate_function_list(estimate_loc, var_info_a,
     candidate_function_list = dict()
     expected_score = 0
     # print(var_info_a)
+    filtered_var_info_a = dict()
     for var_name in var_info_a:
         var_expr_list = var_info_a[var_name]['expr_list']
         for var_expr in var_expr_list:
             if "A-data" in var_expr:
                 expected_score += 1
+                filtered_var_info_a[var_name] = var_info_a[var_name]
                 break
 
     if expected_score == 0 :
         Emitter.warning("\t\t No variable using input-bytes to map in source code")
         expected_score = len(var_info_a.keys())
+    else:
+        var_info_a = filtered_var_info_a
+
+
     best_score = 0
     best_function_info = ""
     best_function_id = ""
