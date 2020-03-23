@@ -143,6 +143,8 @@ def filter_ast_script(ast_script, info_a, info_b, mapping_ba):
             node_line_end = int(node_a['end line']) + 1
             node_line_numbers = set(range(node_line_start, node_line_end))
             intersection = line_numbers_a.intersection(node_line_numbers)
+            if "IntegerLiteral" in script_line:
+                continue
             if intersection:
                 filtered_ast_script.append(script_line)
     return filtered_ast_script
