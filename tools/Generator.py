@@ -149,18 +149,18 @@ def generate_candidate_function_list(estimate_loc, var_info_a,
         start_line = function_node['start line']
         # print(function_node)
 
-        if Values.BACKPORT and expected_score == 0:
-            info = dict()
-            info['var-map'] = dict()
-            info['start-line'] = start_line
-            info['begin-line'] = begin_line
-            info['last-line'] = last_line
-            info['exec-lines'] = function_info['lines']
-            info['score'] = 0
-            info['attempt'] = function_count
-            # info['order'] = trace_order
-            candidate_function_list[function_id] = info
-            return candidate_function_list
+        # if Values.BACKPORT and expected_score == 0:
+        #     info = dict()
+        #     info['var-map'] = dict()
+        #     info['start-line'] = start_line
+        #     info['begin-line'] = begin_line
+        #     info['last-line'] = last_line
+        #     info['exec-lines'] = function_info['lines']
+        #     info['score'] = 0
+        #     info['attempt'] = function_count
+        #     # info['order'] = trace_order
+        #     candidate_function_list[function_id] = info
+        #     return candidate_function_list
 
         generate_symbolic_expressions(source_path,
                                       start_line,
