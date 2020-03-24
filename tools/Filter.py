@@ -123,7 +123,8 @@ def filter_ast_script(ast_script, info_a, info_b, mapping_ba):
             node_line_start = int(node_b['start line'])
             node_line_end = int(node_b['end line']) + 1
             node_line_numbers = set(range(node_line_start, node_line_end))
-
+            if "Insert MemberExpr" in script_line and "into BinaryOperator" in script_line:
+                continue
             intersection = line_numbers_b.intersection(node_line_numbers)
             if intersection:
                 filtered_ast_script.append(script_line)
