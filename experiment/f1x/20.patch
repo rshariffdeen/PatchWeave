@@ -1,0 +1,6 @@
+--- a/util/listmp3.c
++++ b/util/listmp3.c
+98c98
+<     if((flags & MP3_FRAME_SYNC) != MP3_FRAME_SYNC)
+---
+>     if(( ( flags &  4292870144U) == 4292870144U))
