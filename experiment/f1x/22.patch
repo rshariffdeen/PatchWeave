@@ -1,0 +1,6 @@
+--- a/tools/tiff2ps.c
++++ b/tools/tiff2ps.c
+402c402
+<         if (useImagemask == TRUE)
+---
+>         if ((useImagemask != 1))
