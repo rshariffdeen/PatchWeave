@@ -1,6 +1,6 @@
 # PatchWeave
 
-Symbolic analysis based patch transplantation tool for C programs. PatchWeave transplants patches across programs which are semantically equivalent but syntactically different, to fix bugs/vulnerabilities that exist across multiple programs (i.e. recurring vulnerabilities)
+Semantic based patch transplantation tool for C programs. PatchWeave transplants patches across programs which are semantically equivalent but syntactically different, to fix bugs/vulnerabilities that exist across multiple programs (i.e. recurring vulnerabilities)
 
 
 ## Docker Image ##
@@ -16,6 +16,7 @@ You can [download](https://cloud.docker.com/repository/docker/rshariffdeen/patch
 * [Tutorial](doc/Tutorial.md)
 * [Manual](doc/Manual.md)
 * [Troubleshooting](doc/Troubleshooting.md)
+* [Experiment Replication](doc/Replication.md)
 
 To set optimal configuration for your subject, refer to the Configuration section of the [manual](doc/Manual.md).
 
