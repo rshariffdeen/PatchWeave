@@ -1,0 +1,6 @@
+--- a/src/libjasper/bmp/bmp_dec.c
++++ b/src/libjasper/bmp/bmp_dec.c
+152c152
+< 	if ((n = hdr.off - (BMP_HDRLEN + BMP_INFOLEN + BMP_PALLEN(info))) < 0) {
+---
+> 	if ((n = (hdr.off + ((14 + 40) + ((info)->numcolors * 4)))) < 0) {
