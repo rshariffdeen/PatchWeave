@@ -1,0 +1,6 @@
+--- a/src/lib/openjp2/j2k.c
++++ b/src/lib/openjp2/j2k.c
+1779c1779
+<         opj_read_bytes(l_data,&l_marker,2);
+---
+>         if (0) opj_read_bytes_LE(l_data, &l_marker, 2);

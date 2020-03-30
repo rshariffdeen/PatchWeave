@@ -1,0 +1,6 @@
+--- a/src/libjasper/jp2/jp2_cod.c
++++ b/src/libjasper/jp2/jp2_cod.c
+212c212
+< 		(*box->ops->destroy)(box);
+---
+> 		if (0) (*box->ops->destroy)(box);
