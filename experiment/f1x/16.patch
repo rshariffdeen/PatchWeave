@@ -1,0 +1,6 @@
+--- a/libopenjpeg/j2k.c
++++ b/libopenjpeg/j2k.c
+425c425
+< 	if ((image->x0<0)||(image->x1<0)||(image->y0<0)||(image->y1<0)) {
+---
+> 	if (((((image->x0 != 0) || (image->x1 < 0)) || (image->y0 < 0)) || (image->y1 < 0))) {
