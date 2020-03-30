@@ -258,10 +258,10 @@ def build_instrumented_code(source_directory):
         execute_command(pre_config_command)
 
     elif os.path.exists(source_directory + "/autogen.sh"):
-        pre_config_command = "./autogen.sh;"
+        pre_config_command = "./autogen.sh"
         execute_command(pre_config_command)
 
-    if os.path.exists(source_directory + "/" + "CMakeLists.txt"):
+    if os.path.exists(source_directory + "/" + "CMakeCache.txt"):
         config_command = "cd " + source_directory + ";"
         config_command += "cmake -DCMAKE_EXE_LINKER_FLAGS=" + LD_FLAGS + " ."
         execute_command(config_command)

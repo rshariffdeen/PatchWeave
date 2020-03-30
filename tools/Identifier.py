@@ -14,6 +14,7 @@ import Extractor
 import Finder
 from ast import ASTGenerator
 import Oracle
+import Converter
 
 STANDARD_DATA_TYPES = ["int", "char", "float", "unsigned int", "uint32_t", "uint8_t", "char *"]
 
@@ -241,13 +242,24 @@ def identify_missing_macros(ast_node, source_file, target_file, skip_line_list):
     # print(ast_node)
     missing_macro_list = dict()
     node_type = str(ast_node['type'])
+    target_macro_list = Converter.convert_macro_list_to_dict(Extractor.extract_macro_definitions(target_file))
     if node_type == "Macro":
-        missing_macro_list = Extractor.extract_macro_definition(ast_node, skip_line_list, source_file, target_file)
+        node_macro_list = Extractor.extract_macro_definition(ast_node, skip_line_list, source_file, target_file)
+        for macro_name in node_macro_list:
+            if macro_name not in target_macro_list.keys():
+                missing_macro_list[macro_name] = node_macro_list[macro_name]
+
     else:
         macro_node_list = Extractor.extract_macro_node_list(ast_node)
+        node_macro_list = dict()
+
         # print(macro_node_list)
         for macro_node in macro_node_list:
-            missing_macro_list.update(Extractor.extract_macro_definition(macro_node, skip_line_list, source_file, target_file))
+            node_macro_list.update(Extractor.extract_macro_definition(macro_node, skip_line_list, source_file, target_file))
+        for macro_name in node_macro_list:
+            if macro_name not in target_macro_list.keys():
+                missing_macro_list[macro_name] = node_macro_list[macro_name]
+
     # print(missing_macro_list)
     return missing_macro_list
 
@@ -299,7 +311,7 @@ def identify_missing_macros_in_func(function_node, source_file, target_file):
     return missing_macro_list
 
 
-def identify_insertion_points(candidate_function):
+def identify_insertion_points(candidate_function, suspicious_lines):
 
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     insertion_point_list = collections.OrderedDict()
@@ -320,6 +332,15 @@ def identify_insertion_points(candidate_function):
         else:
             target_var_list.append(var_b)
     # print(target_var_list)
+
+    #check if buggy line is in the function and add as candidate line
+    for suspicious_loc in suspicious_lines:
+        sus_source_path, sus_line_number = suspicious_loc.split(":")
+        if sus_source_path == source_path.split("/")[-1]:
+            if int(sus_line_number) in range(start_line, last_line):
+                insertion_point_list[int(sus_line_number) - 1] = len(target_var_list)
+
+
     for exec_line in exec_line_list:
         # if exec_line == last_line:
         #     continue

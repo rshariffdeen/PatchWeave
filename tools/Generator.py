@@ -98,24 +98,37 @@ def generate_candidate_function_list(estimate_loc, var_info_a,
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Emitter.normal("\t\tgenerating candidate function list")
     filtered_trace_list = Filter.filter_trace_list_by_loc(trace_list, estimate_loc)
-    source_list_c = Extractor.extract_source_list(filtered_trace_list)
-    source_function_map = Mapper.map_source_function(source_list_c)
-    trace_function_list = Filter.filter_function_list_using_trace(source_function_map,
+    filtered_source_list_c = Extractor.extract_source_list(filtered_trace_list)
+    filtered_source_function_map = Mapper.map_source_function(filtered_source_list_c)
+    trace_function_list = Filter.filter_function_list_using_trace(filtered_source_function_map,
                                                                   filtered_trace_list)
+
+    full_source_list_c = Extractor.extract_source_list(trace_list)
+    full_source_function_map = Mapper.map_source_function(full_source_list_c)
+    full__trace_function_list = Filter.filter_function_list_using_trace(full_source_function_map,
+                                                                        trace_list)
     # print(trace_function_list)
+    Values.localized_function_list = trace_function_list
+    Values.non_localized_function_list = full__trace_function_list
     candidate_function_list = dict()
     expected_score = 0
     # print(var_info_a)
+    filtered_var_info_a = dict()
     for var_name in var_info_a:
         var_expr_list = var_info_a[var_name]['expr_list']
         for var_expr in var_expr_list:
             if "A-data" in var_expr:
                 expected_score += 1
+                filtered_var_info_a[var_name] = var_info_a[var_name]
                 break
 
-    if expected_score == 0 and (not Values.BACKPORT):
-        Emitter.warning("\t\t No variable to map in source code")
-        return None
+    if expected_score == 0 :
+        Emitter.warning("\t\t No variable using input-bytes to map in source code")
+        expected_score = len(var_info_a.keys())
+    else:
+        var_info_a = filtered_var_info_a
+
+
     best_score = 0
     best_function_info = ""
     best_function_id = ""
@@ -142,18 +155,18 @@ def generate_candidate_function_list(estimate_loc, var_info_a,
         start_line = function_node['start line']
         # print(function_node)
 
-        if Values.BACKPORT and expected_score == 0:
-            info = dict()
-            info['var-map'] = dict()
-            info['start-line'] = start_line
-            info['begin-line'] = begin_line
-            info['last-line'] = last_line
-            info['exec-lines'] = function_info['lines']
-            info['score'] = 0
-            info['attempt'] = function_count
-            # info['order'] = trace_order
-            candidate_function_list[function_id] = info
-            return candidate_function_list
+        # if Values.BACKPORT and expected_score == 0:
+        #     info = dict()
+        #     info['var-map'] = dict()
+        #     info['start-line'] = start_line
+        #     info['begin-line'] = begin_line
+        #     info['last-line'] = last_line
+        #     info['exec-lines'] = function_info['lines']
+        #     info['score'] = 0
+        #     info['attempt'] = function_count
+        #     # info['order'] = trace_order
+        #     candidate_function_list[function_id] = info
+        #     return candidate_function_list
 
         generate_symbolic_expressions(source_path,
                                       start_line,
@@ -192,7 +205,7 @@ def generate_candidate_function_list(estimate_loc, var_info_a,
             best_function_info['score'] = score
             best_function_info['attempt'] = function_count
 
-        if (expected_score == score) and (len(set(var_map.values())) == score):
+        if (expected_score <= score) and (len(set(var_map.values())) == score):
             if len(var_map.values()) == 1:
                 var = var_map.values()[0]
                 if ")" in var:
@@ -210,7 +223,7 @@ def generate_candidate_function_list(estimate_loc, var_info_a,
             # info['order'] = trace_order
             candidate_function_list[function_id] = info
             return candidate_function_list
-
+    Values.localization_iteration_no = function_count
     if not candidate_function_list:
         Emitter.error("\t\tbest score is " + str(best_score))
         Emitter.warning("\t\tno candidate function, attempting with best score")

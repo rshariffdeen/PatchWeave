@@ -123,7 +123,8 @@ def filter_ast_script(ast_script, info_a, info_b, mapping_ba):
             node_line_start = int(node_b['start line'])
             node_line_end = int(node_b['end line']) + 1
             node_line_numbers = set(range(node_line_start, node_line_end))
-
+            if "Insert MemberExpr" in script_line and "into BinaryOperator" in script_line:
+                continue
             intersection = line_numbers_b.intersection(node_line_numbers)
             if intersection:
                 filtered_ast_script.append(script_line)
@@ -143,12 +144,14 @@ def filter_ast_script(ast_script, info_a, info_b, mapping_ba):
             node_line_end = int(node_a['end line']) + 1
             node_line_numbers = set(range(node_line_start, node_line_end))
             intersection = line_numbers_a.intersection(node_line_numbers)
+            if "IntegerLiteral" in script_line:
+                continue
             if intersection:
                 filtered_ast_script.append(script_line)
     return filtered_ast_script
 
 
-def filter_ast_script_by_skip_line(ast_script, ast_node_a, ast_node_b, skip_lines):
+def filter_ast_script_by_skip_line(ast_script, ast_node_a, ast_node_b, skip_lines, operation):
     Logger.trace(__name__ + ":" + sys._getframe().f_code.co_name, locals())
     Emitter.normal("\t\tfiltering AST script using skip lines")
     filtered_ast_script = list()
@@ -192,6 +195,26 @@ def filter_ast_script_by_skip_line(ast_script, ast_node_a, ast_node_b, skip_line
                         filtered_ast_script.append(script_line)
             else:
                 filtered_ast_script.append(script_line)
+        elif "Replace" in script_line:
+            node_id_b = int(((script_line.split(" with ")[1]).split("(")[1]).split(")")[0])
+            node_b = Finder.search_ast_node_by_id(ast_node_b, node_id_b)
+            node_type_b = node_b['type']
+            node_line_start = int(node_b['start line'])
+            node_line_end = int(node_b['end line']) + 1
+            # print(node_line_start)
+            if node_line_start in skip_lines:
+                continue
+            filtered_ast_script.append(script_line)
+        elif "Delete" in script_line:
+            node_id_a = int((script_line.split("(")[1]).split(")")[0])
+            node_a = Finder.search_ast_node_by_id(ast_node_a, node_id_a)
+            node_type_a = node_a['type']
+            if operation == 'modify':
+                if node_type_a == "DeclRefExpr":
+                    filtered_ast_script.append(script_line)
+                continue
+            filtered_ast_script.append(script_line)
+
         else:
             filtered_ast_script.append(script_line)
     return filtered_ast_script

@@ -23,10 +23,9 @@ def search_matching_node(ast_node, search_node, var_map):
             return node_type + "(" + str(node_id) + ")"
 
     for child_node in ast_node['children']:
-        if len(child_node['children']) > 0:
-            target_node_str = search_matching_node(child_node, search_node, var_map)
-            if target_node_str is not None:
-                return target_node_str
+        target_node_str = search_matching_node(child_node, search_node, var_map)
+        if target_node_str is not None:
+            return target_node_str
 
 
 def find_ast_node_position(ast_node, line_number):
@@ -35,7 +34,6 @@ def find_ast_node_position(ast_node, line_number):
     node_type = ast_node['type']
     child_index = 0
     line_number = int(line_number)
-    prev_child_node = ""
     for child_node in ast_node['children']:
         child_node_id = int(child_node['id'])
         child_node_type = str(child_node['type'])
@@ -43,11 +41,10 @@ def find_ast_node_position(ast_node, line_number):
         child_node_end_line = int(child_node['end line'])
         if child_node_start_line == line_number:
             return str(node_type) + "(" + str(node_id) + ") at " + str(child_index)
-        elif child_node_start_line > line_number:
-            return find_ast_node_position(prev_child_node, line_number)
-        prev_child_node = child_node
+        elif line_number in range(child_node_start_line, child_node_end_line):
+            return find_ast_node_position(child_node, line_number)
         child_index += 1
-    return find_ast_node_position(prev_child_node, line_number)
+
 
 
 def search_ast_node_by_id(ast_node, find_id):

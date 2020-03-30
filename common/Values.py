@@ -64,3 +64,10 @@ generated_script_for_c_files = dict()
 translated_script_for_files = dict()
 variable_map = dict()
 diff_info = dict()
+
+non_localized_function_list = list()
+localized_function_list = list()
+fuzz_results = dict()
+original_patch = ""
+transplanted_patch = ""
+localization_iteration_no = 0

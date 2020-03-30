@@ -295,7 +295,7 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
         source_path, function_name = best_candidate_function_id.split(":")
         Emitter.success("\n\t\tBest candidate function: " + function_name + ', attempt=' + str(attempt) + '\n')
         Emitter.sub_sub_title("generating candidate insertion point list")
-        insertion_loc_list, loc_best_score = Identifier.identify_insertion_points(best_candidate_function)
+        insertion_loc_list, loc_best_score = Identifier.identify_insertion_points(best_candidate_function, suspicious_lines_c)
         best_candidate_insertion_loc = Filter.filter_best_candidate_loc(insertion_loc_list, loc_best_score)
 
         Emitter.success(
@@ -334,7 +334,7 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
             target_node_str = script_line.split(" into ")[1]
             inserting_node_id = int((inserting_node_str.split("(")[1]).split(")")[0])
             inserting_node = Finder.search_ast_node_by_id(ast_map_b, inserting_node_id)
-            if len(var_map.keys()) == 0 or Values.BACKPORT:
+            if len(var_map.keys()) == 0:
                 insert_index = int(script_line.split(" at ")[-1])
                 target_node_b_str = (script_line.split(" into ")[1]).split(" at ")[0]
                 target_node_b_id = int((target_node_b_str.split("(")[1]).split(")")[0])
@@ -538,7 +538,7 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
         source_path_c, function_name = best_candidate_function_id.split(":")
         Emitter.success("\n\t\tBest candidate function: " + function_name + ', attempt=' + str(attempt) + '\n')
         Emitter.sub_sub_title("generating candidate insertion point list")
-        insertion_loc_list, loc_best_score = Identifier.identify_insertion_points(best_candidate_function)
+        insertion_loc_list, loc_best_score = Identifier.identify_insertion_points(best_candidate_function, suspicious_lines_c)
         best_candidate_insertion_loc = Filter.filter_best_candidate_loc(insertion_loc_list, loc_best_score)
         Emitter.success(
             "\n\t\tBest candidate location: " + function_name + ":" + str(best_candidate_insertion_loc) + '\n')
@@ -613,12 +613,11 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                 if "CompoundStmt" in target_node_str:
                     translated_command = inserting_node_str + " into " + position_c
 
-                elif "CStyleCastExpr" in inserting_node_str:
+                elif "CStyleCastExpr" in inserting_node_str or len(var_map_ac.keys()) == 0:
                     insert_index = int(script_line.split(" at ")[-1])
                     target_node_b_str = (script_line.split(" into ")[1]).split(" at ")[0]
                     target_node_b_id = int((target_node_b_str.split("(")[1]).split(")")[0])
                     target_node_b = Finder.search_ast_node_by_id(ast_map_b, target_node_b_id)
-
 
                     map_ba = Mapper.map_ast_from_source(source_path_a, source_path_b,
                                                         Definitions.DIRECTORY_TMP + "/tmp-match")
@@ -726,14 +725,25 @@ def weave_code(diff_loc, diff_loc_info, path_a, path_b, path_c, path_d,
                                                                                      source_path_d,
                                                                                      skip_line_list))
                         ast_script_c.append(translated_command)
+            elif "Delete" in script_line:
+                delete_node_str = script_line
+                delete_node_id_a = int((delete_node_str.split("(")[1]).split(")")[0])
+                map_ac = Mapper.map_ast_from_source(source_path_c, source_path_a,
+                                                    Definitions.DIRECTORY_TMP + "/tmp-match")
+                if delete_node_id_a in map_ac.keys():
+                    delete_node_id_c = map_ac[delete_node_id_a]
+                    translated_command = script_line.replace(str(delete_node_id_a), str(delete_node_id_c))
+                    ast_script_c.append(translated_command)
+
         # print(var_map_ac)
         # print(missing_var_list)
-        for var in missing_var_list:
-            var_info = missing_var_list[var]
-            ast_node = var_info['ast-node']
-            ast_op = "Insert " + ast_node['type'] + "(" + str(ast_node['id']) + ")"
-            ast_op += " into " + position_c
-            ast_script_c.append(ast_op)
+        if position_c:
+            for var in missing_var_list:
+                var_info = missing_var_list[var]
+                ast_node = var_info['ast-node']
+                ast_op = "Insert " + ast_node['type'] + "(" + str(ast_node['id']) + ")"
+                ast_op += " into " + position_c
+                ast_script_c.append(ast_op)
         ast_script_c.reverse()
         # print(ast_script)
         var_map_abc = Merger.merge_var_map(var_map_ac, var_map_bc)

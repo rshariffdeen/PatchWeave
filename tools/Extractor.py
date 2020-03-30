@@ -704,6 +704,8 @@ def extract_macro_definition(ast_node, skip_line_list, source_file, target_file)
         if identifier in Values.STANDARD_MACRO_LIST:
             return macro_list
         # print(node_child_count)
+        if "(" in identifier:
+            identifier = identifier.split("(")[0]
         if node_child_count > 0:
             for child_node in ast_node['children']:
                 identifier = str(child_node['value'])
@@ -729,7 +731,7 @@ def extract_macro_definition(ast_node, skip_line_list, source_file, target_file)
             for token in token_list:
                 if token in ["/", "+", "-"]:
                     continue
-                if identifier not in macro_list.keys():
+                if token not in macro_list.keys():
                     info = dict()
                     info['source'] = source_file
                     info['target'] = target_file
