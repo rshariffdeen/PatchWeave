@@ -1,0 +1,6 @@
+--- a/libopenjpeg/j2k.c
++++ b/libopenjpeg/j2k.c
+413c413
+< 	cio_read(cio, 2);				/* Rsiz (capabilities) */
+---
+> 	if (0) cio_read(cio, 2);				/* Rsiz (capabilities) */

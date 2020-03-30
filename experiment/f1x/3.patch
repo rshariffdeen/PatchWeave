@@ -1,0 +1,6 @@
+--- a/libopenjpeg/jp2.c
++++ b/libopenjpeg/jp2.c
+164c164
+< 	if (box->length == 1) {
+---
+> 	if ((box->length != 1)) {

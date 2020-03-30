@@ -1,0 +1,6 @@
+--- a/src/libjasper/jpc/jpc_dec.c
++++ b/src/libjasper/jpc/jpc_dec.c
+337c337
+< 	return 0;
+---
+> 	return opts->maxlyrs;
