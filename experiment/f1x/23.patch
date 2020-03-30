@@ -1,0 +1,6 @@
+--- a/src/flac.c
++++ b/src/flac.c
+183c183
+< 	if (pflac->ptr == NULL)
+---
+> 	if ((pflac->ptr != (void *)0))
