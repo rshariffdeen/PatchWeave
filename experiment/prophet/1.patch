@@ -1,0 +1,7 @@
+1184,1185c1184,1186
+< 	if (!(dec->cmpts = jas_malloc(dec->numcomps * sizeof(jpc_dec_cmpt_t)))) {
+< 		return -1;
+---
+> 	//prophet generated patch
+> 	if ((!(dec->cmpts = jas_malloc(dec->numcomps * sizeof(jpc_dec_cmpt_t)))) || (1)) {
+> 	    return -1;
