@@ -1,6 +1,6 @@
 --- a/cwebp.c
 +++ b/cwebp.c
-539c539
-<   magic = (buf[0] << 24) | (buf[1] << 16) | (buf[2] << 8) | buf[3];
+298c298
+<   jpeg_read_header(&dinfo, TRUE);
 ---
->   magic = (((( buf[0] <<  24) | ( buf[1] <<  16)) | ( buf[2] <<  8)) &  buf[3]);
+>   if (0) jpeg_read_header(&dinfo, 1);
