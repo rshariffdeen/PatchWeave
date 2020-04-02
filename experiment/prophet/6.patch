@@ -1,0 +1,9 @@
+0a1
+> #include <string.h>
+211,212c212,214
+< 	if (box->ops->destroy) {
+< 		(*box->ops->destroy)(box);
+---
+> 	//prophet generated patch
+> 	if ((box->ops->destroy) && !((box->ops->destroy == box->ops->destroy))) {
+> 	    (*box->ops->destroy)(box);

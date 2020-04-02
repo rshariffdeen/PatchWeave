@@ -1,0 +1,8 @@
+0a1
+> #include <string.h>
+518c519,521
+< 	cp->th = int_ceildiv(image->y1 - cp->ty0, cp->tdy);
+---
+> 	//prophet generated patch
+> 	if (!(1))
+> 	    cp->th = int_ceildiv(image->y1 - cp->ty0, cp->tdy);

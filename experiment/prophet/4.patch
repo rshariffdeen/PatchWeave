@@ -1,0 +1,5 @@
+1233c1233,1234
+< 	dec->numvtiles = JPC_CEILDIV(dec->yend - dec->tileyoff, dec->tileheight);
+---
+> 	//prophet generated patch
+> 	dec->numvtiles = (((dec->yend - dec->tileyoff) + (dec->tileheight) - (compno + 0)) / (dec->tileheight));

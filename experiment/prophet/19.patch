@@ -1,0 +1,9 @@
+1231,1233c1231,1234
+< 		if (!(tile->tcomps = jas_malloc(dec->numcomps *
+< 		  sizeof(jpc_dec_tcomp_t)))) {
+< 			return -1;
+---
+> 		//prophet generated patch
+> 		dec->numtiles = (0);
+> 		if (!(tile->tcomps = jas_malloc(dec->numcomps * sizeof(jpc_dec_tcomp_t)))) {
+> 		    return -1;

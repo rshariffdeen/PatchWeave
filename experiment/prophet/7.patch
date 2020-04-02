@@ -1,0 +1,7 @@
+0a1
+> #include <string.h>
+550c551,552
+< 		w = int_ceildiv(image->x1 - image->x0, image->comps[i].dx);
+---
+> 		//prophet generated patch
+> 		w = (i);

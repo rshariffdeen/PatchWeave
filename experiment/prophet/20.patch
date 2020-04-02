@@ -1,0 +1,7 @@
+98,99c98,100
+<     if((flags & MP3_FRAME_SYNC) != MP3_FRAME_SYNC)
+<       break;
+---
+>     //prophet generated patch
+>     if (((flags & 4292870144U) != 4292870144U) && !(1))
+>         break;
