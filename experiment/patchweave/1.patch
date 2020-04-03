@@ -1,0 +1,5 @@
++ #include<stdint.h>
+
++   if ((uint_fast8_t)image->comps[i].dx == 0 || (uint_fast8_t)image->comps[i].dx > 255) {
++       return;
++   }

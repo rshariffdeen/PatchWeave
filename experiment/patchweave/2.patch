@@ -1,0 +1,3 @@
++  if (!((int)cmpt->hstep * (int)cmpt->vstep)) {
++     return -1;
++  }

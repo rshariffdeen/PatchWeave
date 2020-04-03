@@ -1,0 +1,5 @@
++   if (siz->comps[i].hsamp == 0 || siz->comps[i].hsamp > 255) {
++       jas_eprintf("invalid XRsiz value %d\n", siz->comps[i].hsamp);
++       jas_free(siz->comps);
++       return -1;
++   }

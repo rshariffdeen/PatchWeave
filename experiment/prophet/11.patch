@@ -1,0 +1,5 @@
+0a1
+> #include <string.h>
+242a244,245
+>   //prophet generated patch
+>   jpeg_start_decompress(&dinfo);
