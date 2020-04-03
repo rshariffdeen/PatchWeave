@@ -1,0 +1,5 @@
++ #include<stdint.h>
+
++  if ((uint_fast32_t)cp->tx0 > (uint_fast32_t)image->x0 || (uint_fast32_t)cp->tx0 + (uint_fast32_t)cp->tdx <= (uint_fast32_t)image->x0) {
++       return;
++ 	}

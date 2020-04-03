@@ -1,0 +1,18 @@
+-        size = ((width * info_hdr.iBitCount + 31) & ~31) / 8;
++ 		/* XXX: Avoid integer overflow. We can calculate size in one
++ 		 * step using
++ 		 *
++ 		 *   size = ((width * info_hdr.iBitCount + 31) & ~31) / 8
++ 		 *
++ 		 * formulae, but we should check for overflow conditions
++ 		 * during calculation.
++ 		 */
++ 		size = width * info_hdr.iBitCount + 31;
++ 		if (!width || !info_hdr.iBitCount
++ 		    || (size - 31) / info_hdr.iBitCount != width )
++ 		{
++ 			TIFFError(infilename,
++ 				  "Wrong image parameters; "
++ 				  "can't allocate space for scanline buffer");
++			goto bad3;
++ 		}

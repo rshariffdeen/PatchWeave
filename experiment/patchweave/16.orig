@@ -1,0 +1,4 @@
++ 	if (siz->tilexoff > siz->xoff || siz->tilexoff + siz->tilewidth <= siz->xoff) {
++ 		jas_eprintf("XTOsiz not in permissible range\n");
++ 		goto error;
++ 	}

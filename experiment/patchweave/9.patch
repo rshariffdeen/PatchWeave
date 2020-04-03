@@ -1,0 +1,3 @@
++  if ((uint_fast32_t)l_cp->tx0 >= (uint_fast32_t)l_image->x1 || (uint_fast32_t)l_cp->ty0 >= (uint_fast32_t)l_image->y1) {
++ 		return -1;
++  }

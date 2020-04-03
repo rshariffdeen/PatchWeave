@@ -1,0 +1,7 @@
++   typedef	unsigned int uint32
++   uint32 offset, size;
+
++   if (!(uint32)info->width || !info->depth || (size - 31) / info->depth != (uint32)info->width)
++   {
++       return -1;
++   }

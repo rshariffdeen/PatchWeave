@@ -1,0 +1,2 @@
+-  magic = (buf[0] << 24) | (buf[1] << 16) | (buf[2] << 8) | buf[3];
++  magic = ((uint32_t)buf[0] << 24) | (buf[1] << 16) | (buf[2] << 8) | buf[3];

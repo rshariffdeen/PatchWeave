@@ -1,0 +1,17 @@
++ #define OPJ_FALSE 0
++ typedef uint32_t OPJ_UINT32;
++ OPJ_UINT32 l_tmp, l_tx1, l_ty1;
+
++  if (((OPJ_UINT32)dec->tilexoff > (OPJ_UINT32)siz->xoff) || ((OPJ_UINT32)dec->tileyoff > (OPJ_UINT32)siz->yoff) || (l_tx1 <= (OPJ_UINT32)siz->xoff) || (l_ty1 <= (OPJ_UINT32)siz->yoff) ) {
++     return OPJ_FALSE;
++  }
+
++  if (l_ty1 < (OPJ_UINT32)dec->tileyoff) { /* manage overflow */
++     l_ty1 = 0xFFFFFFFFU;
++  }
+
++  l_ty1 = (OPJ_UINT32)dec->tileyoff + (OPJ_UINT32)dec->tileheight;
+
++  if (l_tx1 < (OPJ_UINT32)dec->tilexoff) { /* manage overflow */
++     l_tx1 = 0xFFFFFFFFU;
++   }
