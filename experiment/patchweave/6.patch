@@ -1,0 +1,5 @@
++ #define OPJ_FALSE 0
+
++  if ((int)box->len < 0) {
++ 		return OPJ_FALSE; // TODO: actually check jp2_read_boxhdr's return value
++ 	}

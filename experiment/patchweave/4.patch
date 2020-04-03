@@ -1,0 +1,3 @@
++  if (dec->numhtiles == 0 || dec->numvtiles == 0 || dec->numhtiles > 65535 / dec->numvtiles) {
++      return -1;
++  }

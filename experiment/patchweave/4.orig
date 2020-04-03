@@ -1,0 +1,7 @@
++  /* gdal_fuzzer_check_number_of_tiles.jp2 */
++   if (cp->tw == 0 || cp->th == 0 || cp->tw > 65535 / cp->th) {
++     opj_event_msg(j2k->cinfo, EVT_ERROR,
++                   "Invalid number of tiles : %u x %u (maximum fixed by jpeg2000 norm is 65535 tiles)\n",
++                    cp->tw, cp->th);
++     return;
++   }
