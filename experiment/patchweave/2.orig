@@ -1,5 +1,0 @@
-+   /* prevent division by zero */
-+   if (!(cp->tdx * cp->tdy)) {
-+     opj_event_msg(j2k->cinfo, EVT_ERROR, "JPWL: invalid tile size (tdx: %d, tdy: %d)\n", cp->tdx, cp->tdy);
-+     return;
-+   }

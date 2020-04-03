@@ -1,4 +1,0 @@
-+ 	if (siz->tilexoff >= siz->width || siz->tileyoff >= siz->height) {
-+ 		jas_eprintf("all tiles are outside the image area\n");
-+ 		return -1;
-+ 	}

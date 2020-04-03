@@ -1,5 +1,0 @@
-+ 		if (siz->comps[i].vsamp == 0 || siz->comps[i].vsamp > 255) {
-+ 			jas_eprintf("invalid YRsiz value %d\n", siz->comps[i].vsamp);
-+ 			jas_free(siz->comps);
-+ 			return -1;
-+		}
