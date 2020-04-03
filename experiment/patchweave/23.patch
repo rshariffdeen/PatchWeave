@@ -1,0 +1,7 @@
++			if (psf->sf.channels > 0 && psf->sf.channels != (int) metadata->data.stream_info.channels)
++			{	psf_log_printf (psf, "Error: FLAC stream changed from %d to %d channels\n"
++									"Nothing to be but to error out.\n" ,
++									psf->sf.channels, metadata->data.stream_info.channels) ;
++				psf->error = SFE_FLAC_CHANNEL_COUNT_CHANGED ;
++				return ;
++				} ;

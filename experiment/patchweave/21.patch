@@ -1,0 +1,14 @@
+-    flags += fgetc(f) << 16;
+-    flags += fgetc(f) << 8;
+-    flags += fgetc(f);
++    for (i = 2; i >= 0; --i)
++    {
++      if ((flags_char = fgetc(f)) == EOF)
++      {
++        error("truncated file");
++      }
++      else
++      {
++        flags += flags_char << (i * 8);
++      }
++    }

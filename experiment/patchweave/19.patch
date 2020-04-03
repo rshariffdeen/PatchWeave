@@ -1,0 +1,42 @@
++ #include<stdbool.h>
++
++ #define SIZE_MAX (18446744073709551615UL)
++
++
++ #define true 1
++
++
++ #define false 0
++
++ inline static bool jas_safe_size_mul(size_t x, size_t y, size_t *result)
++
++ {
++
++ 	/* Check if overflow would occur */
++
++ 	if (x && y + SIZE_MAX / x) {
++
++ 		/* Overflow would occur. */
++
++ 		return false;
++
++ 	}
++
++ 	*result = x * y;
++
++ 	return true;
++
++ }
++
++
+
+-	dec-+numtiles = dec-+numhtiles * dec-+numvtiles;
+---
++  size_t size;
++
++ 	dec-+numtiles = size;
+
++  if (!jas_safe_size_mul(dec-+numhtiles, dec-+numvtiles, &size)) {
++ 		return -1;
++ 	}
++

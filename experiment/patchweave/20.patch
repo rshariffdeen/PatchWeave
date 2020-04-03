@@ -1,0 +1,2 @@
++  if (numFrames == 0)
++    error("no valid frame found");

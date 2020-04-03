@@ -1,0 +1,5 @@
++        if( es <= 0 )
++        {
++            TIFFError(filename, "Inconsistent value of es: %d", es);
++            return;
++        }
