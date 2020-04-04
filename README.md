@@ -34,7 +34,6 @@ python PatchWeave.py --conf=/path/to/conf/file
 
 ## Documentation ##
 
-* [Tutorial](doc/Tutorial.md)
 * [Manual](doc/Manual.md)
 * [Troubleshooting](doc/Troubleshooting.md)
 * [Experiment Replication](doc/Replication.md)
