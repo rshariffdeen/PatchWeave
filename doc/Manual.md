@@ -4,7 +4,7 @@ PatchWeave requires the source-code of the donor program and the target program,
 
  ## Usage ##
 
-In order to transplant a patch, PatchWeave requires a special build environment that supports LLVM-7 and LLVM-3.6 (Docker Image with all environment can be located at https://hub.docker.com/repository/docker/rshariffdeen/patchweave).
+In order to transplant a patch, PatchWeave requires a special build environment that supports LLVM-7 and LLVM-3.6 (Docker image with the environment can be located at https://hub.docker.com/repository/docker/rshariffdeen/patchweave).
 PatchWeave attempts to automatically detect the build setup using default build commands, it also provide the interface for customized build commands and configuration commands. 
 
 PatchWeave requires a configuration file as input which provides values as following:
@@ -23,7 +23,10 @@ Apart from the above configuration following additional configuration can be sup
 - config_command_a/_c: custom config command to use instead of using built in PatchWeave configuration commands
 - klee_flags_a/_c: custom flags to pass for the klee instrumented run (i.e. use of pre-built libraries to be linked)
 
-
+One a configuraiton file is specified the tool can be invoked using the following command from the directory of the tool:
+```ruby
+python PatchWeave.py --conf=/path/to/conf/file
+```
 ### Side effects ###
 
 **Warning!** PatchWeave executes arbitrary modifications of your source code which may lead to undesirable side effects. Therefore, it is recommended to run PatchWeave in an isolated environment.
