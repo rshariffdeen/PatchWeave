@@ -6,5 +6,5 @@ If you have any query or troubleshooting related to the tool add a Github issue 
 The current PatchWeave implementation fails to run on four cases in the PatchWeave 2020 benchmark set: openjpeg-jasper-buffer-overflow, jasper-openjpeg-buffer-overflow, libsndfile-wavpack-shift-overflow and jasper-openjpeg-null-pointer. Note that we report that PatchWeave generate no patch for these defects in our paper. 
 
 The plausible (but incorrect) patch PatchWeave generates for some examples is compiler 
-dependent and possibly machine dependent. 
+dependent and possibly machine dependent. PatchWeave relies on compiled AST of the two programs, hence machine dependency is unavoidable with current implementation. 
 
