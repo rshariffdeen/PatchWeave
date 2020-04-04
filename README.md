@@ -19,7 +19,7 @@ the target program. Following is an example configuration file for bug id 1, as 
 path_a:/data/openjpeg-jasper/div-zero-1/openjpeg-1.5.1;
 path_b:/data/openjpeg-jasper/div-zero-1/openjpeg-1.5.2;
 path_c:/data/openjpeg-jasper/div-zero-1/jasper-1.900.2
-exploit_command_c:/src/appl/imginfo -f $POC\
+exploit_command_c:/src/appl/imginfo -f $POC
 exploit_command_a:/applications/codec/j2k_to_image -i $POC -o out.bmp
 path_poc:/data/exploits/jasper/CVE-2016-8691.j2k
 asan_flag:integer
