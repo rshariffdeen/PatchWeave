@@ -41,17 +41,30 @@ python PatchWeave.py --conf=/path/to/conf/file
 To set optimal configuration for your subject, refer to the Configuration section of the [manual](doc/Manual.md).
 
 
-## Contributors ##
 
-Principal investigator:
+## Citing PatchWeave
 
-* Abhik Roychoudhury
+We are researchers, therefore if you use PatchWeave in an academic work we would be really glad if you cite our 
+paper using the following bibtex:
 
-Developers:
-
-* Ridwan Shariffdeen
-
-Contributors:
-
-* Shin Hwei Tan
-* Ming Yuan
+```
+@article{10.1145/3412376,
+author = {Shariffdeen, Ridwan Salihin and Tan, Shin Hwei and Gao, Mingyuan and Roychoudhury, Abhik},
+title = {Automated Patch Transplantation},
+year = {2021},
+issue_date = {January 2021},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+volume = {30},
+number = {1},
+issn = {1049-331X},
+url = {https://doi.org/10.1145/3412376},
+doi = {10.1145/3412376},
+abstract = {Automated program repair is an emerging area that attempts to patch software errors and vulnerabilities. In this article, we formulate and study a problem related to automated repair, namely automated patch transplantation. A patch for an error in a donor program is automatically adapted and inserted into a “similar” target program. We observe that despite standard procedures for vulnerability disclosures and publishing of patches, many un-patched occurrences remain in the wild. One of the main reasons is the fact that various implementations of the same functionality may exist and, hence, published patches need to be modified and adapted. In this article, we therefore propose and implement a workflow for transplanting patches. Our approach centers on identifying patch insertion points, as well as namespaces translation across programs via symbolic execution. Experimental results to eliminate five classes of errors highlight our ability to fix recurring vulnerabilities across various programs through transplantation. We report that in 20 of 24 fixing tasks involving eight application subjects mostly involving file processing programs, we successfully transplanted the patch and validated the transplantation through differential testing. Since the publication of patches make an un-patched implementation more vulnerable, our proposed techniques should serve a long-standing need in practice.},
+journal = {ACM Trans. Softw. Eng. Methodol.},
+month = dec,
+articleno = {6},
+numpages = {36},
+keywords = {code transplantation, dynamic program analysis, Program repair, patch transplantation}
+}
+```

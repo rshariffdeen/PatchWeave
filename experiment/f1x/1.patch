@@ -4,3 +4,4 @@
 < 	cio_read(cio, 2);				/* Rsiz (capabilities) */
 ---
 > 	if (0) cio_read(cio, 2);				/* Rsiz (capabilities) */
+
