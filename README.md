@@ -68,3 +68,9 @@ numpages = {36},
 keywords = {code transplantation, dynamic program analysis, Program repair, patch transplantation}
 }
 ```
+## Developers / Maintainers
+* Ridwan Shariffdeen
+
+
+# License
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details
